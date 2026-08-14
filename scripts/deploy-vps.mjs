@@ -21,6 +21,9 @@ EOF
     
     mkdir -p public/images/profile public/images/writings public/images/ships public/images/education
     
+    echo "Pulling latest code from GitHub repository..."
+    git pull origin main
+    
     docker compose up -d --build
     
     echo "=== Container Status ==="
