@@ -1,0 +1,115 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const recentWritings = (await getCollection('writings', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf())
+  .slice(0, 4);
+
+const recentShips = (await getCollection('ships'))
+  .sort((a, b) => b.data.year.localeCompare(a.data.year))
+  .slice(0, 3);
+
+const recentThoughts = (await getCollection('thoughts'))
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf())
+  .slice(0, 2);
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+---
+
+<BaseLayout title="sanju.sh style – internet space" description="personal corner on the web">
+  <!-- Bio / Intro -->
+  <section class="mb-12">
+    <h1 class="text-xl font-semibold mb-3 tracking-tight" style="color: var(--text-primary);">
+      hey! I'm Yudi <span class="font-normal" style="color: var(--text-muted);">👋</span>
+    </h1>
+    <p class="text-sm leading-relaxed mb-4" style="color: var(--text-secondary);">
+      this is my personal corner on the web where I share my thoughts, ideas, and projects. feel free to explore and contact me if you have any questions or just want to chat.
+    </p>
+  </section>
+
+  <!-- Writings Section -->
+  <section class="mb-12">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="section-tag">writings</h2>
+      <a href="/writings" class="section-tag hover:opacity-80">all writings →</a>
+    </div>
+
+    <div>
+      {recentWritings.map((post) => (
+        <a href={`/writings/${post.slug}`} class="post-row">
+          <span class="post-title">{post.data.title}</span>
+          <span class="post-date">{formatDate(post.data.publishDate)}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Ships Section -->
+  <section class="mb-12">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="section-tag">ships</h2>
+      <a href="/ships" class="section-tag hover:opacity-80">all ships →</a>
+    </div>
+
+    <div class="space-y-3">
+      {recentShips.map((ship) => (
+        <div class="ship-card">
+          <div class="flex items-center justify-between mb-1.5">
+            <h3 class="ship-title">
+              {ship.data.link ? (
+                <a href={ship.data.link} target="_blank" rel="noopener noreferrer" class="hover:underline underline-offset-4 flex items-center gap-1">
+                  {ship.data.title}
+                  <span style="color: var(--text-muted); font-size: 0.75rem;">↗</span>
+                </a>
+              ) : (
+                ship.data.title
+              )}
+            </h3>
+            <span class="status-badge">
+              {ship.data.status}
+            </span>
+          </div>
+          <p class="ship-desc mb-2.5">{ship.data.description}</p>
+          <div class="flex gap-1.5 flex-wrap">
+            {ship.data.techStack.map((tech) => (
+              <span class="tech-tag">
+                {tech}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Thoughts Section -->
+  {recentThoughts.length > 0 && (
+    <section class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="section-tag">thoughts</h2>
+        <a href="/thoughts" class="section-tag hover:opacity-80">all thoughts →</a>
+      </div>
+
+      <div class="space-y-3">
+        {recentThoughts.map(async (thought) => {
+          const { Content } = await thought.render();
+          return (
+            <div class="thought-bubble">
+              <div class="text-[11px] font-mono mb-1.5" style="color: var(--text-muted);">{formatDate(thought.data.publishDate)}</div>
+              <div class="thought-content prose">
+                <Content />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  )}
+</BaseLayout>

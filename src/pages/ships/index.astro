@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const ships = (await getCollection('ships'))
+  .sort((a, b) => b.data.year.localeCompare(a.data.year));
+---
+
+<BaseLayout title="ships – yudi.sh" description="a collection of projects I've built and shipped">
+  <div class="mb-10">
+    <h1 class="text-xl font-semibold mb-2 tracking-tight" style="color: var(--text-primary);">ships</h1>
+    <p class="text-sm" style="color: var(--text-secondary);">a collection of tools, applications, and side-projects i have shipped.</p>
+  </div>
+
+  <div class="space-y-4">
+    {ships.map((ship) => (
+      <div class="ship-card">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="ship-title">
+            {ship.data.link ? (
+              <a href={ship.data.link} target="_blank" rel="noopener noreferrer" class="hover:underline underline-offset-4 flex items-center gap-1">
+                {ship.data.title}
+                <span style="color: var(--text-muted); font-size: 0.75rem;">↗</span>
+              </a>
+            ) : (
+              ship.data.title
+            )}
+          </h2>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-mono" style="color: var(--text-muted);">{ship.data.year}</span>
+            <span class="status-badge">
+              {ship.data.status}
+            </span>
+          </div>
+        </div>
+
+        <p class="ship-desc mb-3">
+          {ship.data.description}
+        </p>
+
+        <div class="flex items-center justify-between flex-wrap gap-2 pt-2 border-t" style="border-color: var(--border);">
+          <div class="flex gap-1.5 flex-wrap">
+            {ship.data.techStack.map((tech) => (
+              <span class="tech-tag">
+                {tech}
+              </span>
+            ))}
+          </div>
+
+          <div class="flex gap-3 text-xs font-mono">
+            {ship.data.link && (
+              <a href={ship.data.link} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--text-primary);">
+                live ↗
+              </a>
+            )}
+            {ship.data.github && (
+              <a href={ship.data.github} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--text-muted);">
+                source ↗
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    ))}
+
+    {ships.length === 0 && (
+      <p class="text-xs italic py-4" style="color: var(--text-muted);">No ships cataloged yet.</p>
+    )}
+  </div>
+</BaseLayout>

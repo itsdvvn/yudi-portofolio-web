@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const thoughts = (await getCollection('thoughts'))
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+---
+
+<BaseLayout title="thoughts – yudi.sh" description="a place for me to share my random thoughts and ideas">
+  <div class="mb-10">
+    <h1 class="text-xl font-semibold mb-2 tracking-tight" style="color: var(--text-primary);">thoughts</h1>
+    <p class="text-sm" style="color: var(--text-secondary);">a place for me to share random thoughts and quick ideas (micro-blog).</p>
+  </div>
+
+  <div class="space-y-4">
+    {thoughts.map(async (thought) => {
+      const { Content } = await thought.render();
+      return (
+        <div class="thought-bubble">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-mono" style="color: var(--text-muted);">{formatDate(thought.data.publishDate)}</span>
+            {thought.data.tags.length > 0 && (
+              <div class="flex gap-1">
+                {thought.data.tags.map((tag) => (
+                  <span class="tech-tag text-[10px]">#{tag}</span>
+                ))}
+              </div>
+            )}
+          </div>
+          <div class="thought-content prose max-w-none">
+            <Content />
+          </div>
+        </div>
+      );
+    })}
+
+    {thoughts.length === 0 && (
+      <p class="text-xs italic py-4" style="color: var(--text-muted);">No thoughts logged yet.</p>
+    )}
+  </div>
+</BaseLayout>

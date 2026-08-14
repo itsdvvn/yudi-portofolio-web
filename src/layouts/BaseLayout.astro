@@ -1,0 +1,117 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Yudi's internet space",
+  description = 'personal corner on the web where I share my thoughts, ideas, and projects.',
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <script is:inline>
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        return 'dark';
+      })();
+
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    </script>
+  </head>
+  <body class="py-6 sm:py-8 md:py-12">
+    <div class="site-wrap flex-1 flex flex-col">
+      <!-- Responsive Header -->
+      <header class="flex items-center justify-between gap-2 mb-8 sm:mb-12">
+        <a href="/" class="text-base font-semibold tracking-tight hover:opacity-80 transition-opacity shrink-0" style="color: var(--text-primary);">
+          yudi.sh
+        </a>
+
+        <div class="flex items-center gap-3 sm:gap-5 overflow-x-auto no-scrollbar py-1">
+          <nav class="flex items-center gap-3 sm:gap-5 text-xs sm:text-sm">
+            <a href="/" class={`nav-link ${currentPath === '/' ? 'active' : ''}`}>home</a>
+            <a href="/writings" class={`nav-link ${currentPath.startsWith('/writings') ? 'active' : ''}`}>writings</a>
+            <a href="/thoughts" class={`nav-link ${currentPath.startsWith('/thoughts') ? 'active' : ''}`}>thoughts</a>
+            <a href="/ships" class={`nav-link ${currentPath.startsWith('/ships') ? 'active' : ''}`}>ships</a>
+          </nav>
+          
+          <div class="flex items-center gap-1.5 sm:gap-2 border-l pl-2 sm:pl-3 shrink-0" style="border-color: var(--border);">
+            <button id="theme-toggle" class="transition-colors p-1" style="color: var(--text-muted);" aria-label="Toggle Theme">
+              <svg class="sun-icon hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+              <svg class="moon-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </button>
+            <a href="/keystatic" title="Keystatic CMS" class="transition-colors p-1 text-[11px] sm:text-xs font-mono" style="color: var(--text-muted);">
+              [cms]
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Slot -->
+      <main class="flex-1">
+        <slot />
+      </main>
+
+      <!-- Responsive Footer -->
+      <footer class="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t text-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left" style="border-color: var(--border); color: var(--text-muted);">
+        <p>© {new Date().getFullYear()} yudi • built with astro & keystatic</p>
+        <div class="flex gap-4">
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="hover:underline">github</a>
+          <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="hover:underline">x / twitter</a>
+          <a href="/keystatic" class="hover:underline">cms</a>
+        </div>
+      </footer>
+    </div>
+
+    <script is:inline>
+      const themeToggleBtn = document.getElementById('theme-toggle');
+      const sunIcon = document.querySelector('.sun-icon');
+      const moonIcon = document.querySelector('.moon-icon');
+
+      function updateIcon(isLight) {
+        if (isLight) {
+          sunIcon.classList.remove('hidden');
+          moonIcon.classList.add('hidden');
+        } else {
+          sunIcon.classList.add('hidden');
+          moonIcon.classList.remove('hidden');
+        }
+      }
+
+      const isInitiallyLight = document.documentElement.getAttribute('data-theme') === 'light';
+      updateIcon(isInitiallyLight);
+
+      themeToggleBtn?.addEventListener('click', () => {
+        const isCurrentLight = document.documentElement.getAttribute('data-theme') === 'light';
+        if (isCurrentLight) {
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'dark');
+          updateIcon(false);
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+          localStorage.setItem('theme', 'light');
+          updateIcon(true);
+        }
+      });
+    </script>
+  </body>
+</html>
