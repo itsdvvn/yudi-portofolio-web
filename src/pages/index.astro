@@ -22,18 +22,168 @@ function formatDate(date: Date) {
     year: 'numeric',
   });
 }
+
+const education = profileData.education || [];
+const experience = profileData.experience || [];
+const awards = profileData.awards || [];
+const activities = profileData.recentActivities || [];
+const roles = profileData.roles || [];
 ---
 
 <BaseLayout title="dvvn – internet space" description={profileData.bio || 'personal corner on the web'}>
-  <!-- Bio / Intro (Editable from CMS) -->
+  <!-- Bio / Profile Hero Section -->
   <section class="mb-12">
-    <h1 class="text-xl font-semibold mb-3 tracking-tight" style="color: var(--text-primary);">
-      {profileData.headline || "hey! I'm Yudi"} <span class="font-normal" style="color: var(--text-muted);">{profileData.greetingEmoji || '👋'}</span>
+    {profileData.avatarUrl && (
+      <div class="mb-6">
+        <img 
+          src={profileData.avatarUrl} 
+          alt={profileData.headline || "Profile"} 
+          class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 shadow-sm"
+          style="border-color: var(--border);"
+        />
+      </div>
+    )}
+
+    <h1 class="text-xl sm:text-2xl font-bold mb-3 tracking-tight" style="color: var(--text-primary);">
+      {profileData.headline || "Halo, saya Yudi"}
     </h1>
+    
     <p class="text-sm leading-relaxed mb-4 whitespace-pre-line" style="color: var(--text-secondary);">
-      {profileData.bio || "I'm a multimedia creator exploring the intersection of visual storytelling (photography & video) and web technology. Welcome to my creative corner on the internet."}
+      {profileData.bio}
     </p>
+
+    {roles.length > 0 && (
+      <div class="mt-4">
+        <p class="text-sm font-medium mb-2.5" style="color: var(--text-primary);">
+          Secara umum, saya dikenal sebagai:
+        </p>
+        <ul class="space-y-3.5 pl-4 list-disc text-sm" style="color: var(--text-secondary);">
+          {roles.map((role) => (
+            <li>
+              <strong style="color: var(--text-primary);">{role.title}</strong>
+              <p class="mt-0.5 text-xs sm:text-sm leading-relaxed" style="color: var(--text-secondary);">
+                {role.description}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
   </section>
+
+  <!-- 🎓 Pendidikan Section (Only shows if there is data) -->
+  {education.length > 0 && (
+    <section class="mb-12">
+      <div class="flex items-center gap-2 mb-4">
+        <h2 class="text-base font-bold flex items-center gap-1.5" style="color: var(--text-primary);">
+          <span>🎓</span> Pendidikan
+        </h2>
+      </div>
+
+      <div class="space-y-3">
+        {education.map((edu) => (
+          <div class="ship-card p-3 sm:p-4">
+            <h3 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">
+              {edu.degree}
+            </h3>
+            <p class="text-xs sm:text-sm mb-1" style="color: var(--text-secondary);">
+              {edu.institution}
+            </p>
+            <span class="text-xs font-mono" style="color: var(--text-muted);">
+              {edu.year}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {profileData.educationPhoto && (
+        <div class="mt-4 rounded-xl overflow-hidden border shadow-sm" style="border-color: var(--border);">
+          <img src={profileData.educationPhoto} alt="Momen Pendidikan / Wisuda" class="w-full h-auto max-h-[420px] object-cover" />
+        </div>
+      )}
+    </section>
+  )}
+
+  <!-- 🏢 Pengalaman Section (Only shows if there is data) -->
+  {experience.length > 0 && (
+    <section class="mb-12">
+      <div class="flex items-center gap-2 mb-4">
+        <h2 class="text-base font-bold flex items-center gap-1.5" style="color: var(--text-primary);">
+          <span>🏢</span> Pengalaman
+        </h2>
+      </div>
+
+      <ul class="space-y-4 pl-4 list-disc text-sm" style="color: var(--text-secondary);">
+        {experience.map((exp) => (
+          <li>
+            <strong style="color: var(--text-primary);">{exp.position}</strong>
+            {exp.period && (
+              <span class="text-xs font-mono block sm:inline sm:ml-1" style="color: var(--text-muted);">
+                ({exp.period})
+              </span>
+            )}
+            <p class="mt-1 text-xs sm:text-sm leading-relaxed" style="color: var(--text-secondary);">
+              {exp.description}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <!-- 🏆 Penghargaan Section (Only shows if there is data) -->
+  {awards.length > 0 && (
+    <section class="mb-12">
+      <div class="flex items-center gap-2 mb-2">
+        <h2 class="text-base font-bold flex items-center gap-1.5" style="color: var(--text-primary);">
+          <span>🏆</span> Penghargaan
+        </h2>
+      </div>
+      <p class="text-xs sm:text-sm mb-3" style="color: var(--text-secondary);">
+        Berikut beberapa penghargaan yang telah saya peroleh:
+      </p>
+
+      <ul class="space-y-2 pl-4 list-disc text-xs sm:text-sm" style="color: var(--text-secondary);">
+        {awards.map((award) => (
+          <li>
+            <span style="color: var(--text-primary);">{award.title}</span>
+            {award.year && (
+              <span class="font-mono text-xs ml-1" style="color: var(--text-muted);">
+                ({award.year})
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <!-- 📣 Aktivitas Terbaru Section (Only shows if there is data) -->
+  {activities.length > 0 && (
+    <section class="mb-12">
+      <div class="flex items-center gap-2 mb-2">
+        <h2 class="text-base font-bold flex items-center gap-1.5" style="color: var(--text-primary);">
+          <span>📣</span> Aktivitas Terbaru
+        </h2>
+      </div>
+      <p class="text-xs sm:text-sm mb-3" style="color: var(--text-secondary);">
+        Berikut beberapa kegiatan seminar, pameran, atau karya terbaru yang telah saya lakukan:
+      </p>
+
+      <ul class="space-y-2 pl-4 list-disc text-xs sm:text-sm" style="color: var(--text-secondary);">
+        {activities.map((act) => (
+          <li>
+            <span style="color: var(--text-primary);">{act.title}</span>
+            {act.locationDate && (
+              <span class="font-mono text-xs ml-1" style="color: var(--text-muted);">
+                ({act.locationDate})
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
 
   <!-- Ships / Works Section -->
   <section class="mb-12">

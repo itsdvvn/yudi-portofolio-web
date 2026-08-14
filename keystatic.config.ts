@@ -6,22 +6,85 @@ export default config({
   },
   singletons: {
     profile: singleton({
-      label: 'Homepage Profile & Bio',
+      label: 'Homepage Profile & Sections',
       path: 'src/content/profile/index',
       format: { data: 'json' },
       schema: {
-        headline: fields.text({
-          label: 'Greeting / Headline',
-          defaultValue: "hey! I'm Yudi",
+        avatarUrl: fields.text({
+          label: 'Avatar / Profile Photo URL (e.g. Cloudflare R2)',
         }),
-        greetingEmoji: fields.text({
-          label: 'Greeting Emoji',
-          defaultValue: '👋',
+        headline: fields.text({
+          label: 'Greeting / Headline (H1)',
+          defaultValue: "Halo, saya Yudi",
         }),
         bio: fields.text({
-          label: 'Bio / Intro Description',
+          label: 'Bio / Intro Paragraph',
           multiline: true,
-          defaultValue: "I'm a multimedia creator exploring the intersection of visual storytelling (photography & video) and web technology. Welcome to my creative corner on the internet.",
+          defaultValue: "Saya seorang multimedia creator dengan fokus pada visual storytelling (fotografi, video) dan teknologi web.",
+        }),
+        roles: fields.array(
+          fields.object({
+            title: fields.text({ label: 'Peran / Role (e.g. Videografer / Fotografer)' }),
+            description: fields.text({ label: 'Deskripsi Peran', multiline: true }),
+          }),
+          {
+            label: 'Dikenal Sebagai / Roles List (Bulleted Highlights)',
+            itemLabel: (props) => props.fields.title.value || 'Role Item',
+          }
+        ),
+        education: fields.array(
+          fields.object({
+            degree: fields.text({ label: 'Gelar / Jurusan (e.g. S1 Desain Komunikasi Visual)' }),
+            institution: fields.text({ label: 'Institusi / Universitas' }),
+            year: fields.text({ label: 'Tahun (e.g. 2019 - 2023)' }),
+          }),
+          {
+            label: '🎓 Pendidikan',
+            itemLabel: (props) => props.fields.degree.value || 'Pendidikan',
+          }
+        ),
+        educationPhoto: fields.text({
+          label: 'Foto Momen Wisuda / Pendidikan URL (Opsional)',
+        }),
+        experience: fields.array(
+          fields.object({
+            position: fields.text({ label: 'Posisi & Tempat (e.g. Creative Director, Studio Media)' }),
+            period: fields.text({ label: 'Periode (e.g. 2023 – now)' }),
+            description: fields.text({ label: 'Deskripsi Pengalaman / Tanggung Jawab', multiline: true }),
+          }),
+          {
+            label: '🏢 Pengalaman',
+            itemLabel: (props) => props.fields.position.value || 'Pengalaman',
+          }
+        ),
+        awards: fields.array(
+          fields.object({
+            title: fields.text({ label: 'Nama Penghargaan' }),
+            year: fields.text({ label: 'Tahun / Penyelenggara' }),
+          }),
+          {
+            label: '🏆 Penghargaan',
+            itemLabel: (props) => props.fields.title.value || 'Penghargaan',
+          }
+        ),
+        recentActivities: fields.array(
+          fields.object({
+            title: fields.text({ label: 'Nama Kegiatan / Event' }),
+            locationDate: fields.text({ label: 'Lokasi & Tanggal (e.g. Jakarta, 12 Oktober 2025)' }),
+          }),
+          {
+            label: '📣 Aktivitas Terbaru (Seminar / Workshop / Pameran)',
+            itemLabel: (props) => props.fields.title.value || 'Aktivitas',
+          }
+        ),
+        socials: fields.object({
+          youtube: fields.url({ label: 'YouTube URL' }),
+          instagram: fields.url({ label: 'Instagram URL' }),
+          tiktok: fields.url({ label: 'TikTok URL' }),
+          discord: fields.url({ label: 'Discord URL' }),
+          github: fields.url({ label: 'GitHub URL' }),
+          xTwitter: fields.url({ label: 'X / Twitter URL' }),
+          email: fields.text({ label: 'Email Address' }),
         }),
       },
     }),

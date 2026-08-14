@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import profileData from '../content/profile/index.json';
 
 interface Props {
   title?: string;
@@ -12,6 +13,7 @@ const {
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
+const socials = profileData?.socials || {};
 ---
 
 <!doctype html>
@@ -71,13 +73,53 @@ const currentPath = Astro.url.pathname;
         <slot />
       </main>
 
-      <!-- Responsive Footer -->
-      <footer class="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t text-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left" style="border-color: var(--border); color: var(--text-muted);">
-        <p>© {new Date().getFullYear()} yudi • built with astro & keystatic</p>
-        <div class="flex gap-4">
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="hover:underline">github</a>
-          <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="hover:underline">x / twitter</a>
-          <a href="/keystatic" class="hover:underline">cms</a>
+      <!-- Clean Social Icons & Contact Footer (Matching Screenshot) -->
+      <footer class="mt-14 sm:mt-20 pt-6 sm:pt-8 border-t flex items-center justify-between gap-4" style="border-color: var(--border); color: var(--text-muted);">
+        <!-- Social Icons Left -->
+        <div class="flex items-center gap-4 text-zinc-400">
+          {socials.youtube && (
+            <a href={socials.youtube} target="_blank" rel="noopener noreferrer" class="hover:text-zinc-100 transition-colors" title="YouTube" aria-label="YouTube">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><polygon points="10 15 15 12 10 9 10 15"/></svg>
+            </a>
+          )}
+          {socials.instagram && (
+            <a href={socials.instagram} target="_blank" rel="noopener noreferrer" class="hover:text-zinc-100 transition-colors" title="Instagram" aria-label="Instagram">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+            </a>
+          )}
+          {socials.tiktok && (
+            <a href={socials.tiktok} target="_blank" rel="noopener noreferrer" class="hover:text-zinc-100 transition-colors" title="TikTok" aria-label="TikTok">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+            </a>
+          )}
+          {socials.discord && (
+            <a href={socials.discord} target="_blank" rel="noopener noreferrer" class="hover:text-zinc-100 transition-colors" title="Discord" aria-label="Discord">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6h0a14.5 14.5 0 0 0-4-1.5 9.87 9.87 0 0 0-.5 1.5 12.64 12.64 0 0 0-3 0 9.87 9.87 0 0 0-.5-1.5 14.5 14.5 0 0 0-4 1.5C3.5 10 3 14 3.5 18a15.84 15.84 0 0 0 4.5 2.5c.5-.5 1-1.5 1-2a10.6 10.6 0 0 1-2-.5c.2-.2.4-.3.5-.5a11.5 11.5 0 0 0 9 0c.2.2.4.3.5.5a10.6 10.6 0 0 1-2 .5c0 .5.5 1.5 1 2a15.84 15.84 0 0 0 4.5-2.5c.5-4 0-8-2.5-12z"/><circle cx="8.5" cy="13.5" r="1.5"/><circle cx="15.5" cy="13.5" r="1.5"/></svg>
+            </a>
+          )}
+          {socials.github && (
+            <a href={socials.github} target="_blank" rel="noopener noreferrer" class="hover:text-zinc-100 transition-colors" title="GitHub" aria-label="GitHub">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+            </a>
+          )}
+          {socials.xTwitter && (
+            <a href={socials.xTwitter} target="_blank" rel="noopener noreferrer" class="hover:text-zinc-100 transition-colors" title="X" aria-label="X">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>
+            </a>
+          )}
+        </div>
+
+        <!-- Contact Right -->
+        <div>
+          {socials.email ? (
+            <a href={`mailto:${socials.email}`} class="text-sm font-medium hover:underline tracking-tight" style="color: var(--text-primary);">
+              Contact
+            </a>
+          ) : (
+            <a href="/keystatic" class="text-xs font-mono" style="color: var(--text-muted);">
+              [cms]
+            </a>
+          )}
         </div>
       </footer>
     </div>

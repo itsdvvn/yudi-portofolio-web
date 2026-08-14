@@ -1,5 +1,29 @@
 {
-  "headline": "hey! I'm Yudi",
-  "greetingEmoji": "👋",
-  "bio": "I'm a multimedia creator exploring the intersection of visual storytelling (photography & video) and web technology. Welcome to my creative corner on the internet."
+  "avatarUrl": "",
+  "headline": "Halo, saya Yudi",
+  "bio": "Saya seorang multimedia creator dengan fokus pada visual storytelling (fotografi, video) dan teknologi web.",
+  "roles": [
+    {
+      "title": "Fotografer & Videografer",
+      "description": "Berfokus pada street photography, cinematic video, dan visual storytelling untuk media digital."
+    },
+    {
+      "title": "Web & Creative Explorer",
+      "description": "Mengeksplorasi pembuatan website minimalis, cepat, dan modern menggunakan Astro dan Cloudflare."
+    }
+  ],
+  "education": [],
+  "educationPhoto": "",
+  "experience": [],
+  "awards": [],
+  "recentActivities": [],
+  "socials": {
+    "youtube": "https://youtube.com",
+    "instagram": "https://instagram.com",
+    "tiktok": "https://tiktok.com",
+    "discord": "",
+    "github": "https://github.com/itsdvvn",
+    "xTwitter": "https://x.com",
+    "email": "swahyuinfo@gmail.com"
+  }
 }
