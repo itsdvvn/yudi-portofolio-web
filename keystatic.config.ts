@@ -118,7 +118,7 @@ export default config({
           publicPath: '/media/writings/',
         }),
         heroImageUrl: fields.text({
-          label: 'Atau Hero Image R2 CDN URL (Opsional: https://media.itsdvvn.my.id/...)',
+          label: 'Hero Image URL (PocketBase / CDN / R2: https://pb.itsdvvn.my.id/api/files/...)',
         }),
         imageCaption: fields.text({ label: 'Image Caption' }),
         photoCredit: fields.text({ label: 'Photo Credit' }),
