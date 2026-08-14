@@ -2,14 +2,20 @@ import { defineCollection, z } from 'astro:content';
 
 const writingsCollection = defineCollection({
   type: 'content',
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    publishDate: z.coerce.date(),
-    readTime: z.string().default('3 min read'),
-    tags: z.array(z.string()).default([]),
-    draft: z.boolean().default(false),
-  }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      category: z.string().default('Article'),
+      deck: z.string().optional().nullable(),
+      publishDate: z.coerce.date(),
+      publishTime: z.string().default('10:00 AM'),
+      readTime: z.string().default('3 min read'),
+      heroImage: z.string().optional().nullable(),
+      imageCaption: z.string().optional().nullable(),
+      photoCredit: z.string().optional().nullable(),
+      tags: z.array(z.string()).default([]),
+      draft: z.boolean().default(false),
+    }),
 });
 
 const thoughtsCollection = defineCollection({

@@ -22,22 +22,63 @@ function formatDate(date: Date) {
 }
 ---
 
-<BaseLayout title={`${entry.data.title} – yudi.sh`} description={entry.data.description}>
+<BaseLayout title={`${entry.data.title} – yudi.sh`} description={entry.data.deck || entry.data.title}>
   <article class="max-w-none">
-    <div class="mb-8">
-      <a href="/writings" class="section-tag hover:opacity-80 inline-flex items-center gap-1 mb-6">
-        ← writings
-      </a>
-      <h1 class="text-2xl font-bold tracking-tight mb-2" style="color: var(--text-primary);">
-        {entry.data.title}
-      </h1>
-      <div class="flex items-center gap-2 text-xs font-mono" style="color: var(--text-muted);">
-        <span>{formatDate(entry.data.publishDate)}</span>
-        <span>•</span>
-        <span>{entry.data.readTime}</span>
-      </div>
+    <!-- 1. Breadcrumb / Category -->
+    <nav class="flex items-center gap-2 text-xs font-mono mb-4 text-zinc-400" aria-label="Breadcrumb">
+      <a href="/" class="hover:underline">home</a>
+      <span>/</span>
+      <a href="/writings" class="hover:underline">writings</a>
+      <span>/</span>
+      <span class="text-zinc-500">{entry.data.category || 'Article'}</span>
+    </nav>
+
+    <!-- 2. Headline (H1) -->
+    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight mb-3 leading-tight" style="color: var(--text-primary);">
+      {entry.data.title}
+    </h1>
+
+    <!-- 3. Deck / Subheadline -->
+    {entry.data.deck && (
+      <p class="text-base sm:text-lg leading-relaxed mb-4 font-normal" style="color: var(--text-secondary);">
+        {entry.data.deck}
+      </p>
+    )}
+
+    <!-- 4. Publication Date & Time -->
+    <div class="flex items-center gap-2 text-xs font-mono mb-6" style="color: var(--text-muted);">
+      <time datetime={entry.data.publishDate.toISOString()}>
+        {formatDate(entry.data.publishDate)}
+      </time>
+      <span>•</span>
+      <span>{entry.data.publishTime || '10:00 AM'}</span>
+      <span>•</span>
+      <span>{entry.data.readTime}</span>
     </div>
 
+    <!-- 5. Hero / Featured Image Section -->
+    {entry.data.heroImage && (
+      <figure class="mb-8 rounded-lg overflow-hidden border" style="border-color: var(--border);">
+        <img 
+          src={entry.data.heroImage} 
+          alt={entry.data.imageCaption || entry.data.title} 
+          class="w-full h-auto max-h-[420px] object-cover" 
+          loading="eager"
+        />
+        {(entry.data.imageCaption || entry.data.photoCredit) && (
+          <figcaption class="p-3 bg-zinc-900/30 dark:bg-zinc-900/30 text-xs flex flex-col sm:flex-row justify-between gap-1 border-t" style="border-color: var(--border);">
+            {entry.data.imageCaption && (
+              <span style="color: var(--text-secondary);">{entry.data.imageCaption}</span>
+            )}
+            {entry.data.photoCredit && (
+              <span class="font-mono text-[11px]" style="color: var(--text-muted);">{entry.data.photoCredit}</span>
+            )}
+          </figcaption>
+        )}
+      </figure>
+    )}
+
+    <!-- Article Content Divider & Body -->
     <div class="prose text-sm leading-relaxed max-w-none border-t pt-6" style="border-color: var(--border);">
       <Content />
     </div>
