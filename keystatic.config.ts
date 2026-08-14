@@ -11,12 +11,12 @@ export default config({
       format: { data: 'json' },
       schema: {
         avatarImage: fields.image({
-          label: 'Avatar / Profile Photo (Upload File Langsung)',
-          directory: 'src/assets/profile',
-          publicPath: '/src/assets/profile/',
+          label: 'Avatar / Profile Photo (Pilih / Upload File)',
+          directory: 'public/images/profile',
+          publicPath: '/images/profile/',
         }),
         avatarUrl: fields.text({
-          label: 'Atau Avatar R2 CDN URL (Opsional jika ingin direct link: https://media.itsdvvn.my.id/...)',
+          label: 'Atau Avatar R2 CDN URL (Opsional direct link: https://media.itsdvvn.my.id/...)',
         }),
         headline: fields.text({
           label: 'Greeting / Headline (H1)',
@@ -48,8 +48,13 @@ export default config({
             itemLabel: (props) => props.fields.degree.value || 'Pendidikan',
           }
         ),
-        educationPhoto: fields.text({
-          label: 'Foto Momen Wisuda / Pendidikan URL (Opsional)',
+        educationPhoto: fields.image({
+          label: 'Foto Momen Wisuda / Pendidikan (Pilih / Upload File)',
+          directory: 'public/images/education',
+          publicPath: '/images/education/',
+        }),
+        educationPhotoUrl: fields.text({
+          label: 'Atau Foto Wisuda R2 CDN URL (Opsional: https://media.itsdvvn.my.id/...)',
         }),
         experience: fields.array(
           fields.object({
@@ -107,8 +112,13 @@ export default config({
         publishDate: fields.date({ label: 'Publication Date', defaultValue: { kind: 'today' } }),
         publishTime: fields.text({ label: 'Publication Time (e.g. 14:30 WIB)', defaultValue: '10:00 AM' }),
         readTime: fields.text({ label: 'Reading Time (e.g. 4 min read)', defaultValue: '3 min read' }),
-        heroImage: fields.text({
-          label: 'Hero / Featured Image URL (Cloudflare R2: https://media.itsdvvn.my.id/...)',
+        heroImage: fields.image({
+          label: 'Hero / Featured Image (Pilih / Upload File)',
+          directory: 'public/images/writings',
+          publicPath: '/images/writings/',
+        }),
+        heroImageUrl: fields.text({
+          label: 'Atau Hero Image R2 CDN URL (Opsional: https://media.itsdvvn.my.id/...)',
         }),
         imageCaption: fields.text({ label: 'Image Caption' }),
         photoCredit: fields.text({ label: 'Photo Credit' }),
@@ -158,8 +168,13 @@ export default config({
           defaultValue: 'Photography',
         }),
         description: fields.text({ label: 'Short Description / Story', multiline: true }),
-        coverImage: fields.text({
-          label: 'Cover / Thumbnail URL (Cloudflare R2: https://media.itsdvvn.my.id/...)',
+        coverImage: fields.image({
+          label: 'Cover / Thumbnail Image (Pilih / Upload File)',
+          directory: 'public/images/ships',
+          publicPath: '/images/ships/',
+        }),
+        coverImageUrl: fields.text({
+          label: 'Atau Cover R2 CDN URL (Opsional: https://media.itsdvvn.my.id/...)',
         }),
         videoUrl: fields.url({ label: 'Video URL (YouTube / Vimeo / Google Drive / Direct link)' }),
         link: fields.url({ label: 'Live Link / Portfolio URL (Behance, Instagram, Demo, etc.)' }),

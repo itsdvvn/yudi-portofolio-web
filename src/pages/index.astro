@@ -96,9 +96,9 @@ const roles = profileData.roles || [];
         ))}
       </div>
 
-      {profileData.educationPhoto && (
+      {(profileData.educationPhoto || profileData.educationPhotoUrl) && (
         <div class="mt-4 rounded-xl overflow-hidden border shadow-sm" style="border-color: var(--border);">
-          <img src={profileData.educationPhoto} alt="Momen Pendidikan / Wisuda" class="w-full h-auto max-h-[420px] object-cover" />
+          <img src={profileData.educationPhoto || profileData.educationPhotoUrl} alt="Momen Pendidikan / Wisuda" class="w-full h-auto max-h-[420px] object-cover" />
         </div>
       )}
     </section>
@@ -211,9 +211,9 @@ const roles = profileData.roles || [];
             </span>
           </div>
           
-          {ship.data.coverImage && (
+          {(ship.data.coverImage || ship.data.coverImageUrl) && (
             <div class="mb-2.5 rounded overflow-hidden border" style="border-color: var(--border);">
-              <img src={ship.data.coverImage} alt={ship.data.title} class="w-full h-40 object-cover" />
+              <img src={ship.data.coverImage || ship.data.coverImageUrl} alt={ship.data.title} class="w-full h-40 object-cover" />
             </div>
           )}
 

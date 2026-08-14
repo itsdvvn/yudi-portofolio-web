@@ -57,10 +57,10 @@ function formatDate(date: Date) {
     </div>
 
     <!-- 5. Hero / Featured Image Section -->
-    {entry.data.heroImage && (
+    {(entry.data.heroImage || entry.data.heroImageUrl) && (
       <figure class="mb-8 rounded-lg overflow-hidden border" style="border-color: var(--border);">
         <img 
-          src={entry.data.heroImage} 
+          src={entry.data.heroImage || entry.data.heroImageUrl} 
           alt={entry.data.imageCaption || entry.data.title} 
           class="w-full h-auto max-h-[420px] object-cover" 
           loading="eager"

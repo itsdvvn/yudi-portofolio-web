@@ -49,9 +49,9 @@ const categories = ['All', 'Photography', 'Videography', 'Design', 'Code', 'Mult
           </div>
         </div>
 
-        {ship.data.coverImage && (
+        {(ship.data.coverImage || ship.data.coverImageUrl) && (
           <div class="mb-3 rounded overflow-hidden border" style="border-color: var(--border);">
-            <img src={ship.data.coverImage} alt={ship.data.title} class="w-full h-48 sm:h-64 object-cover" />
+            <img src={ship.data.coverImage || ship.data.coverImageUrl} alt={ship.data.title} class="w-full h-48 sm:h-64 object-cover" />
           </div>
         )}
 

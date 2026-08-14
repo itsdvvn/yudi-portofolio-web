@@ -3,14 +3,14 @@ services:
     build: .
     container_name: yudi-portfolio-web
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       - HOST=0.0.0.0
       - PORT=4321
-      - R2_ACCOUNT_ID=54654e7eebbed345259d292ae43dafe6
-      - R2_BUCKET_NAME=yudi-web-personal
-      - R2_PUBLIC_DOMAIN=https://media.itsdvvn.my.id
     volumes:
       - ./src/content:/app/src/content
+      - ./public/images:/app/public/images
     networks:
       - server_web
     labels:
