@@ -17,10 +17,8 @@ export default config({
         publishDate: fields.date({ label: 'Publication Date', defaultValue: { kind: 'today' } }),
         publishTime: fields.text({ label: 'Publication Time (e.g. 14:30 WIB)', defaultValue: '10:00 AM' }),
         readTime: fields.text({ label: 'Reading Time (e.g. 4 min read)', defaultValue: '3 min read' }),
-        heroImage: fields.image({
-          label: 'Hero / Featured Image',
-          directory: 'src/assets/writings',
-          publicPath: '/src/assets/writings/',
+        heroImage: fields.text({
+          label: 'Hero / Featured Image URL (Cloudflare R2: https://media.itsdvvn.my.id/...)',
         }),
         imageCaption: fields.text({ label: 'Image Caption' }),
         photoCredit: fields.text({ label: 'Photo Credit' }),
@@ -70,10 +68,8 @@ export default config({
           defaultValue: 'Photography',
         }),
         description: fields.text({ label: 'Short Description / Story', multiline: true }),
-        coverImage: fields.image({
-          label: 'Cover / Thumbnail Image',
-          directory: 'src/assets/ships',
-          publicPath: '/src/assets/ships/',
+        coverImage: fields.text({
+          label: 'Cover / Thumbnail URL (Cloudflare R2: https://media.itsdvvn.my.id/...)',
         }),
         videoUrl: fields.url({ label: 'Video URL (YouTube / Vimeo / Google Drive / Direct link)' }),
         link: fields.url({ label: 'Live Link / Portfolio URL (Behance, Instagram, Demo, etc.)' }),
