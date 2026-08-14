@@ -1,9 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { reader } from '../../lib/reader';
 
-const ships = (await getCollection('ships'))
-  .sort((a, b) => b.data.year.localeCompare(a.data.year));
+const allSlugs = await reader.collections.ships.list();
+const shipsRaw = await Promise.all(
+  allSlugs.map(async (slug) => {
+    const data = await reader.collections.ships.read(slug);
+    return { slug, ...data };
+  })
+);
+
+const ships = shipsRaw
+  .filter(Boolean)
+  .sort((a, b) => (b.year || '').localeCompare(a.year || ''));
 
 const categories = ['All', 'Photography', 'Videography', 'Design', 'Code', 'Multimedia'];
 ---
@@ -29,39 +38,39 @@ const categories = ['All', 'Photography', 'Videography', 'Design', 'Code', 'Mult
   <!-- Works Grid / List -->
   <div class="space-y-4" id="ships-list">
     {ships.map((ship) => (
-      <div class="ship-card" data-category={ship.data.category}>
+      <div class="ship-card" data-category={ship.category}>
         <div class="flex items-center justify-between mb-2 gap-2">
           <h2 class="ship-title">
-            {ship.data.link ? (
-              <a href={ship.data.link} target="_blank" rel="noopener noreferrer" class="hover:underline underline-offset-4 flex items-center gap-1">
-                {ship.data.title}
+            {ship.link ? (
+              <a href={ship.link} target="_blank" rel="noopener noreferrer" class="hover:underline underline-offset-4 flex items-center gap-1">
+                {ship.title}
                 <span style="color: var(--text-muted); font-size: 0.75rem;">↗</span>
               </a>
             ) : (
-              ship.data.title
+              ship.title
             )}
           </h2>
           <div class="flex items-center gap-2 shrink-0">
-            <span class="text-[11px] font-mono" style="color: var(--text-muted);">{ship.data.year}</span>
+            <span class="text-[11px] font-mono" style="color: var(--text-muted);">{ship.year}</span>
             <span class="status-badge">
-              {ship.data.category}
+              {ship.category}
             </span>
           </div>
         </div>
 
-        {(ship.data.coverImage || ship.data.coverImageUrl) && (
+        {(ship.coverImage || ship.coverImageUrl) && (
           <div class="mb-3 rounded overflow-hidden border" style="border-color: var(--border);">
-            <img src={ship.data.coverImage || ship.data.coverImageUrl} alt={ship.data.title} class="w-full h-48 sm:h-64 object-cover" />
+            <img src={ship.coverImage || ship.coverImageUrl} alt={ship.title} class="w-full h-48 sm:h-64 object-cover" />
           </div>
         )}
 
         <p class="ship-desc mb-3">
-          {ship.data.description}
+          {ship.description}
         </p>
 
         <div class="flex items-center justify-between flex-wrap gap-2 pt-2 border-t" style="border-color: var(--border);">
           <div class="flex gap-1.5 flex-wrap">
-            {ship.data.tools.map((tool) => (
+            {(ship.tools || []).map((tool) => (
               <span class="tech-tag">
                 {tool}
               </span>
@@ -69,18 +78,18 @@ const categories = ['All', 'Photography', 'Videography', 'Design', 'Code', 'Mult
           </div>
 
           <div class="flex gap-3 text-xs font-mono">
-            {ship.data.videoUrl && (
-              <a href={ship.data.videoUrl} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--accent);">
+            {ship.videoUrl && (
+              <a href={ship.videoUrl} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--accent);">
                 watch video ↗
               </a>
             )}
-            {ship.data.link && (
-              <a href={ship.data.link} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--text-primary);">
+            {ship.link && (
+              <a href={ship.link} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--text-primary);">
                 view work ↗
               </a>
             )}
-            {ship.data.github && (
-              <a href={ship.data.github} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--text-muted);">
+            {ship.github && (
+              <a href={ship.github} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--text-muted);">
                 source ↗
               </a>
             )}
@@ -90,44 +99,25 @@ const categories = ['All', 'Photography', 'Videography', 'Design', 'Code', 'Mult
     ))}
 
     {ships.length === 0 && (
-      <p class="text-xs italic py-4" style="color: var(--text-muted);">No works cataloged yet.</p>
+      <p class="text-xs italic py-4" style="color: var(--text-muted);">No ships or works added yet.</p>
     )}
   </div>
 </BaseLayout>
 
-<style>
-  .category-tab {
-    background-color: var(--card-bg);
-    border-color: var(--border);
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-  .category-tab:hover {
-    color: var(--text-primary);
-    border-color: var(--border-hover);
-  }
-  .category-tab.active {
-    background-color: var(--tag-bg);
-    border-color: var(--accent);
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-</style>
-
 <script is:inline>
-  const buttons = document.querySelectorAll('.category-tab');
-  const cards = document.querySelectorAll('#ships-list .ship-card');
+  const filterTabs = document.querySelectorAll('.category-tab');
+  const cards = document.querySelectorAll('.ship-card');
 
-  buttons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      buttons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
+  filterTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      filterTabs.forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
 
-      const filter = btn.getAttribute('data-filter');
+      const filter = tab.getAttribute('data-filter');
 
       cards.forEach((card) => {
-        const cat = card.getAttribute('data-category');
-        if (filter === 'All' || cat === filter) {
+        const category = card.getAttribute('data-category');
+        if (filter === 'All' || category === filter) {
           card.style.display = 'block';
         } else {
           card.style.display = 'none';

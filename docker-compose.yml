@@ -10,6 +10,7 @@ services:
       - PORT=4321
     volumes:
       - ./src/content:/app/src/content
+      - ./public/images:/app/dist/client/images
       - ./public/images:/app/public/images
     networks:
       - server_web
