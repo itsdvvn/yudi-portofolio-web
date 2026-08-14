@@ -1,11 +1,22 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { reader } from '../../lib/reader';
 
-const writings = (await getCollection('writings', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+const allSlugs = await reader.collections.writings.list();
+const writingsRaw = await Promise.all(
+  allSlugs.map(async (slug) => {
+    const data = await reader.collections.writings.read(slug);
+    return { slug, ...data };
+  })
+);
 
-function formatDate(date: Date) {
+const writings = writingsRaw
+  .filter((post) => post && !post.draft)
+  .sort((a, b) => new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf());
+
+function formatDate(dateStr: string) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -24,10 +35,10 @@ function formatDate(date: Date) {
     {writings.map((post) => (
       <a href={`/writings/${post.slug}`} class="post-row group">
         <div>
-          <div class="post-title">{post.data.title}</div>
-          <div class="post-desc">{post.data.description}</div>
+          <div class="post-title">{post.title}</div>
+          {post.deck && <div class="post-desc">{post.deck}</div>}
         </div>
-        <span class="post-date">{formatDate(post.data.publishDate)}</span>
+        <span class="post-date">{formatDate(post.publishDate)}</span>
       </a>
     ))}
 

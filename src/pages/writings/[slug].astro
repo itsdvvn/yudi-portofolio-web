@@ -1,26 +1,33 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getEntryBySlug } from 'astro:content';
+import { reader } from '../../lib/reader';
+import Markdoc from '@markdoc/markdoc';
 
 const { slug } = Astro.params;
-const entry = await getEntryBySlug('writings', slug as string);
+const post = await reader.collections.writings.read(slug as string);
 
-if (!entry) {
+if (!post || post.draft) {
   return Astro.redirect('/writings');
 }
 
-const { Content } = await entry.render();
+const contentAst = await post.content();
+const transformedContent = Markdoc.transform(contentAst);
+const htmlContent = Markdoc.renderers.html(transformedContent);
 
-function formatDate(date: Date) {
+function formatDate(dateStr: string) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
   return date.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   });
 }
+
+const heroImg = post.heroImage || post.heroImageUrl;
 ---
 
-<BaseLayout title={`${entry.data.title} – dvvn`} description={entry.data.deck || entry.data.title}>
+<BaseLayout title={`${post.title} – dvvn`} description={post.deck || post.title}>
   <article class="max-w-none">
     <!-- 1. Breadcrumb / Category -->
     <nav class="flex items-center gap-2 text-xs font-mono mb-4 text-zinc-400" aria-label="Breadcrumb">
@@ -28,48 +35,46 @@ function formatDate(date: Date) {
       <span>/</span>
       <a href="/writings" class="hover:underline">writings</a>
       <span>/</span>
-      <span class="text-zinc-500">{entry.data.category || 'Article'}</span>
+      <span class="text-zinc-500">{post.category || 'Article'}</span>
     </nav>
 
     <!-- 2. Headline (H1) -->
     <h1 class="text-2xl sm:text-3xl font-bold tracking-tight mb-3 leading-tight" style="color: var(--text-primary);">
-      {entry.data.title}
+      {post.title}
     </h1>
 
     <!-- 3. Deck / Subheadline -->
-    {entry.data.deck && (
+    {post.deck && (
       <p class="text-base sm:text-lg leading-relaxed mb-4 font-normal" style="color: var(--text-secondary);">
-        {entry.data.deck}
+        {post.deck}
       </p>
     )}
 
     <!-- 4. Publication Date & Time -->
     <div class="flex items-center gap-2 text-xs font-mono mb-6" style="color: var(--text-muted);">
-      <time datetime={entry.data.publishDate.toISOString()}>
-        {formatDate(entry.data.publishDate)}
-      </time>
+      <span>{formatDate(post.publishDate)}</span>
       <span>•</span>
-      <span>{entry.data.publishTime || '10:00 AM'}</span>
+      <span>{post.publishTime || '10:00 AM'}</span>
       <span>•</span>
-      <span>{entry.data.readTime}</span>
+      <span>{post.readTime || '3 min read'}</span>
     </div>
 
     <!-- 5. Hero / Featured Image Section -->
-    {(entry.data.heroImage || entry.data.heroImageUrl) && (
+    {heroImg && (
       <figure class="mb-8 rounded-lg overflow-hidden border" style="border-color: var(--border);">
         <img 
-          src={entry.data.heroImage || entry.data.heroImageUrl} 
-          alt={entry.data.imageCaption || entry.data.title} 
+          src={heroImg} 
+          alt={post.imageCaption || post.title} 
           class="w-full h-auto max-h-[420px] object-cover" 
           loading="eager"
         />
-        {(entry.data.imageCaption || entry.data.photoCredit) && (
+        {(post.imageCaption || post.photoCredit) && (
           <figcaption class="p-3 bg-zinc-900/30 dark:bg-zinc-900/30 text-xs flex flex-col sm:flex-row justify-between gap-1 border-t" style="border-color: var(--border);">
-            {entry.data.imageCaption && (
-              <span style="color: var(--text-secondary);">{entry.data.imageCaption}</span>
+            {post.imageCaption && (
+              <span style="color: var(--text-secondary);">{post.imageCaption}</span>
             )}
-            {entry.data.photoCredit && (
-              <span class="font-mono text-[11px]" style="color: var(--text-muted);">{entry.data.photoCredit}</span>
+            {post.photoCredit && (
+              <span class="font-mono text-[11px]" style="color: var(--text-muted);">{post.photoCredit}</span>
             )}
           </figcaption>
         )}
@@ -78,7 +83,7 @@ function formatDate(date: Date) {
 
     <!-- Article Content Divider & Body -->
     <div class="prose text-sm leading-relaxed max-w-none border-t pt-6" style="border-color: var(--border);">
-      <Content />
+      <Fragment set:html={htmlContent} />
     </div>
   </article>
 </BaseLayout>
