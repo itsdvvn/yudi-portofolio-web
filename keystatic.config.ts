@@ -13,7 +13,7 @@ export default config({
         avatarImage: fields.image({
           label: 'Avatar / Profile Photo (Pilih / Upload File)',
           directory: 'public/images/profile',
-          publicPath: '/images/profile/',
+          publicPath: '/media/profile/',
         }),
         avatarUrl: fields.text({
           label: 'Atau Avatar R2 CDN URL (Opsional direct link: https://media.itsdvvn.my.id/...)',
@@ -51,7 +51,7 @@ export default config({
         educationPhoto: fields.image({
           label: 'Foto Momen Wisuda / Pendidikan (Pilih / Upload File)',
           directory: 'public/images/education',
-          publicPath: '/images/education/',
+          publicPath: '/media/education/',
         }),
         educationPhotoUrl: fields.text({
           label: 'Atau Foto Wisuda R2 CDN URL (Opsional: https://media.itsdvvn.my.id/...)',
@@ -115,7 +115,7 @@ export default config({
         heroImage: fields.image({
           label: 'Hero / Featured Image (Pilih / Upload File)',
           directory: 'public/images/writings',
-          publicPath: '/images/writings/',
+          publicPath: '/media/writings/',
         }),
         heroImageUrl: fields.text({
           label: 'Atau Hero Image R2 CDN URL (Opsional: https://media.itsdvvn.my.id/...)',
@@ -171,7 +171,7 @@ export default config({
         coverImage: fields.image({
           label: 'Cover / Thumbnail Image (Pilih / Upload File)',
           directory: 'public/images/ships',
-          publicPath: '/images/ships/',
+          publicPath: '/media/ships/',
         }),
         coverImageUrl: fields.text({
           label: 'Atau Cover R2 CDN URL (Opsional: https://media.itsdvvn.my.id/...)',
