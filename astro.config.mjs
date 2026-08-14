@@ -7,7 +7,7 @@ import tailwind from '@astrojs/tailwind';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://yudi.dev',
+  site: 'https://itsdvvn.my.id',
   adapter: node({
     mode: 'standalone'
   }),
@@ -19,5 +19,5 @@ export default defineConfig({
       applyBaseStyles: false,
     })
   ],
-  output: 'hybrid'
+  output: 'server'
 });

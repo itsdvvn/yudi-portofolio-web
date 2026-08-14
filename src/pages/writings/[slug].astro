@@ -1,16 +1,14 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { getEntryBySlug } from 'astro:content';
 
-export async function getStaticPaths() {
-  const writings = await getCollection('writings');
-  return writings.map((entry) => ({
-    params: { slug: entry.slug },
-    props: { entry },
-  }));
+const { slug } = Astro.params;
+const entry = await getEntryBySlug('writings', slug as string);
+
+if (!entry) {
+  return Astro.redirect('/writings');
 }
 
-const { entry } = Astro.props;
 const { Content } = await entry.render();
 
 function formatDate(date: Date) {
