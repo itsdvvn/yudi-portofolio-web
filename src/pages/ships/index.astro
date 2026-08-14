@@ -4,18 +4,33 @@ import { getCollection } from 'astro:content';
 
 const ships = (await getCollection('ships'))
   .sort((a, b) => b.data.year.localeCompare(a.data.year));
+
+const categories = ['All', 'Photography', 'Videography', 'Design', 'Code', 'Multimedia'];
 ---
 
-<BaseLayout title="ships – yudi.sh" description="a collection of projects I've built and shipped">
-  <div class="mb-10">
-    <h1 class="text-xl font-semibold mb-2 tracking-tight" style="color: var(--text-primary);">ships</h1>
-    <p class="text-sm" style="color: var(--text-secondary);">a collection of tools, applications, and side-projects i have shipped.</p>
+<BaseLayout title="ships & works – yudi.sh" description="a collection of multimedia works, photography, videos, and code projects">
+  <div class="mb-8">
+    <h1 class="text-xl font-semibold mb-2 tracking-tight" style="color: var(--text-primary);">ships & works</h1>
+    <p class="text-sm" style="color: var(--text-secondary);">a collection of creative multimedia works, photography series, videos, and code experiments.</p>
   </div>
 
-  <div class="space-y-4">
+  <!-- Interactive Category Filter Tabs -->
+  <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-6" id="filter-container">
+    {categories.map((cat, idx) => (
+      <button 
+        data-filter={cat}
+        class={`category-tab text-xs font-mono px-3 py-1 rounded border transition-all cursor-pointer ${idx === 0 ? 'active' : ''}`}
+      >
+        {cat}
+      </button>
+    ))}
+  </div>
+
+  <!-- Works Grid / List -->
+  <div class="space-y-4" id="ships-list">
     {ships.map((ship) => (
-      <div class="ship-card">
-        <div class="flex items-center justify-between mb-2">
+      <div class="ship-card" data-category={ship.data.category}>
+        <div class="flex items-center justify-between mb-2 gap-2">
           <h2 class="ship-title">
             {ship.data.link ? (
               <a href={ship.data.link} target="_blank" rel="noopener noreferrer" class="hover:underline underline-offset-4 flex items-center gap-1">
@@ -26,13 +41,19 @@ const ships = (await getCollection('ships'))
               ship.data.title
             )}
           </h2>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 shrink-0">
             <span class="text-[11px] font-mono" style="color: var(--text-muted);">{ship.data.year}</span>
             <span class="status-badge">
-              {ship.data.status}
+              {ship.data.category}
             </span>
           </div>
         </div>
+
+        {ship.data.coverImage && (
+          <div class="mb-3 rounded overflow-hidden border" style="border-color: var(--border);">
+            <img src={ship.data.coverImage} alt={ship.data.title} class="w-full h-48 sm:h-64 object-cover" />
+          </div>
+        )}
 
         <p class="ship-desc mb-3">
           {ship.data.description}
@@ -40,17 +61,22 @@ const ships = (await getCollection('ships'))
 
         <div class="flex items-center justify-between flex-wrap gap-2 pt-2 border-t" style="border-color: var(--border);">
           <div class="flex gap-1.5 flex-wrap">
-            {ship.data.techStack.map((tech) => (
+            {ship.data.tools.map((tool) => (
               <span class="tech-tag">
-                {tech}
+                {tool}
               </span>
             ))}
           </div>
 
           <div class="flex gap-3 text-xs font-mono">
+            {ship.data.videoUrl && (
+              <a href={ship.data.videoUrl} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--accent);">
+                watch video ↗
+              </a>
+            )}
             {ship.data.link && (
               <a href={ship.data.link} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--text-primary);">
-                live ↗
+                view work ↗
               </a>
             )}
             {ship.data.github && (
@@ -64,7 +90,49 @@ const ships = (await getCollection('ships'))
     ))}
 
     {ships.length === 0 && (
-      <p class="text-xs italic py-4" style="color: var(--text-muted);">No ships cataloged yet.</p>
+      <p class="text-xs italic py-4" style="color: var(--text-muted);">No works cataloged yet.</p>
     )}
   </div>
 </BaseLayout>
+
+<style>
+  .category-tab {
+    background-color: var(--card-bg);
+    border-color: var(--border);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .category-tab:hover {
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+  }
+  .category-tab.active {
+    background-color: var(--tag-bg);
+    border-color: var(--accent);
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+</style>
+
+<script is:inline>
+  const buttons = document.querySelectorAll('.category-tab');
+  const cards = document.querySelectorAll('#ships-list .ship-card');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      buttons.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filter = btn.getAttribute('data-filter');
+
+      cards.forEach((card) => {
+        const cat = card.getAttribute('data-category');
+        if (filter === 'All' || cat === filter) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>

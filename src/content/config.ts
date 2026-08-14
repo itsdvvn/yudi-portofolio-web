@@ -2,7 +2,7 @@ import { defineCollection, z } from 'astro:content';
 
 const writingsCollection = defineCollection({
   type: 'content',
-  schema: ({ image }) =>
+  schema: () =>
     z.object({
       title: z.string(),
       category: z.string().default('Article'),
@@ -31,12 +31,14 @@ const shipsCollection = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
+    category: z.enum(['Photography', 'Videography', 'Design', 'Code', 'Multimedia']).default('Photography'),
     description: z.string(),
-    status: z.enum(['live', 'building', 'archived']).default('live'),
-    year: z.string().default('2025'),
+    coverImage: z.string().optional().nullable(),
+    videoUrl: z.string().optional().nullable(),
     link: z.string().optional().nullable(),
     github: z.string().optional().nullable(),
-    techStack: z.array(z.string()).default([]),
+    tools: z.array(z.string()).default([]),
+    year: z.string().default('2025'),
     featured: z.boolean().default(false),
   }),
 });
