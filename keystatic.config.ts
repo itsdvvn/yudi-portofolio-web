@@ -10,8 +10,13 @@ export default config({
       path: 'src/content/profile/index',
       format: { data: 'json' },
       schema: {
+        avatarImage: fields.image({
+          label: 'Avatar / Profile Photo (Upload File Langsung)',
+          directory: 'src/assets/profile',
+          publicPath: '/src/assets/profile/',
+        }),
         avatarUrl: fields.text({
-          label: 'Avatar / Profile Photo URL (e.g. Cloudflare R2)',
+          label: 'Atau Avatar R2 CDN URL (Opsional jika ingin direct link: https://media.itsdvvn.my.id/...)',
         }),
         headline: fields.text({
           label: 'Greeting / Headline (H1)',

@@ -33,10 +33,10 @@ const roles = profileData.roles || [];
 <BaseLayout title="dvvn – internet space" description={profileData.bio || 'personal corner on the web'}>
   <!-- Bio / Profile Hero Section -->
   <section class="mb-12">
-    {profileData.avatarUrl && (
+    {(profileData.avatarImage || profileData.avatarUrl) && (
       <div class="mb-6">
         <img 
-          src={profileData.avatarUrl} 
+          src={profileData.avatarImage || profileData.avatarUrl} 
           alt={profileData.headline || "Profile"} 
           class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 shadow-sm"
           style="border-color: var(--border);"
