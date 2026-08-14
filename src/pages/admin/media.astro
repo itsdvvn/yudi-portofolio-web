@@ -1,0 +1,209 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="R2 Media Manager & Uploader – dvvn" description="Upload, view, and copy CDN URLs for your multimedia assets in Cloudflare R2">
+  <div class="mb-8">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-2">
+      <h1 class="text-xl font-bold tracking-tight" style="color: var(--text-primary);">
+        Cloudflare R2 Media Manager
+      </h1>
+      <a href="/keystatic" class="text-xs font-mono px-2.5 py-1 rounded border" style="border-color: var(--border); color: var(--text-muted);">
+        ← Back to CMS
+      </a>
+    </div>
+    <p class="text-xs sm:text-sm" style="color: var(--text-secondary);">
+      Upload foto, video, atau audio langsung ke Cloudflare R2 bucket (<code class="font-mono text-xs text-emerald-400">yudi-web-personal</code>) dan salin URL publik CDN (<code class="font-mono text-xs text-emerald-400">media.itsdvvn.my.id</code>) untuk dipakai di CMS.
+    </p>
+  </div>
+
+  <!-- Upload Box -->
+  <div class="ship-card mb-8 p-4 sm:p-6">
+    <h2 class="text-sm font-semibold mb-3 flex items-center gap-2" style="color: var(--text-primary);">
+      <span>📤</span> Upload Media Baru
+    </h2>
+
+    <form id="upload-form" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-mono mb-1.5" style="color: var(--text-muted);">Pilih File (Foto / Video / Audio)</label>
+          <input 
+            type="file" 
+            id="file-input" 
+            required 
+            class="w-full text-xs font-mono file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-mono file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer p-2 rounded border" 
+            style="border-color: var(--border); background-color: var(--bg);"
+          />
+        </div>
+        <div>
+          <label class="block text-xs font-mono mb-1.5" style="color: var(--text-muted);">Folder Tujuan</label>
+          <select id="folder-select" class="w-full text-xs font-mono p-2 rounded border" style="border-color: var(--border); background-color: var(--bg); color: var(--text-primary);">
+            <option value="photos">photos/</option>
+            <option value="videos">videos/</option>
+            <option value="writings">writings/</option>
+            <option value="avatar">avatar/</option>
+            <option value="general">general/</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Submit & Loading UI -->
+      <div class="flex items-center gap-3 pt-2">
+        <button 
+          type="submit" 
+          id="upload-btn" 
+          class="text-xs font-semibold px-4 py-2 rounded transition-all flex items-center gap-2 cursor-pointer"
+          style="background-color: var(--accent); color: #000;"
+        >
+          <span id="btn-text">Upload ke Cloudflare R2</span>
+          <span id="spinner" class="hidden animate-spin">⏳</span>
+        </button>
+        <span id="upload-status" class="text-xs font-mono" style="color: var(--text-muted);"></span>
+      </div>
+
+      <!-- Upload Progress / Result Banner -->
+      <div id="result-banner" class="hidden p-3 rounded border text-xs font-mono space-y-1" style="background-color: var(--card-bg); border-color: var(--border);">
+        <div class="text-emerald-400 font-semibold flex items-center gap-1.5">
+          <span>✓</span> Upload Berhasil!
+        </div>
+        <div class="flex items-center justify-between gap-2 bg-zinc-950/60 p-2 rounded border" style="border-color: var(--border);">
+          <input type="text" id="uploaded-url" readonly class="w-full bg-transparent text-xs font-mono focus:outline-none" style="color: var(--text-primary);" />
+          <button type="button" id="copy-btn" class="px-2.5 py-1 text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded shrink-0 cursor-pointer">
+            Copy URL
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Media Gallery / Viewer -->
+  <section>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="section-tag">Media di Cloudflare R2</h2>
+      <button id="refresh-btn" class="text-xs font-mono text-zinc-500 hover:text-zinc-300 flex items-center gap-1 cursor-pointer">
+        🔄 Refresh Galeri
+      </button>
+    </div>
+
+    <div id="media-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div class="col-span-full py-8 text-center text-xs font-mono" style="color: var(--text-muted);">
+        Memuat media dari Cloudflare R2...
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  const uploadForm = document.getElementById('upload-form');
+  const fileInput = document.getElementById('file-input');
+  const folderSelect = document.getElementById('folder-select');
+  const uploadBtn = document.getElementById('upload-btn');
+  const btnText = document.getElementById('btn-text');
+  const spinner = document.getElementById('spinner');
+  const uploadStatus = document.getElementById('upload-status');
+  const resultBanner = document.getElementById('result-banner');
+  const uploadedUrl = document.getElementById('uploaded-url');
+  const copyBtn = document.getElementById('copy-btn');
+  const mediaGrid = document.getElementById('media-grid');
+  const refreshBtn = document.getElementById('refresh-btn');
+
+  // Fetch Media List
+  async function loadMedia() {
+    try {
+      mediaGrid.innerHTML = '<div class="col-span-full py-8 text-center text-xs font-mono text-zinc-500">Memuat media dari Cloudflare R2...</div>';
+      const res = await fetch('/api/media-list');
+      const data = await res.json();
+
+      if (!data.success || !data.items || data.items.length === 0) {
+        mediaGrid.innerHTML = '<div class="col-span-full py-8 text-center text-xs font-mono text-zinc-500 italic">Belum ada file di bucket atau token R2 belum diset.</div>';
+        return;
+      }
+
+      mediaGrid.innerHTML = data.items.map(item => {
+        const isImage = item.key.match(/\\.(jpg|jpeg|png|webp|gif|svg)$/i);
+        const isVideo = item.key.match(/\\.(mp4|webm|mov)$/i);
+        const filename = item.key.split('/').pop();
+        const sizeMb = (item.size / (1024 * 1024)).toFixed(2);
+
+        return `
+          <div class="ship-card p-2.5 flex flex-col justify-between group">
+            <div class="rounded overflow-hidden bg-black/40 mb-2 h-28 flex items-center justify-center border border-zinc-800">
+              ${isImage 
+                ? `<img src="${item.url}" alt="${filename}" class="w-full h-full object-cover" loading="lazy" />`
+                : isVideo 
+                  ? `<video src="${item.url}" class="w-full h-full object-cover" muted></video>`
+                  : `<span class="text-xs font-mono text-zinc-500">📄 ${item.key.split('.').pop()}</span>`
+              }
+            </div>
+            <div>
+              <div class="text-[11px] font-mono truncate text-zinc-300 mb-1" title="${filename}">${filename}</div>
+              <div class="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1 border-t border-zinc-800">
+                <span>${sizeMb} MB</span>
+                <button onclick="navigator.clipboard.writeText('${item.url}'); alert('URL Disalin!');" class="hover:text-emerald-400 text-zinc-400 cursor-pointer">
+                  Copy URL
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      mediaGrid.innerHTML = '<div class="col-span-full py-8 text-center text-xs font-mono text-red-400">Gagal memuat galeri R2.</div>';
+    }
+  }
+
+  refreshBtn?.addEventListener('click', loadMedia);
+  loadMedia();
+
+  // Handle Upload
+  uploadForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    // UI Loading State
+    uploadBtn.disabled = true;
+    uploadBtn.style.opacity = '0.7';
+    btnText.textContent = 'Mengunggah ke Cloudflare R2...';
+    spinner.classList.remove('hidden');
+    uploadStatus.textContent = 'Mohon tunggu, proses transfer sedang berjalan...';
+    resultBanner.classList.add('hidden');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folderSelect.value);
+
+    try {
+      const res = await fetch('/api/upload-r2', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.success) {
+        uploadStatus.textContent = 'Upload Selesai!';
+        uploadedUrl.value = result.url;
+        resultBanner.classList.remove('hidden');
+        fileInput.value = '';
+        loadMedia(); // refresh gallery
+      } else {
+        uploadStatus.textContent = 'Error: ' + (result.error || 'Gagal mengunggah');
+      }
+    } catch (err) {
+      uploadStatus.textContent = 'Gagal menghubungi server.';
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.style.opacity = '1';
+      btnText.textContent = 'Upload ke Cloudflare R2';
+      spinner.classList.add('hidden');
+    }
+  });
+
+  copyBtn?.addEventListener('click', () => {
+    uploadedUrl.select();
+    navigator.clipboard.writeText(uploadedUrl.value);
+    copyBtn.textContent = 'Copied!';
+    setTimeout(() => { copyBtn.textContent = 'Copy URL'; }, 2000);
+  });
+</script>

@@ -3,22 +3,24 @@ import { Client } from 'ssh2';
 const conn = new Client();
 
 conn.on('ready', () => {
-  console.log('SSH Connection Ready. Starting isolated deployment...');
+  console.log('Creating .env on VPS and starting deployment...');
   
   const deployCmd = `
     set -e
-    mkdir -p /root/portfolio
     cd /root/portfolio
     
-    if [ -d ".git" ]; then
-      echo "Pulling latest updates..."
-      git pull origin main
-    else
-      echo "Cloning repository..."
-      git clone https://github.com/itsdvvn/yudi-portofolio-web.git .
+    if [ ! -f ".env" ]; then
+      cat << 'EOF' > .env
+R2_ACCOUNT_ID=54654e7eebbed345259d292ae43dafe6
+R2_BUCKET_NAME=yudi-web-personal
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_PUBLIC_DOMAIN=https://media.itsdvvn.my.id
+EOF
     fi
     
-    echo "Building and starting container in isolated network..."
+    mkdir -p public/images/profile public/images/writings public/images/ships public/images/education
+    
     docker compose up -d --build
     
     echo "=== Container Status ==="
@@ -28,7 +30,7 @@ conn.on('ready', () => {
   conn.exec(deployCmd, (err, stream) => {
     if (err) throw err;
     stream.on('close', (code, signal) => {
-      console.log('Deployment script finished with exit code: ' + code);
+      console.log('Deployment finished with code: ' + code);
       conn.end();
     }).on('data', (data) => {
       process.stdout.write(data);
