@@ -57,17 +57,20 @@ function formatDate(dateStr: string) {
 const education = profileData.education || [];
 const experience = profileData.experience || [];
 const awards = profileData.awards || [];
-const activities = profileData.recentActivities || [];
-const roles = profileData.roles || [];
+const rawAvatar = profileData.avatarImage || profileData.avatarUrl;
+const avatarSrc = rawAvatar ? (rawAvatar.startsWith('http') ? rawAvatar : `${rawAvatar}?t=${Date.now()}`) : '';
+
+const rawEduPhoto = profileData.educationPhoto || profileData.educationPhotoUrl;
+const eduPhotoSrc = rawEduPhoto ? (rawEduPhoto.startsWith('http') ? rawEduPhoto : `${rawEduPhoto}?t=${Date.now()}`) : '';
 ---
 
 <BaseLayout title="dvvn – internet space" description={profileData.bio || 'personal corner on the web'}>
   <!-- Bio / Profile Hero Section -->
   <section class="mb-12">
-    {(profileData.avatarImage || profileData.avatarUrl) && (
+    {avatarSrc && (
       <div class="mb-6">
         <img 
-          src={profileData.avatarImage || profileData.avatarUrl} 
+          src={avatarSrc} 
           alt={profileData.headline || "Profile"} 
           class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 shadow-sm"
           style="border-color: var(--border);"
@@ -127,9 +130,9 @@ const roles = profileData.roles || [];
         ))}
       </div>
 
-      {(profileData.educationPhoto || profileData.educationPhotoUrl) && (
+      {eduPhotoSrc && (
         <div class="mt-4 rounded-xl overflow-hidden border shadow-sm" style="border-color: var(--border);">
-          <img src={profileData.educationPhoto || profileData.educationPhotoUrl} alt="Momen Pendidikan / Wisuda" class="w-full h-auto max-h-[420px] object-cover" />
+          <img src={eduPhotoSrc} alt="Momen Pendidikan / Wisuda" class="w-full h-auto max-h-[420px] object-cover" />
         </div>
       )}
     </section>

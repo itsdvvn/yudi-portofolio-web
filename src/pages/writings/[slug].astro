@@ -24,7 +24,11 @@ function formatDate(dateStr: string) {
   });
 }
 
-const heroImg = post.heroImage || post.heroImageUrl;
+const rawHero = post.heroImage || post.heroImageUrl;
+let heroImg = rawHero;
+if (rawHero && !rawHero.startsWith('http')) {
+  heroImg = `${rawHero}?t=${Date.now()}`;
+}
 ---
 
 <BaseLayout title={`${post.title} – dvvn`} description={post.deck || post.title}>
