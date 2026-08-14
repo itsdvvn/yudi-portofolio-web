@@ -57,6 +57,8 @@ function formatDate(dateStr: string) {
 const education = profileData.education || [];
 const experience = profileData.experience || [];
 const awards = profileData.awards || [];
+const activities = profileData.recentActivities || [];
+const roles = profileData.roles || [];
 const rawAvatar = profileData.avatarImage || profileData.avatarUrl;
 const avatarSrc = rawAvatar ? (rawAvatar.startsWith('http') ? rawAvatar : `${rawAvatar}?t=${Date.now()}`) : '';
 

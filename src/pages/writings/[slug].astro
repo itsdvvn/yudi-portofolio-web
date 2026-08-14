@@ -11,7 +11,7 @@ if (!post || post.draft) {
 }
 
 const contentAst = await post.content();
-const transformedContent = Markdoc.transform(contentAst);
+const transformedContent = Markdoc.transform(contentAst.node || contentAst);
 const htmlContent = Markdoc.renderers.html(transformedContent);
 
 function formatDate(dateStr: string) {
