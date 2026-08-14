@@ -1,8 +1,30 @@
-import { config, fields, collection } from '@keystatic/core';
+import { config, fields, collection, singleton } from '@keystatic/core';
 
 export default config({
   storage: {
     kind: 'local',
+  },
+  singletons: {
+    profile: singleton({
+      label: 'Homepage Profile & Bio',
+      path: 'src/content/profile/index',
+      format: { data: 'json' },
+      schema: {
+        headline: fields.text({
+          label: 'Greeting / Headline',
+          defaultValue: "hey! I'm Yudi",
+        }),
+        greetingEmoji: fields.text({
+          label: 'Greeting Emoji',
+          defaultValue: '👋',
+        }),
+        bio: fields.text({
+          label: 'Bio / Intro Description',
+          multiline: true,
+          defaultValue: "I'm a multimedia creator exploring the intersection of visual storytelling (photography & video) and web technology. Welcome to my creative corner on the internet.",
+        }),
+      },
+    }),
   },
   collections: {
     writings: collection({
