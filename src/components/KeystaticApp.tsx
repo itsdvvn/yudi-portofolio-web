@@ -29,7 +29,7 @@ export function KeystaticApp() {
       input.dataset.hasLiveCounter = 'true';
 
       const badge = document.createElement('div');
-      badge.style.cssText = 'display:flex; justify-content:space-between; align-items:center; font-size:11px; font-family:monospace; margin-top:5px; padding:4px 8px; border-radius:4px; font-weight:600; width:100%; box-sizing:border-box; transition:all 0.15s ease;';
+      badge.style.cssText = 'display:flex; justify-content:flex-end; align-items:center; gap:8px; font-size:11px; font-family:ui-monospace, monospace; margin-top:4px; margin-bottom:4px; padding:0 2px; font-weight:500; width:100%; transition:color 0.15s ease;';
 
       function update() {
         const len = input.value ? input.value.length : 0;
@@ -37,22 +37,17 @@ export function KeystaticApp() {
         const isOver = len > max;
 
         badge.innerHTML = `
-          <span>📊 ${labelName}: <strong>${len}/${max}</strong> karakter</span>
+          <span>${labelName}: <strong>${len}/${max}</strong> karakter</span>
+          <span>•</span>
           <span>${isOver ? '⚠️ Kelebihan ' + Math.abs(remaining) + ' karakter' : 'Sisa ' + remaining + ' karakter'}</span>
         `;
 
         if (isOver) {
           badge.style.color = '#ef4444';
-          badge.style.backgroundColor = 'rgba(239, 68, 68, 0.12)';
-          badge.style.border = '1px solid rgba(239, 68, 68, 0.35)';
         } else if (len >= max * 0.85) {
           badge.style.color = '#f59e0b';
-          badge.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
-          badge.style.border = '1px solid rgba(245, 158, 11, 0.25)';
         } else {
-          badge.style.color = '#10b981';
-          badge.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
-          badge.style.border = '1px solid rgba(16, 185, 129, 0.2)';
+          badge.style.color = '#71717a';
         }
       }
 
@@ -61,10 +56,13 @@ export function KeystaticApp() {
       });
       update();
 
-      if (input.nextSibling) {
-        input.parentNode?.insertBefore(badge, input.nextSibling);
+      // Cari parent terluar field (container field sebelum field berikutnya)
+      // Struktur Keystatic/Keystar: Flex > [Label, Description, InputWrapper, Error]
+      const inputOuterWrapper = input.closest('div[class*="css-"]') || input.parentElement;
+      if (inputOuterWrapper && inputOuterWrapper.parentElement) {
+        inputOuterWrapper.parentElement.appendChild(badge);
       } else {
-        input.parentNode?.appendChild(badge);
+        input.insertAdjacentElement('afterend', badge);
       }
     }
 
