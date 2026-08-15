@@ -43,27 +43,37 @@ const socials = profileData?.socials || {};
   <body class="py-6 sm:py-8 md:py-12">
     <div class="site-wrap flex-1 flex flex-col">
       <!-- Responsive Header -->
-      <header class="flex items-center justify-between gap-2 mb-8 sm:mb-12">
-        <a href="/" class="text-base font-semibold tracking-tight hover:opacity-80 transition-opacity shrink-0" style="color: var(--text-primary);">
-          dvvn
-        </a>
+      <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-8 sm:mb-12 border-b sm:border-b-0 pb-3.5 sm:pb-0" style="border-color: var(--border);">
+        <div class="flex items-center justify-between w-full sm:w-auto">
+          <a href="/" class="text-lg sm:text-base font-bold tracking-tight hover:opacity-80 transition-opacity" style="color: var(--text-primary);">
+            dvvn
+          </a>
 
-        <div class="flex items-center gap-3 sm:gap-5 overflow-x-auto no-scrollbar py-1">
-          <nav class="flex items-center gap-3 sm:gap-5 text-xs sm:text-sm">
+          <!-- Mobile Theme Toggle & CMS shortcut -->
+          <div class="flex sm:hidden items-center gap-2">
+            <button id="theme-toggle-mobile" class="theme-toggle-btn p-1.5 rounded border text-zinc-400 hover:text-zinc-100" style="border-color: var(--border);" aria-label="Toggle Theme">
+              <svg class="sun-icon hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+              <svg class="moon-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </button>
+            <a href="/keystatic" title="Keystatic CMS" class="px-2 py-1 rounded border text-[11px] font-mono" style="border-color: var(--border); color: var(--text-muted);">
+              cms
+            </a>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-5 w-full sm:w-auto overflow-x-auto no-scrollbar py-0.5">
+          <nav class="flex items-center gap-4 sm:gap-5 text-sm sm:text-sm">
             <a href="/" class={`nav-link ${currentPath === '/' ? 'active' : ''}`}>home</a>
             <a href="/writings" class={`nav-link ${currentPath.startsWith('/writings') ? 'active' : ''}`}>writings</a>
             <a href="/thoughts" class={`nav-link ${currentPath.startsWith('/thoughts') ? 'active' : ''}`}>thoughts</a>
             <a href="/ships" class={`nav-link ${currentPath.startsWith('/ships') ? 'active' : ''}`}>ships</a>
           </nav>
           
-          <div class="flex items-center gap-1.5 sm:gap-2 border-l pl-2 sm:pl-3 shrink-0" style="border-color: var(--border);">
-            <button id="theme-toggle" class="transition-colors p-1" style="color: var(--text-muted);" aria-label="Toggle Theme">
+          <div class="hidden sm:flex items-center gap-2 border-l pl-3 shrink-0" style="border-color: var(--border);">
+            <button id="theme-toggle" class="theme-toggle-btn transition-colors p-1" style="color: var(--text-muted);" aria-label="Toggle Theme">
               <svg class="sun-icon hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
               <svg class="moon-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
             </button>
-            <a href="https://pb.itsdvvn.my.id/_/" target="_blank" rel="noopener noreferrer" title="PocketBase Media Manager" class="transition-colors p-1 text-[11px] sm:text-xs font-mono" style="color: var(--accent);">
-              [pocketbase]
-            </a>
             <a href="/keystatic" title="Keystatic CMS" class="transition-colors p-1 text-[11px] sm:text-xs font-mono" style="color: var(--text-muted);">
               [cms]
             </a>
@@ -128,34 +138,31 @@ const socials = profileData?.socials || {};
     </div>
 
     <script is:inline>
-      const themeToggleBtn = document.getElementById('theme-toggle');
-      const sunIcon = document.querySelector('.sun-icon');
-      const moonIcon = document.querySelector('.moon-icon');
+      const themeToggleBtns = document.querySelectorAll('.theme-toggle-btn');
+      const sunIcons = document.querySelectorAll('.sun-icon');
+      const moonIcons = document.querySelectorAll('.moon-icon');
 
       function updateIcon(isLight) {
-        if (isLight) {
-          sunIcon.classList.remove('hidden');
-          moonIcon.classList.add('hidden');
-        } else {
-          sunIcon.classList.add('hidden');
-          moonIcon.classList.remove('hidden');
-        }
+        sunIcons.forEach(icon => isLight ? icon.classList.remove('hidden') : icon.classList.add('hidden'));
+        moonIcons.forEach(icon => isLight ? icon.classList.add('hidden') : icon.classList.remove('hidden'));
       }
 
       const isInitiallyLight = document.documentElement.getAttribute('data-theme') === 'light';
       updateIcon(isInitiallyLight);
 
-      themeToggleBtn?.addEventListener('click', () => {
-        const isCurrentLight = document.documentElement.getAttribute('data-theme') === 'light';
-        if (isCurrentLight) {
-          document.documentElement.removeAttribute('data-theme');
-          localStorage.setItem('theme', 'dark');
-          updateIcon(false);
-        } else {
-          document.documentElement.setAttribute('data-theme', 'light');
-          localStorage.setItem('theme', 'light');
-          updateIcon(true);
-        }
+      themeToggleBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const isCurrentLight = document.documentElement.getAttribute('data-theme') === 'light';
+          if (isCurrentLight) {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'dark');
+            updateIcon(false);
+          } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
+            updateIcon(true);
+          }
+        });
       });
     </script>
   </body>
