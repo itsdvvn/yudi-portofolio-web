@@ -29,21 +29,20 @@ const markdocConfig = {
           : image;
 
         return new Markdoc.Tag('figure', { 
-          class: 'my-8 rounded-lg overflow-hidden border', 
-          style: 'border-color: var(--border);' 
+          class: 'article-figure my-8 w-full block' 
         }, [
           new Markdoc.Tag('img', { 
             src: imgPath, 
             alt: caption || 'Article Image',
-            class: 'w-full h-auto max-h-[440px] object-cover block m-0 p-0',
+            class: 'w-full h-auto object-contain block m-0 p-0 border-0 outline-0 shadow-none bg-transparent',
             loading: 'lazy'
           }),
           (caption || credit) && new Markdoc.Tag('figcaption', { 
-            class: 'p-3 bg-zinc-900/30 dark:bg-zinc-900/30 text-xs flex flex-col sm:flex-row justify-between gap-1 border-t', 
-            style: 'border-color: var(--border); font-family: inherit;' 
+            class: 'article-caption text-xs mt-2 text-zinc-400 italic flex flex-col sm:flex-row justify-between gap-1 pb-2 border-b', 
+            style: 'border-color: var(--border); font-family: \'Lora\', \'Newsreader\', serif;' 
           }, [
             caption && new Markdoc.Tag('span', { style: 'color: var(--text-secondary);' }, [caption]),
-            credit && new Markdoc.Tag('span', { class: 'font-mono text-[11px]', style: 'color: var(--text-muted);' }, [`Foto/ ${credit}`]),
+            credit && new Markdoc.Tag('span', { class: 'font-mono text-[11px] not-italic', style: 'color: var(--text-muted);' }, [`Foto/ ${credit}`]),
           ]),
         ].filter(Boolean));
       },
