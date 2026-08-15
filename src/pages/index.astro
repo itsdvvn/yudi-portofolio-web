@@ -41,7 +41,11 @@ const thoughtsRaw = await Promise.all(
 );
 const recentThoughts = thoughtsRaw
   .filter(Boolean)
-  .sort((a, b) => new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf())
+  .sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf();
+  })
   .slice(0, 2);
 
 function formatDate(dateStr: string) {

@@ -20,7 +20,13 @@ const thoughtsRaw = await Promise.all(
 
 const thoughts = thoughtsRaw
   .filter(Boolean)
-  .sort((a, b) => new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf());
+  .sort((a, b) => {
+    // 1. Pinned thoughts always come first
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    // 2. Then sort by latest date
+    return new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf();
+  });
 
 function formatDate(dateStr: string) {
   if (!dateStr) return '';
@@ -41,9 +47,16 @@ function formatDate(dateStr: string) {
 
   <div class="space-y-4">
     {thoughts.map((thought) => (
-      <div class="thought-bubble">
+      <div class={`thought-bubble ${thought.pinned ? 'border-orange-500/30' : ''}`} style={thought.pinned ? 'border-color: rgba(249, 115, 22, 0.35);' : undefined}>
         <div class="flex items-center justify-between mb-2">
-          <span class="text-[11px] font-mono" style="color: var(--text-muted);">{formatDate(thought.publishDate)}</span>
+          <div class="flex items-center gap-2">
+            {thought.pinned && (
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded flex items-center gap-1 bg-orange-500/10 text-orange-400 border border-orange-500/20" title="Pinned Thought">
+                📌 pinned
+              </span>
+            )}
+            <span class="text-[11px] font-mono" style="color: var(--text-muted);">{formatDate(thought.publishDate)}</span>
+          </div>
           {(thought.tags || []).length > 0 && (
             <div class="flex gap-1">
               {(thought.tags || []).map((tag) => (

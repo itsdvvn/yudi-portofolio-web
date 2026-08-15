@@ -201,6 +201,10 @@ export default config({
       format: { contentField: 'content' },
       schema: {
         id: fields.slug({ name: { label: 'Short ID / Title' } }),
+        pinned: fields.checkbox({
+          label: '📌 Sematkan Postingan Ini (Pin to Top)',
+          defaultValue: false,
+        }),
         publishDate: fields.date({ label: 'Date', defaultValue: { kind: 'today' } }),
         tags: fields.array(fields.text({ label: 'Tag' }), {
           label: 'Tags',
