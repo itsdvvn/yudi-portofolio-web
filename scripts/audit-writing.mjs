@@ -6,11 +6,17 @@ conn.on('ready', () => {
   console.log('Auditing writing content and images on VPS...');
   
   const cmd = `
-    echo "=== 1. FIND ALL IMAGES ON VPS ==="
-    find /root/portfolio -name "*.jpg" -o -name "*.png" -o -name "*.webp"
+    echo "=== 1. CHECK WRITING ENTRY CONTENT ==="
+    cat /root/portfolio/src/content/writings/welcome-to-my-space.mdoc
     
-    echo "=== 2. DOCKER FIND ALL IMAGES INSIDE CONTAINER ==="
-    docker exec yudi-portfolio-web find /app -name "*.jpg" -o -name "*.png" -o -name "*.webp"
+    echo "=== 2. TEST CURL WRITING PAGE VIA TRAEFIK NETWORK ==="
+    docker exec traefik wget -qO- --header="Host: itsdvvn.my.id" http://172.18.0.11:4321/writings/welcome-to-my-space | grep -i "heroImage"
+    
+    echo "=== 3. TEST CURL IMAGE ENDPOINT VIA DOCKER ==="
+    docker exec yudi-portfolio-web wget -S --spider http://127.0.0.1:4321/media/writings/welcome-to-my-space/heroImage.jpg || true
+    
+    echo "=== 4. DOCKER CONTAINER LOGS ==="
+    docker logs --tail 25 yudi-portfolio-web
   `;
 
   conn.exec(cmd, (err, stream) => {
