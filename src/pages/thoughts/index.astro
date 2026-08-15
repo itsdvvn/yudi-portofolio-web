@@ -1,11 +1,30 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { reader } from '../../lib/reader';
+import Markdoc from '@markdoc/markdoc';
 
-const thoughts = (await getCollection('thoughts'))
-  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+const allSlugs = await reader.collections.thoughts.list();
+const thoughtsRaw = await Promise.all(
+  allSlugs.map(async (slug) => {
+    const data = await reader.collections.thoughts.read(slug);
+    if (!data) return null;
+    let htmlContent = '';
+    try {
+      const contentAst = await data.content();
+      const transformedContent = Markdoc.transform(contentAst.node || contentAst);
+      htmlContent = Markdoc.renderers.html(transformedContent);
+    } catch (e) {}
+    return { slug, ...data, htmlContent };
+  })
+);
 
-function formatDate(date: Date) {
+const thoughts = thoughtsRaw
+  .filter(Boolean)
+  .sort((a, b) => new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf());
+
+function formatDate(dateStr: string) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -21,26 +40,23 @@ function formatDate(date: Date) {
   </div>
 
   <div class="space-y-4">
-    {thoughts.map(async (thought) => {
-      const { Content } = await thought.render();
-      return (
-        <div class="thought-bubble">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-[11px] font-mono" style="color: var(--text-muted);">{formatDate(thought.data.publishDate)}</span>
-            {thought.data.tags.length > 0 && (
-              <div class="flex gap-1">
-                {thought.data.tags.map((tag) => (
-                  <span class="tech-tag text-[10px]">#{tag}</span>
-                ))}
-              </div>
-            )}
-          </div>
-          <div class="thought-content prose max-w-none">
-            <Content />
-          </div>
+    {thoughts.map((thought) => (
+      <div class="thought-bubble">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-mono" style="color: var(--text-muted);">{formatDate(thought.publishDate)}</span>
+          {(thought.tags || []).length > 0 && (
+            <div class="flex gap-1">
+              {(thought.tags || []).map((tag) => (
+                <span class="tech-tag text-[10px]">#{tag}</span>
+              ))}
+            </div>
+          )}
         </div>
-      );
-    })}
+        <div class="thought-content prose max-w-none">
+          <Fragment set:html={thought.htmlContent} />
+        </div>
+      </div>
+    ))}
 
     {thoughts.length === 0 && (
       <p class="text-xs italic py-4" style="color: var(--text-muted);">No thoughts logged yet.</p>
