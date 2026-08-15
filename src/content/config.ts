@@ -18,13 +18,13 @@ const writingsCollection = defineCollection({
   type: 'content',
   schema: () =>
     z.object({
-      title: z.string(),
+      title: z.string().max(80),
       publicationType: z.enum(['reguler', 'mingguan']).default('reguler'),
       edition: z.string().optional().nullable(),
       rubrik: z.string().default('Artikel'),
       isCoverStory: z.boolean().default(false),
       category: z.string().default('Article'),
-      deck: z.string().optional().nullable(),
+      deck: z.string().max(144).optional().nullable(),
       publishDate: z.coerce.date(),
       publishTime: z.string().default('10:00 AM'),
       readTime: z.string().default('3 min read'),

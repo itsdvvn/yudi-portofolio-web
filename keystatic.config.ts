@@ -163,7 +163,17 @@ export default config({
       path: 'src/content/writings/*',
       format: { contentField: 'content' },
       schema: {
-        title: fields.slug({ name: { label: 'Headline (H1)' } }),
+        title: fields.slug({ 
+          name: { 
+            label: 'Headline / Judul Artikel (Maksimal 80 karakter)',
+            description: 'Judul artikel ringkas, padat & SEO friendly (maks. 80 karakter)',
+            validation: {
+              length: {
+                max: 80,
+              },
+            },
+          },
+        }),
         publicationType: fields.select({
           label: 'Tipe Publikasi',
           description: 'Pilih apakah artikel harian/reguler atau bagian dari Majalah Edisi Mingguan',
@@ -187,7 +197,16 @@ export default config({
           defaultValue: false,
         }),
         category: fields.text({ label: 'Kategori / Tag Utama', defaultValue: 'Article' }),
-        deck: fields.text({ label: 'Deck / Subheadline', multiline: true }),
+        deck: fields.text({ 
+          label: 'Deck / Deskripsi Artikel (Maksimal 144 karakter)', 
+          description: 'Ringkasan singkat subheadline / meta deskripsi artikel (maks. 144 karakter)',
+          multiline: true,
+          validation: {
+            length: {
+              max: 144,
+            },
+          },
+        }),
         publishDate: fields.date({ label: 'Publication Date', defaultValue: { kind: 'today' } }),
         publishTime: fields.text({ label: 'Publication Time (e.g. 14:30 WIB)', defaultValue: '10:00 AM' }),
         readTime: fields.text({ label: 'Reading Time (e.g. 4 min read)', defaultValue: '3 min read' }),
