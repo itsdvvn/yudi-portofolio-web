@@ -16,5 +16,8 @@ pnpm-debug.log*
 .env.local
 .DS_Store
 
+# Automation & deployment scripts (keep credentials strictly local)
+scripts/
+
 # Keystatic local build cache
 .keystatic
