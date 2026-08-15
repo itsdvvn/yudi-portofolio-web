@@ -218,15 +218,8 @@ export default config({
       format: { contentField: 'content' },
       schema: {
         title: fields.slug({ name: { label: 'Project / Artwork Title' } }),
-        category: fields.select({
-          label: 'Category',
-          options: [
-            { label: 'Photography', value: 'Photography' },
-            { label: 'Videography / Motion', value: 'Videography' },
-            { label: 'Design & Visual Arts', value: 'Design' },
-            { label: 'Code & Web Development', value: 'Code' },
-            { label: 'Other Multimedia', value: 'Multimedia' },
-          ],
+        category: fields.text({
+          label: 'Category (e.g. Photography, Videography, Code, Web, Writing, Design)',
           defaultValue: 'Photography',
         }),
         description: fields.text({ label: 'Short Description / Story', multiline: true }),

@@ -14,7 +14,11 @@ const ships = shipsRaw
   .filter(Boolean)
   .sort((a, b) => (b.year || '').localeCompare(a.year || ''));
 
-const categories = ['All', 'Photography', 'Videography', 'Design', 'Code', 'Multimedia'];
+// Extract unique categories dynamically from actual items entered by the user
+const dynamicCategories = Array.from(
+  new Set(ships.map((s) => s.category).filter(Boolean))
+);
+const categories = ['All', ...dynamicCategories];
 ---
 
 <BaseLayout title="ships & works – dvvn" description="a collection of multimedia works, photography, videos, and code projects">
