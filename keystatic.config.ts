@@ -131,8 +131,8 @@ export default config({
           label: 'Article Body Content',
           options: {
             image: {
-              directory: 'public/images/writings',
-              publicPath: '/media/writings/',
+              directory: 'public/images/body',
+              publicPath: '/media/body/',
             },
           },
         }),
