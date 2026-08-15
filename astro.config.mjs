@@ -13,7 +13,9 @@ export default defineConfig({
   }),
   integrations: [
     react(),
-    markdoc(),
+    markdoc({
+      allowImageOptimization: false,
+    }),
     keystatic(),
     tailwind({
       applyBaseStyles: false,
