@@ -125,19 +125,34 @@ const eduPhotoSrc = rawEduPhoto ? (rawEduPhoto.startsWith('http') ? rawEduPhoto 
       </div>
 
       <div class="space-y-3">
-        {education.map((edu) => (
-          <div class="ship-card p-3 sm:p-4">
-            <h3 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">
-              {edu.degree}
-            </h3>
-            <p class="text-xs sm:text-sm mb-1" style="color: var(--text-secondary);">
-              {edu.institution}
-            </p>
-            <span class="text-xs font-mono" style="color: var(--text-muted);">
-              {edu.year}
-            </span>
-          </div>
-        ))}
+        {education.map((edu: any) => {
+          let displayYear = edu.year;
+          if (!displayYear) {
+            if (edu.startYear) {
+              displayYear = edu.current 
+                ? `${edu.startYear} – sekarang` 
+                : (edu.endYear ? `${edu.startYear} – ${edu.endYear}` : edu.startYear);
+            } else if (edu.current) {
+              displayYear = 'Sekarang';
+            }
+          }
+
+          return (
+            <div class="ship-card p-3 sm:p-4">
+              <h3 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">
+                {edu.degree}
+              </h3>
+              <p class="text-xs sm:text-sm mb-1" style="color: var(--text-secondary);">
+                {edu.institution}
+              </p>
+              {displayYear && (
+                <span class="text-xs font-mono" style="color: var(--text-muted);">
+                  {displayYear}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {eduPhotoSrc && (
@@ -158,19 +173,34 @@ const eduPhotoSrc = rawEduPhoto ? (rawEduPhoto.startsWith('http') ? rawEduPhoto 
       </div>
 
       <ul class="space-y-4 pl-4 list-disc text-sm" style="color: var(--text-secondary);">
-        {experience.map((exp) => (
-          <li>
-            <strong style="color: var(--text-primary);">{exp.position}</strong>
-            {exp.period && (
-              <span class="text-xs font-mono block sm:inline sm:ml-1" style="color: var(--text-muted);">
-                ({exp.period})
-              </span>
-            )}
-            <p class="mt-1 text-xs sm:text-sm leading-relaxed" style="color: var(--text-secondary);">
-              {exp.description}
-            </p>
-          </li>
-        ))}
+        {experience.map((exp: any) => {
+          let displayPeriod = exp.period;
+          if (!displayPeriod) {
+            if (exp.startYear) {
+              displayPeriod = exp.current 
+                ? `${exp.startYear} – sekarang` 
+                : (exp.endYear ? `${exp.startYear} – ${exp.endYear}` : exp.startYear);
+            } else if (exp.current) {
+              displayPeriod = 'Sekarang';
+            }
+          }
+
+          return (
+            <li>
+              <strong style="color: var(--text-primary);">{exp.position}</strong>
+              {displayPeriod && (
+                <span class="text-xs font-mono block sm:inline sm:ml-1" style="color: var(--text-muted);">
+                  ({displayPeriod})
+                </span>
+              )}
+              {exp.description && (
+                <p class="mt-1 text-xs sm:text-sm leading-relaxed" style="color: var(--text-secondary);">
+                  {exp.description}
+                </p>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </section>
   )}

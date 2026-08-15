@@ -51,7 +51,10 @@ export default config({
           fields.object({
             degree: fields.text({ label: 'Gelar / Jurusan (e.g. S1 Desain Komunikasi Visual)' }),
             institution: fields.text({ label: 'Institusi / Universitas' }),
-            year: fields.text({ label: 'Tahun (e.g. 2019 - 2023)' }),
+            year: fields.text({ label: 'Tahun / Periode (Opsional jika diisi manual: e.g. 2019 - 2023)' }),
+            startYear: fields.text({ label: 'Tahun Mulai (e.g. 2023)' }),
+            endYear: fields.text({ label: 'Tahun Selesai (e.g. 2027)' }),
+            current: fields.checkbox({ label: 'Masih Berlangsung / Sampai Sekarang (Present)', defaultValue: false }),
           }),
           {
             label: '🎓 Pendidikan',
@@ -69,7 +72,10 @@ export default config({
         experience: fields.array(
           fields.object({
             position: fields.text({ label: 'Posisi & Tempat (e.g. Creative Director, Studio Media)' }),
-            period: fields.text({ label: 'Periode (e.g. 2023 – now)' }),
+            period: fields.text({ label: 'Periode (Opsional jika diisi manual: e.g. 2023 – now)' }),
+            startYear: fields.text({ label: 'Tahun / Bulan Mulai (e.g. 2023)' }),
+            endYear: fields.text({ label: 'Tahun / Bulan Selesai (e.g. 2025)' }),
+            current: fields.checkbox({ label: 'Masih Bekerja di Sini / Sampai Sekarang (Present)', defaultValue: false }),
             description: fields.text({ label: 'Deskripsi Pengalaman / Tanggung Jawab', multiline: true }),
           }),
           {
