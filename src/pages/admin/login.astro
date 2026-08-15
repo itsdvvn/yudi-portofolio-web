@@ -1,0 +1,122 @@
+---
+export const prerender = false;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const authToken = Astro.cookies.get('pb_auth_token')?.value;
+if (authToken) {
+  return Astro.redirect('/keystatic');
+}
+---
+
+<BaseLayout title="Admin Login – dvvn" description="Masuk ke dashboard admin CMS menggunakan akun PocketBase">
+  <div class="max-w-md mx-auto py-12">
+    <div class="ship-card p-6 sm:p-8">
+      <div class="text-center mb-6">
+        <span class="text-2xl mb-2 inline-block">🔐</span>
+        <h1 class="text-xl font-bold tracking-tight" style="color: var(--text-primary);">
+          CMS Admin Login
+        </h1>
+        <p class="text-xs sm:text-sm mt-1" style="color: var(--text-secondary);">
+          Gunakan akun Superuser PocketBase Anda untuk membuka akses Keystatic CMS.
+        </p>
+      </div>
+
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label for="email" class="block text-xs font-mono mb-1.5" style="color: var(--text-muted);">
+            Email Admin
+          </label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            required 
+            placeholder="admin@itsdvvn.my.id"
+            class="w-full text-sm p-2.5 rounded border focus:outline-none focus:ring-1 focus:ring-emerald-500" 
+            style="border-color: var(--border); background-color: var(--bg); color: var(--text-primary);"
+          />
+        </div>
+
+        <div>
+          <label for="password" class="block text-xs font-mono mb-1.5" style="color: var(--text-muted);">
+            Password
+          </label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            required 
+            placeholder="••••••••"
+            class="w-full text-sm p-2.5 rounded border focus:outline-none focus:ring-1 focus:ring-emerald-500" 
+            style="border-color: var(--border); background-color: var(--bg); color: var(--text-primary);"
+          />
+        </div>
+
+        <div id="error-msg" class="hidden text-xs font-mono p-2.5 rounded border border-rose-500/40 bg-rose-950/20 text-rose-300"></div>
+
+        <button 
+          type="submit" 
+          id="submit-btn" 
+          class="w-full text-sm font-semibold py-2.5 rounded transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+          style="background-color: var(--accent); color: #000;"
+        >
+          <span id="btn-text">Masuk ke CMS</span>
+          <span id="spinner" class="hidden animate-spin">⏳</span>
+        </button>
+      </form>
+
+      <div class="mt-6 pt-4 border-t text-center text-xs font-mono" style="border-color: var(--border); color: var(--text-muted);">
+        Terhubung langsung ke PocketBase Auth
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  const form = document.getElementById('login-form');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const errorMsg = document.getElementById('error-msg');
+  const submitBtn = document.getElementById('submit-btn');
+  const btnText = document.getElementById('btn-text');
+  const spinner = document.getElementById('spinner');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMsg.classList.add('hidden');
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.7';
+    btnText.textContent = 'Memverifikasi...';
+    spinner.classList.remove('hidden');
+
+    try {
+      const res = await fetch('/api/admin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailInput.value.trim(),
+          password: passwordInput.value,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        btnText.textContent = 'Sukses! Mengalihkan...';
+        window.location.href = '/keystatic';
+      } else {
+        errorMsg.textContent = data.error || 'Login gagal, periksa email & password Anda.';
+        errorMsg.classList.remove('hidden');
+      }
+    } catch (err) {
+      errorMsg.textContent = 'Gagal menghubungi server verifikasi.';
+      errorMsg.classList.remove('hidden');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = '1';
+      btnText.textContent = 'Masuk ke CMS';
+      spinner.classList.add('hidden');
+    }
+  });
+</script>
