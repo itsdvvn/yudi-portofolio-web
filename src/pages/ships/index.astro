@@ -14,10 +14,22 @@ const ships = shipsRaw
   .filter(Boolean)
   .sort((a, b) => (b.year || '').localeCompare(a.year || ''));
 
-// Extract unique categories dynamically from actual items entered by the user
-const dynamicCategories = Array.from(
-  new Set(ships.map((s) => s.category).filter(Boolean))
-);
+// 1. Get profile master categories
+const profileData = await reader.singletons.profile.read();
+const masterCategories: string[] = (profileData as any)?.customCategories || [];
+
+// 2. Extract unique categories dynamically from actual items entered by the user
+const itemCategories = ships.map((s) => s.category?.trim()).filter(Boolean);
+
+// 3. Merge & Deduplicate case-insensitively while preserving proper title casing
+const categoryMap = new Map<string, string>();
+for (const cat of [...masterCategories, ...itemCategories]) {
+  if (cat && !categoryMap.has(cat.toLowerCase())) {
+    categoryMap.set(cat.toLowerCase(), cat);
+  }
+}
+
+const dynamicCategories = Array.from(categoryMap.values());
 const categories = ['All', ...dynamicCategories];
 ---
 
@@ -117,11 +129,11 @@ const categories = ['All', ...dynamicCategories];
       filterTabs.forEach((t) => t.classList.remove('active'));
       tab.classList.add('active');
 
-      const filter = tab.getAttribute('data-filter');
+      const filter = (tab.getAttribute('data-filter') || '').toLowerCase();
 
       cards.forEach((card) => {
-        const category = card.getAttribute('data-category');
-        if (filter === 'All' || category === filter) {
+        const category = (card.getAttribute('data-category') || '').toLowerCase();
+        if (filter === 'all' || category === filter) {
           card.style.display = 'block';
         } else {
           card.style.display = 'none';

@@ -97,6 +97,11 @@ export default config({
           xTwitter: fields.url({ label: 'X / Twitter URL' }),
           email: fields.text({ label: 'Email Address' }),
         }),
+        customCategories: fields.array(fields.text({ label: 'Nama Kategori (e.g. Photography, Videography, Code, Design)' }), {
+          label: '🏷️ Master Kategori (Ships & Works Portfolio)',
+          description: 'Kelola daftar kategori yang dapat dipilih saat membuat karya portofolio (seperti tag di Notion)',
+          itemLabel: (props) => props.value || 'Kategori',
+        }),
       },
     }),
   },
