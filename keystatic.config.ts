@@ -129,6 +129,12 @@ export default config({
         draft: fields.checkbox({ label: 'Draft', defaultValue: false }),
         content: fields.markdoc({
           label: 'Article Body Content',
+          options: {
+            image: {
+              directory: 'public/images/writings',
+              publicPath: '/media/writings/',
+            },
+          },
         }),
       },
     }),

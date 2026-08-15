@@ -13,7 +13,16 @@ if (!post || post.draft) {
 
 const contentAst = await post.content();
 const transformedContent = Markdoc.transform(contentAst.node || contentAst);
-const htmlContent = Markdoc.renderers.html(transformedContent);
+let rawHtml = Markdoc.renderers.html(transformedContent);
+
+// Fix relative inline images to point to /media/writings/[slug]/ or /media/...
+const htmlContent = rawHtml.replace(/<img\s+([^>]*?)src="([^"]+)"/gi, (match, prefix, src) => {
+  if (src.startsWith('http') || src.startsWith('/')) {
+    return `<img ${prefix}src="${src}"`;
+  }
+  // If it's a relative filename (e.g. Screenshot.jpg), map to /media/writings/[slug]/filename
+  return `<img ${prefix}src="/media/writings/${slug}/${src}"`;
+});
 
 const computedReadTime = calculateReadingTime(htmlContent);
 
