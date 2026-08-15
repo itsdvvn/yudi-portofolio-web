@@ -154,6 +154,30 @@ export default config({
                 }),
               },
             }),
+            YouTubeEmbed: block({
+              label: '▶️ YouTube Video Embed',
+              schema: {
+                url: fields.text({
+                  label: 'YouTube URL / Video ID',
+                  description: 'Contoh: https://www.youtube.com/watch?v=dQw4w9WgXcQ atau dQw4w9WgXcQ',
+                }),
+                caption: fields.text({
+                  label: 'Keterangan Video (Opsional)',
+                }),
+              },
+            }),
+            InstagramEmbed: block({
+              label: '📸 Instagram Post / Reel Embed',
+              schema: {
+                url: fields.text({
+                  label: 'Instagram Post / Reel URL',
+                  description: 'Contoh: https://www.instagram.com/p/C-xyz123/ atau https://www.instagram.com/reel/xyz123/',
+                }),
+                caption: fields.text({
+                  label: 'Keterangan Post (Opsional)',
+                }),
+              },
+            }),
           },
         }),
       },

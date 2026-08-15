@@ -47,6 +47,73 @@ const markdocConfig = {
         ].filter(Boolean));
       },
     },
+    YouTubeEmbed: {
+      render: 'YouTubeEmbed',
+      attributes: {
+        url: { type: String },
+        caption: { type: String },
+      },
+      transform(node: any) {
+        const { url, caption } = node.attributes;
+        if (!url) return null;
+
+        let videoId = url.trim();
+        if (videoId.includes('v=')) {
+          videoId = videoId.split('v=')[1].split('&')[0];
+        } else if (videoId.includes('youtu.be/')) {
+          videoId = videoId.split('youtu.be/')[1].split('?')[0];
+        } else if (videoId.includes('embed/')) {
+          videoId = videoId.split('embed/')[1].split('?')[0];
+        }
+
+        return new Markdoc.Tag('figure', { class: 'my-8 w-full block' }, [
+          new Markdoc.Tag('div', { class: 'relative w-full aspect-video rounded-lg overflow-hidden border shadow-sm', style: 'border-color: var(--border);' }, [
+            new Markdoc.Tag('iframe', {
+              src: `https://www.youtube-nocookie.com/embed/${videoId}`,
+              title: caption || 'YouTube Video Player',
+              class: 'absolute top-0 left-0 w-full h-full border-0',
+              allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
+              allowfullscreen: 'true',
+            }),
+          ]),
+          caption && new Markdoc.Tag('figcaption', { 
+            class: 'article-caption text-xs mt-2 text-zinc-400 italic pb-2 border-b', 
+            style: 'border-color: var(--border); font-family: \'Lora\', \'Newsreader\', serif;' 
+          }, [caption]),
+        ].filter(Boolean));
+      },
+    },
+    InstagramEmbed: {
+      render: 'InstagramEmbed',
+      attributes: {
+        url: { type: String },
+        caption: { type: String },
+      },
+      transform(node: any) {
+        const { url, caption } = node.attributes;
+        if (!url) return null;
+
+        let cleanUrl = url.trim().split('?')[0];
+        if (!cleanUrl.endsWith('/')) cleanUrl += '/';
+        const embedUrl = `${cleanUrl}embed`;
+
+        return new Markdoc.Tag('figure', { class: 'my-8 max-w-md mx-auto block text-center' }, [
+          new Markdoc.Tag('div', { class: 'rounded-lg overflow-hidden border bg-zinc-950/20 shadow-sm flex justify-center', style: 'border-color: var(--border);' }, [
+            new Markdoc.Tag('iframe', {
+              src: embedUrl,
+              class: 'w-full min-h-[480px] max-w-[420px] border-0 mx-auto',
+              frameborder: '0',
+              scrolling: 'no',
+              allowtransparency: 'true',
+            }),
+          ]),
+          caption && new Markdoc.Tag('figcaption', { 
+            class: 'article-caption text-xs mt-2 text-zinc-400 italic text-left pb-2 border-b', 
+            style: 'border-color: var(--border); font-family: \'Lora\', \'Newsreader\', serif;' 
+          }, [caption]),
+        ].filter(Boolean));
+      },
+    },
   },
 };
 
