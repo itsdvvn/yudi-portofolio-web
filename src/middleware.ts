@@ -72,6 +72,73 @@ export const onRequest = defineMiddleware(async (context, next) => {
               });
             }
 
+            function setupConditionalFields() {
+              // Cari select / dropdown Tipe Publikasi
+              const buttons = document.querySelectorAll('button, select');
+              let isMingguan = false;
+              let isReguler = false;
+
+              // Check text content inside field containers
+              const allElements = document.querySelectorAll('div, label, span');
+              allElements.forEach(el => {
+                const text = el.textContent || '';
+                if (text.includes('Tipe Publikasi')) {
+                  const parentSection = el.closest('div[class*="css-"]') || el.parentElement;
+                  if (parentSection) {
+                    const btn = parentSection.querySelector('button');
+                    const btnText = btn?.textContent || '';
+                    if (btnText.includes('Mingguan') || btnText.includes('📖')) {
+                      isMingguan = true;
+                    } else if (btnText.includes('Harian') || btnText.includes('📰')) {
+                      isReguler = true;
+                    }
+                  }
+                }
+              });
+
+              // Also check radio / select values
+              const selects = document.querySelectorAll('select');
+              selects.forEach(sel => {
+                if (sel.value === 'mingguan') isMingguan = true;
+                if (sel.value === 'reguler') isReguler = true;
+              });
+
+              // Target containers of fields that belong only to 'Mingguan'
+              // Fields: 'Pilih Edisi Mingguan', 'Nomor Urutan Artikel dalam Edisi', 'Laporan Utama (Cover Story)'
+              const fieldLabels = document.querySelectorAll('label, div[class*="css-"]');
+              fieldLabels.forEach(lbl => {
+                const text = lbl.textContent || '';
+                const isWeeklyField = 
+                  (text.includes('Pilih Edisi Mingguan') && !text.includes('Tipe Publikasi')) || 
+                  text.includes('Nomor Urutan Artikel') || 
+                  text.includes('Laporan Utama (Cover Story)');
+
+                if (isWeeklyField) {
+                  // Find top level field container
+                  let container = lbl;
+                  while (container && container.parentElement && !container.getAttribute('data-field-container')) {
+                    if (container.parentElement.tagName === 'FORM' || container.parentElement.tagName === 'MAIN' || container.parentElement.classList.contains('css-1v8v10e')) {
+                      break;
+                    }
+                    if (container.style && (container.style.display !== undefined)) {
+                      // Found suitable candidate
+                    }
+                    container = container.parentElement;
+                  }
+
+                  // Fallback: nearest div wrapper
+                  const targetWrapper = lbl.closest('div[style*="margin"], div[class*="css-"], div[class*="field"]') || lbl.parentElement;
+                  if (targetWrapper && targetWrapper !== document.body) {
+                    if (isReguler && !isMingguan) {
+                      targetWrapper.style.display = 'none';
+                    } else {
+                      targetWrapper.style.display = '';
+                    }
+                  }
+                }
+              });
+            }
+
             function attachCounter(elem, maxLen, labelName) {
               if (elem.dataset.counterAttached) return;
               elem.dataset.counterAttached = 'true';
@@ -123,14 +190,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
               elem.insertAdjacentElement('afterend', counterBox);
             }
 
+            function runAll() {
+              setupCharacterCounters();
+              setupConditionalFields();
+            }
+
             // Observe DOM changes in Keystatic SPA
             const observer = new MutationObserver(() => {
-              setupCharacterCounters();
+              runAll();
             });
 
             observer.observe(document.body, { childList: true, subtree: true });
-            setInterval(setupCharacterCounters, 800);
-            window.addEventListener('load', setupCharacterCounters);
+            setInterval(runAll, 600);
+            window.addEventListener('load', runAll);
           })();
         </script>
       `;

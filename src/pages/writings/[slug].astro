@@ -257,11 +257,9 @@ if (post.publicationType === 'mingguan' && post.edition) {
       </p>
     )}
 
-    <!-- 4. Publication Date & Time -->
+    <!-- 4. Publication Date & Read Time -->
     <div class="flex items-center gap-2 text-xs font-mono mb-6" style="color: var(--text-muted);">
       <span>{formatDate(post.publishDate)}</span>
-      <span>•</span>
-      <span>{post.publishTime || '10:00 AM'}</span>
       <span>•</span>
       <span>{computedReadTime || post.readTime || '1 min read'}</span>
     </div>

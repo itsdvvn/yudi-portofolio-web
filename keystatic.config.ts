@@ -212,8 +212,6 @@ export default config({
           },
         }),
         publishDate: fields.date({ label: 'Publication Date', defaultValue: { kind: 'today' } }),
-        publishTime: fields.text({ label: 'Publication Time (e.g. 14:30 WIB)', defaultValue: '10:00 AM' }),
-        readTime: fields.text({ label: 'Reading Time (e.g. 4 min read)', defaultValue: '3 min read' }),
         heroImage: fields.image({
           label: 'Hero / Featured Image (Pilih / Upload File)',
           directory: 'public/images/writings',
