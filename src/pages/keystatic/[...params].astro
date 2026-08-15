@@ -6,78 +6,103 @@ export const prerender = false;
 
 <KeystaticApp client:only="react" />
 
+<style is:global>
+  .ks-char-counter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+    font-weight: 600;
+    width: fit-content;
+    transition: all 0.2s ease;
+  }
+  .ks-char-counter-badge.normal {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+  .ks-char-counter-badge.warning {
+    background: rgba(245, 158, 11, 0.14);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+  }
+  .ks-char-counter-badge.danger {
+    background: rgba(239, 68, 68, 0.16);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+</style>
+
 <script is:inline>
   (function() {
-    function setupLiveCounters() {
-      // 1. Scan semua input teks dan textarea
-      const inputs = document.querySelectorAll('input[type="text"], textarea');
-      
-      inputs.forEach(el => {
-        // Cari label terdekat
-        const formField = el.closest('[class*="field"], label, div');
-        const parentContainer = el.parentElement;
-        const allText = (formField?.textContent || '' + ' ' + (el.getAttribute('aria-label') || '') + ' ' + (el.getAttribute('placeholder') || '')).toLowerCase();
+    function initCounters() {
+      // 1. Temukan semua input headline/title dan textarea deck/deskripsi
+      const allTextInputs = document.querySelectorAll('input[type="text"], textarea');
 
-        const isTitle = (allText.includes('headline') || allText.includes('judul')) && el.tagName === 'INPUT' && !el.id?.includes('slug');
-        const isDeck = (allText.includes('deck') || allText.includes('deskripsi') || allText.includes('subheadline')) && el.tagName === 'TEXTAREA';
+      allTextInputs.forEach(input => {
+        // Cari container field terdekat
+        const container = input.closest('div[class*="css-"], label, [role="group"]') || input.parentElement;
+        if (!container) return;
 
-        if (isTitle) {
-          attachCounter(el, 80, 'Judul');
-        } else if (isDeck) {
-          attachCounter(el, 144, 'Deskripsi');
+        const containerText = (container.textContent || '' + ' ' + (input.getAttribute('aria-label') || '') + ' ' + (input.placeholder || '')).toLowerCase();
+        
+        // Identifikasi field
+        const isTitleField = (containerText.includes('headline') || containerText.includes('judul')) && input.tagName === 'INPUT' && !input.id?.includes('slug');
+        const isDeckField = (containerText.includes('deck') || containerText.includes('deskripsi') || containerText.includes('subheadline')) && input.tagName === 'TEXTAREA';
+
+        if (isTitleField) {
+          bindCounter(input, container, 80, 'Judul Artikel');
+        } else if (isDeckField) {
+          bindCounter(input, container, 144, 'Deskripsi Artikel');
         }
       });
     }
 
-    function attachCounter(elem, max, labelName) {
-      if (elem.dataset.counterAttached) return;
-      elem.dataset.counterAttached = 'true';
+    function bindCounter(input, container, maxChars, fieldName) {
+      if (input.dataset.hasLiveCounter) return;
+      input.dataset.hasLiveCounter = 'true';
 
-      const box = document.createElement('div');
-      box.className = 'live-char-counter-box';
-      box.style.cssText = 'display:flex; justify-content:space-between; align-items:center; font-size:11px; font-family:monospace; margin-top:4px; padding:3px 8px; border-radius:4px; transition:all 0.15s ease; width:100%; box-sizing:border-box;';
+      const badge = document.createElement('div');
+      badge.className = 'ks-char-counter-badge normal';
 
-      function update() {
-        const len = elem.value.length;
-        const remaining = max - len;
-        const isOver = len > max;
+      function render() {
+        const count = input.value ? input.value.length : 0;
+        const remaining = maxChars - count;
+        const isExceeded = count > maxChars;
 
-        box.innerHTML = `
-          <span>${labelName}: <strong>${len} / ${max}</strong> karakter</span>
-          <span>${isOver ? '⚠️ Lebih ' + Math.abs(remaining) + ' karakter' : 'Sisa ' + remaining + ' karakter'}</span>
+        badge.className = 'ks-char-counter-badge ' + (isExceeded ? 'danger' : count >= maxChars * 0.85 ? 'warning' : 'normal');
+        badge.innerHTML = `
+          <span>📊 ${fieldName}: <strong>${count}/${maxChars}</strong> karakter</span>
+          <span>•</span>
+          <span>${isExceeded ? '⚠️ Kelebihan ' + Math.abs(remaining) + ' karakter' : 'Sisa ' + remaining + ' lagi'}</span>
         `;
-
-        if (isOver) {
-          box.style.color = '#ef4444';
-          box.style.backgroundColor = 'rgba(239, 68, 68, 0.12)';
-          box.style.border = '1px solid rgba(239, 68, 68, 0.35)';
-        } else if (len > max * 0.85) {
-          box.style.color = '#f59e0b';
-          box.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
-          box.style.border = '1px solid rgba(245, 158, 11, 0.25)';
-        } else {
-          box.style.color = '#10b981';
-          box.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
-          box.style.border = '1px solid rgba(16, 185, 129, 0.2)';
-        }
       }
 
-      elem.addEventListener('input', update);
-      elem.addEventListener('change', update);
-      elem.addEventListener('keyup', update);
-      elem.addEventListener('focus', update);
-      update();
+      ['input', 'change', 'keyup', 'focus', 'paste'].forEach(evt => {
+        input.addEventListener(evt, render);
+      });
+      render();
 
-      // Sisipkan tepat di bawah elemen input
-      if (elem.nextSibling) {
-        elem.parentNode.insertBefore(box, elem.nextSibling);
+      // Tempatkan tepat di bawah wrapper input field
+      const fieldWrapper = input.closest('div[class*="css-"]') || input.parentElement;
+      if (fieldWrapper && fieldWrapper.parentElement) {
+        fieldWrapper.parentElement.appendChild(badge);
       } else {
-        elem.parentNode.appendChild(box);
+        input.insertAdjacentElement('afterend', badge);
       }
     }
 
-    setInterval(setupLiveCounters, 500);
-    window.addEventListener('load', setupLiveCounters);
-    document.addEventListener('DOMContentLoaded', setupLiveCounters);
+    setInterval(initCounters, 300);
+    window.addEventListener('load', initCounters);
+    document.addEventListener('DOMContentLoaded', initCounters);
   })();
 </script>
