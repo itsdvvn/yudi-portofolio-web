@@ -228,7 +228,13 @@ function formatDate(dateStr: string) {
                   >
                     {heroThumb && (
                       <div class="w-full sm:w-32 sm:h-20 h-36 rounded overflow-hidden bg-zinc-900 shrink-0 border" style="border-color: var(--border);">
-                        <img src={heroThumb} alt={article.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        <img 
+                          src={heroThumb} 
+                          alt={article.title} 
+                          class="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                          loading="lazy" 
+                          decoding="async" 
+                        />
                       </div>
                     )}
                     <div class="flex-1 min-w-0">
@@ -266,7 +272,13 @@ function formatDate(dateStr: string) {
           {editions.slice(1).map((ed) => (
             <div class="ship-card p-3 flex flex-col justify-between">
               <div class="aspect-[3/4] rounded overflow-hidden mb-2 bg-zinc-900 border" style="border-color: var(--border);">
-                <img src={ed.coverImage || ed.coverImageUrl || '/itsdvvn-web.jpg'} alt={ed.title} class="w-full h-full object-cover" />
+                <img 
+                  src={ed.coverImage || ed.coverImageUrl || '/itsdvvn-web.jpg'} 
+                  alt={ed.title} 
+                  class="w-full h-full object-cover" 
+                  loading="lazy" 
+                  decoding="async" 
+                />
               </div>
               <div>
                 <span class="text-[10px] font-mono text-zinc-500 block mb-1">{ed.editionNumber}</span>

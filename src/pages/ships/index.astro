@@ -76,7 +76,13 @@ const categories = ['All', ...dynamicCategories];
 
         {(ship.coverImage || ship.coverImageUrl) && (
           <div class="mb-3 rounded overflow-hidden border" style="border-color: var(--border);">
-            <img src={ship.coverImage || ship.coverImageUrl} alt={ship.title} class="w-full h-48 sm:h-64 object-cover" />
+            <img 
+              src={ship.coverImage || ship.coverImageUrl} 
+              alt={ship.title} 
+              class="w-full h-48 sm:h-64 object-cover" 
+              loading="lazy" 
+              decoding="async" 
+            />
           </div>
         )}
 

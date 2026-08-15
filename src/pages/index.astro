@@ -157,7 +157,13 @@ const eduPhotoSrc = rawEduPhoto ? (rawEduPhoto.startsWith('http') ? rawEduPhoto 
 
       {eduPhotoSrc && (
         <div class="mt-4 rounded-xl overflow-hidden border shadow-sm" style="border-color: var(--border);">
-          <img src={eduPhotoSrc} alt="Momen Pendidikan / Wisuda" class="w-full h-auto max-h-[420px] object-cover" />
+          <img 
+            src={eduPhotoSrc} 
+            alt="Momen Pendidikan / Wisuda" 
+            class="w-full h-auto max-h-[420px] object-cover" 
+            loading="lazy" 
+            decoding="async" 
+          />
         </div>
       )}
     </section>
@@ -297,7 +303,13 @@ const eduPhotoSrc = rawEduPhoto ? (rawEduPhoto.startsWith('http') ? rawEduPhoto 
           
           {(ship.coverImage || ship.coverImageUrl) && (
             <div class="mb-2.5 rounded overflow-hidden border" style="border-color: var(--border);">
-              <img src={ship.coverImage || ship.coverImageUrl} alt={ship.title} class="w-full h-40 object-cover" />
+              <img 
+                src={ship.coverImage || ship.coverImageUrl} 
+                alt={ship.title} 
+                class="w-full h-40 object-cover" 
+                loading="lazy" 
+                decoding="async" 
+              />
             </div>
           )}
 
