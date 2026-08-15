@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Lora:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -240,23 +240,27 @@
   line-height: 1.65;
 }
 
-/* Prose Typography in Article */
+/* Prose Editorial Serif Typography in Articles (Matching Reference Image) */
 .prose {
+  font-family: 'Newsreader', 'Lora', 'Georgia', serif;
   color: var(--text-secondary);
-  font-size: 0.95rem;
-  line-height: 1.8;
+  font-size: 1.06rem;
+  line-height: 1.85;
   word-break: break-word;
+  letter-spacing: -0.003em;
 }
 
 .prose h1, .prose h2, .prose h3, .prose h4 {
+  font-family: 'Inter', system-ui, sans-serif;
   color: var(--text-primary);
   font-weight: 700;
-  margin-top: 1.8rem;
-  margin-bottom: 0.7rem;
+  margin-top: 2rem;
+  margin-bottom: 0.8rem;
+  letter-spacing: -0.02em;
 }
 
 .prose p {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
   color: var(--text-secondary);
 }
 
@@ -268,25 +272,41 @@
 
 .prose strong {
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.prose em {
+  font-style: italic;
 }
 
 .prose ul, .prose ol {
-  margin-bottom: 1.25rem;
-  padding-left: 1.25rem;
+  margin-bottom: 1.5rem;
+  padding-left: 1.4rem;
   color: var(--text-secondary);
 }
 
 .prose li {
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.45rem;
 }
 
+/* Matching Editorial Blockquote from Reference Image */
 .prose blockquote {
-  border-left: 3px solid var(--border-hover);
-  padding-left: 1rem;
-  color: var(--text-muted);
-  font-style: italic;
-  margin: 1.5rem 0;
+  border-left: 4px solid #f97316; /* Vibrant warm orange matching reference photo */
+  padding-left: 1.25rem;
+  margin: 1.75rem 0;
+  font-family: 'Newsreader', 'Lora', 'Georgia', serif;
+  font-size: 1.08rem;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+.prose blockquote p {
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.prose blockquote p:last-child {
+  margin-bottom: 0;
 }
 
 .prose code:not(pre code) {
