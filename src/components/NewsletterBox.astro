@@ -6,49 +6,42 @@ interface Props {
 const { articleTitle = 'Writings' } = Astro.props;
 ---
 
-<div class="newsletter-box mt-12 p-6 rounded-xl border relative overflow-hidden" style="border-color: var(--border); background-color: var(--card-bg);">
-  <!-- Subtle Gradient Accent in Background -->
-  <div class="absolute -right-12 -top-12 w-36 h-36 bg-orange-500/10 rounded-full blur-2xl pointer-events-none"></div>
-
-  <div class="relative z-10">
-    <div class="flex items-center gap-2 mb-2">
-      <span class="text-base">✉️</span>
-      <h3 class="text-base font-medium tracking-tight" style="color: var(--text-primary);">
-        Dapatkan Notifikasi Tulisan Baru
-      </h3>
-    </div>
-    
-    <p class="text-xs leading-relaxed mb-4" style="color: var(--text-secondary);">
-      Langganan newsletter untuk menerima kabar dan tulisan terbaru langsung di email Anda. Tanpa spam, Anda dapat berhenti berlangganan kapan saja.
+<div class="newsletter-section mt-16 pt-8 border-t" style="border-color: var(--border);">
+  <div class="space-y-2 mb-4">
+    <h3 class="text-sm font-medium tracking-tight" style="color: var(--text-primary);">
+      Subscribe
+    </h3>
+    <p class="text-xs leading-relaxed" style="color: var(--text-secondary);">
+      Get notified when I publish new writings and projects. No spam, unsubscribe anytime.
     </p>
-
-    <form id="newsletter-form" class="space-y-2">
-      <input type="hidden" id="newsletter-source" value={articleTitle} />
-      
-      <div class="flex flex-col sm:flex-row gap-2">
-        <input 
-          type="email" 
-          id="newsletter-email" 
-          required 
-          placeholder="masukkan email Anda..." 
-          class="flex-1 px-3.5 py-2 text-xs rounded-lg border bg-zinc-900/40 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all font-mono"
-          style="border-color: var(--border); color: var(--text-primary);"
-        />
-        <button 
-          type="submit" 
-          id="newsletter-submit-btn"
-          class="px-4 py-2 text-xs font-mono rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-medium text-white shadow-sm"
-          style="background-color: #f97316;"
-        >
-          <span id="newsletter-btn-text">Langganan</span>
-          <span id="newsletter-btn-spinner" class="hidden animate-spin">⌛</span>
-        </button>
-      </div>
-
-      <!-- Feedback Messages -->
-      <div id="newsletter-message" class="text-[11px] hidden pt-1"></div>
-    </form>
   </div>
+
+  <form id="newsletter-form" class="space-y-2">
+    <input type="hidden" id="newsletter-source" value={articleTitle} />
+    
+    <div class="flex items-center gap-2 max-w-md">
+      <input 
+        type="email" 
+        id="newsletter-email" 
+        required 
+        placeholder="your email address..." 
+        class="flex-1 px-3 py-1.5 text-xs rounded border transition-colors font-mono focus:outline-none focus:border-zinc-400"
+        style="border-color: var(--border); background-color: var(--tag-bg); color: var(--text-primary);"
+      />
+      <button 
+        type="submit" 
+        id="newsletter-submit-btn"
+        class="px-3.5 py-1.5 text-xs font-mono rounded border transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-800 hover:text-white"
+        style="border-color: var(--border); color: var(--text-primary); background-color: var(--card-bg);"
+      >
+        <span id="newsletter-btn-text">Join</span>
+        <span id="newsletter-btn-spinner" class="hidden animate-spin">⌛</span>
+      </button>
+    </div>
+
+    <!-- Feedback Messages -->
+    <div id="newsletter-message" class="text-[11px] hidden pt-1 font-mono"></div>
+  </form>
 </div>
 
 <script is:inline>
@@ -71,7 +64,7 @@ const { articleTitle = 'Writings' } = Astro.props;
 
       // Loading state
       submitBtn.disabled = true;
-      btnText.textContent = 'Memproses...';
+      btnText.textContent = '...';
       btnSpinner.classList.remove('hidden');
       messageDiv.classList.add('hidden');
       messageDiv.textContent = '';
@@ -86,22 +79,22 @@ const { articleTitle = 'Writings' } = Astro.props;
         const result = await response.json();
 
         if (response.ok && result.success) {
-          messageDiv.textContent = '✨ ' + (result.message || 'Terima kasih telah berlangganan!');
-          messageDiv.style.color = '#22c55e'; // Green
+          messageDiv.textContent = '✓ Subscribed. Thank you!';
+          messageDiv.style.color = 'var(--text-secondary)';
           messageDiv.classList.remove('hidden');
           emailInput.value = '';
         } else {
-          messageDiv.textContent = '⚠️ ' + (result.error || 'Terjadi kesalahan. Coba lagi nanti.');
-          messageDiv.style.color = '#ef4444'; // Red
+          messageDiv.textContent = '✕ ' + (result.error || 'Something went wrong.');
+          messageDiv.style.color = '#ef4444';
           messageDiv.classList.remove('hidden');
         }
       } catch (err) {
-        messageDiv.textContent = '⚠️ Gagal terhubung ke server. Silakan coba lagi.';
+        messageDiv.textContent = '✕ Failed to connect to server.';
         messageDiv.style.color = '#ef4444';
         messageDiv.classList.remove('hidden');
       } finally {
         submitBtn.disabled = false;
-        btnText.textContent = 'Langganan';
+        btnText.textContent = 'Join';
         btnSpinner.classList.add('hidden');
       }
     });
