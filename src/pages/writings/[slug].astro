@@ -194,6 +194,31 @@ let heroImg = rawHero;
 if (rawHero && !rawHero.startsWith('http')) {
   heroImg = `${rawHero}?t=${Date.now()}`;
 }
+
+// 6. If article belongs to a Weekly Magazine Edition, load the Edition & all sibling articles
+let parentEdition: any = null;
+let editionArticles: any[] = [];
+
+if (post.publicationType === 'mingguan' && post.edition) {
+  parentEdition = await reader.collections.editions.read(post.edition);
+  if (parentEdition) {
+    const allWritingsSlugs = await reader.collections.writings.list();
+    const allWritingsData = await Promise.all(
+      allWritingsSlugs.map(async (s) => {
+        const item = await reader.collections.writings.read(s);
+        return { slug: s, ...item };
+      })
+    );
+
+    editionArticles = allWritingsData
+      .filter((w) => w && !w.draft && w.publicationType === 'mingguan' && w.edition === post.edition)
+      .sort((a, b) => {
+        const orderA = a.order ?? (a.isCoverStory ? 0 : 99);
+        const orderB = b.order ?? (b.isCoverStory ? 0 : 99);
+        return orderA - orderB;
+      });
+  }
+}
 ---
 
 <BaseLayout 
@@ -266,6 +291,87 @@ if (rawHero && !rawHero.startsWith('http')) {
     <div class="prose text-sm leading-relaxed max-w-none border-t pt-6" style="border-color: var(--border);">
       <Fragment set:html={htmlContent} />
     </div>
+
+    <!-- 📖 Majalah Mingguan Series / Edition Navigation Box (Tempo Style) -->
+    {parentEdition && editionArticles.length > 0 && (
+      <section class="my-10 rounded-xl overflow-hidden border p-5 sm:p-7 bg-zinc-950 text-white shadow-xl" style="border-color: rgba(255,255,255,0.12);">
+        <!-- Edition Header -->
+        <div class="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
+          <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-600 text-white font-mono tracking-wider uppercase">
+            Edisi Khusus
+          </span>
+          <span class="text-xs font-mono text-zinc-300">
+            {parentEdition.editionNumber || formatDate(parentEdition.publishDate)}
+          </span>
+        </div>
+
+        <!-- Edition Info: Cover + Title + Arrow Link -->
+        <div class="flex items-start gap-4 mb-6">
+          <div class="w-16 sm:w-20 aspect-[3/4] rounded overflow-hidden bg-zinc-800 shrink-0 border border-white/10 shadow-md">
+            <img 
+              src={parentEdition.coverImage || parentEdition.coverImageUrl || '/itsdvvn-web.jpg'} 
+              alt={parentEdition.title} 
+              class="w-full h-full object-cover" 
+            />
+          </div>
+          <div class="min-w-0 flex-1">
+            <h3 class="text-base sm:text-lg font-bold text-white leading-snug tracking-tight mb-1">
+              {parentEdition.title}
+            </h3>
+            <a 
+              href="/writings#mingguan" 
+              class="text-xs font-mono text-zinc-400 hover:text-white transition-colors inline-flex items-center gap-1 mt-0.5"
+            >
+              <span>Lihat Edisi Selengkapnya</span>
+              <span class="text-sm">→</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Article List / Series Playlist in this Edition -->
+        <div class="divide-y border-y border-white/10">
+          {editionArticles.map((item, idx) => {
+            const isCurrent = item.slug === slug;
+
+            return (
+              <a 
+                href={`/writings/${item.slug}`} 
+                class={`py-3 sm:py-3.5 flex items-start gap-3 transition-colors block group ${
+                  isCurrent 
+                    ? 'text-rose-400 font-semibold' 
+                    : 'text-zinc-200 hover:text-white hover:bg-white/[0.02]'
+                }`}
+              >
+                <!-- Active / Current Indicator Arrow -->
+                <div class="w-5 shrink-0 pt-0.5 text-center">
+                  {isCurrent ? (
+                    <span class="text-rose-500 font-bold text-sm">→</span>
+                  ) : (
+                    <span class="text-zinc-600 font-mono text-xs group-hover:text-zinc-400">{idx + 1}</span>
+                  )}
+                </div>
+
+                <!-- Article Rubrik & Title -->
+                <div class="min-w-0 flex-1">
+                  {item.rubrik && (
+                    <span class={`text-[10px] font-mono uppercase tracking-wider block mb-0.5 ${
+                      isCurrent ? 'text-rose-400' : 'text-zinc-400 group-hover:text-zinc-300'
+                    }`}>
+                      {item.rubrik}
+                    </span>
+                  )}
+                  <h4 class={`text-xs sm:text-sm leading-snug transition-colors ${
+                    isCurrent ? 'text-rose-400 font-bold' : 'text-zinc-100 group-hover:text-white'
+                  }`}>
+                    {item.title}
+                  </h4>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+    )}
 
     <!-- Newsletter Subscription Box -->
     <NewsletterBox articleTitle={post.title} />

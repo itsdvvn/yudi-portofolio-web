@@ -192,6 +192,10 @@ export default config({
           label: 'Rubrik / Kolom (e.g. Laporan Utama, Editorial, Ekonomi, Opini, Investigasi, Seni)',
           defaultValue: 'Artikel',
         }),
+        order: fields.integer({
+          label: 'Nomor Urutan Artikel dalam Edisi (e.g. 1 untuk Laporan Utama, 2, 3, dst)',
+          defaultValue: 1,
+        }),
         isCoverStory: fields.checkbox({
           label: '⭐ Laporan Utama (Cover Story) Edisi Ini',
           defaultValue: false,

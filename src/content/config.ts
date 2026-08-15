@@ -22,6 +22,7 @@ const writingsCollection = defineCollection({
       publicationType: z.enum(['reguler', 'mingguan']).default('reguler'),
       edition: z.string().optional().nullable(),
       rubrik: z.string().default('Artikel'),
+      order: z.number().default(1),
       isCoverStory: z.boolean().default(false),
       category: z.string().default('Article'),
       deck: z.string().max(144).optional().nullable(),
