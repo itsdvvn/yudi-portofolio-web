@@ -214,20 +214,25 @@ const eduPhotoSrc = rawEduPhoto ? (rawEduPhoto.startsWith('http') ? rawEduPhoto 
         </h2>
       </div>
       <p class="text-xs sm:text-sm mb-3" style="color: var(--text-secondary);">
-        Berikut beberapa penghargaan yang telah saya peroleh:
+        {awards.length === 1 
+          ? 'Berikut penghargaan yang telah saya peroleh:' 
+          : 'Berikut beberapa penghargaan yang telah saya peroleh:'}
       </p>
 
       <ul class="space-y-2 pl-4 list-disc text-xs sm:text-sm" style="color: var(--text-secondary);">
-        {awards.map((award) => (
-          <li>
-            <span style="color: var(--text-primary);">{award.title}</span>
-            {award.year && (
-              <span class="font-mono text-xs ml-1" style="color: var(--text-muted);">
-                ({award.year})
-              </span>
-            )}
-          </li>
-        ))}
+        {awards.map((award: any) => {
+          const cleanYear = (award.year || '').trim();
+          return (
+            <li>
+              <span style="color: var(--text-primary);">{award.title}</span>
+              {cleanYear && (
+                <span class="font-mono text-xs ml-1" style="color: var(--text-muted);">
+                  ({cleanYear})
+                </span>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </section>
   )}
@@ -241,20 +246,25 @@ const eduPhotoSrc = rawEduPhoto ? (rawEduPhoto.startsWith('http') ? rawEduPhoto 
         </h2>
       </div>
       <p class="text-xs sm:text-sm mb-3" style="color: var(--text-secondary);">
-        Berikut beberapa kegiatan seminar, pameran, atau karya terbaru yang telah saya lakukan:
+        {activities.length === 1 
+          ? 'Berikut kegiatan seminar, pameran, atau karya terbaru yang telah saya lakukan:' 
+          : 'Berikut beberapa kegiatan seminar, pameran, atau karya terbaru yang telah saya lakukan:'}
       </p>
 
       <ul class="space-y-2 pl-4 list-disc text-xs sm:text-sm" style="color: var(--text-secondary);">
-        {activities.map((act) => (
-          <li>
-            <span style="color: var(--text-primary);">{act.title}</span>
-            {act.locationDate && (
-              <span class="font-mono text-xs ml-1" style="color: var(--text-muted);">
-                ({act.locationDate})
-              </span>
-            )}
-          </li>
-        ))}
+        {activities.map((act: any) => {
+          const cleanDate = (act.locationDate || '').trim();
+          return (
+            <li>
+              <span style="color: var(--text-primary);">{act.title}</span>
+              {cleanDate && (
+                <span class="font-mono text-xs ml-1" style="color: var(--text-muted);">
+                  ({cleanDate})
+                </span>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </section>
   )}

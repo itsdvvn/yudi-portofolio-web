@@ -1,12 +1,70 @@
 {
-  "siteTitle": "Wahyudi Setiawan (dvvn) – Multimedia Creator & Visual Storyteller",
-  "siteDescription": "Bentar ya, masih dipikirin kontennya, baru jadi website nya 🤓",
+  "siteTitle": "Senin toko tutup",
+  "siteDescription": "Tempat semua-muanya yang paling valid dan terkini",
+  "avatarImage": "/media/profile/avatarImage.jpg",
   "headline": "Halo, saya Yudi 🍍",
-  "bio": "Bentar ya, masih dipikirin kontennya, baru jadi website nya 🤓",
-  "roles": [],
-  "education": [],
-  "experience": [],
-  "awards": [],
+  "bio": "Jika Sorting Hat dari semesta Harry Potter benar-benar ada, saya sangat yakin akan terpilih masuk asrama Ravenclaw. Rasa ingin tahu untuk mengeksplorasi hal baru terus menjadi motor penggerak saya selama lebih dari dua dekade. Saya memadukan kreativitas dan teknologi secara proaktif, berekspansi dari penyutradaraan video, manajemen media sosial, penulisan jurnalistik, hingga pemanfaatan teknologi Artificial Intelligence.",
+  "roles": [
+    {
+      "title": "Video Director",
+      "description": "Menerjemahkan ide menjadi treatment visual yang kuat. Saya memimpin koordinasi lintas divisi, mengarahkan talent di lapangan, hingga mengeksekusi proses pascaproduksi secara langsung dari tahapan rough cut sampai online editing."
+    },
+    {
+      "title": "Social Media Officer",
+      "description": "Mengolah data analitik menjadi langkah strategis. Saya merancang perencanaan konten, melakukan publikasi terukur, dan memantau performa kampanye untuk mengambil keputusan yang berbasis data."
+    },
+    {
+      "title": "Writer",
+      "description": "Meracik tulisan mendalam untuk artikel seni, budaya, dan berbagai isu nasional. Saya mendasari setiap karya dengan riset komprehensif, mulai dari bedah literatur ilmiah, analisis lanskap media massa, hingga wawancara langsung dengan narasumber."
+    },
+    {
+      "title": "AI Developer",
+      "description": "Mengawinkan teknologi mutakhir dengan alur kerja kreatif. Saya mengintegrasikan AI Agent untuk web development dan merancang sistem otomasi yang efisien guna menunjang produktivitas peran video directing, manajemen media sosial, dan kelengkapan riset penulisan."
+    }
+  ],
+  "education": [
+    {
+      "degree": "S1 Public Relations",
+      "institution": "Universitas Bina Sarana Informatika",
+      "year": "2023 - saat ini",
+      "startYear": "2023",
+      "current": true
+    }
+  ],
+  "experience": [
+    {
+      "position": "Video Production, PT Terato Beserta Kita",
+      "startYear": "2023",
+      "current": true,
+      "description": "Saya mengawal penuh siklus produksi video dari tahap praproduksi hingga pascaproduksi. Saya mengatur alur manajemen produksi dan database lewat Notion, serta meracik konsep naskah menggunakan ekosistem Google Workspace. Di lapangan, saya mengeksekusi pengambilan gambar secara langsung dengan sistem kamera mirrorless atau DSLR. Pada tahap akhir, saya mengolah sentuhan visual secara komprehensif menggunakan perangkat Adobe Creative Cloud dan Davinci Resolve"
+    },
+    {
+      "position": "Freelance Video Editor, Dynamic Buzz Indonesia",
+      "startYear": "2023",
+      "endYear": "2024",
+      "current": false,
+      "description": "Saya mengeksekusi proses editing video secara remote berdasarkan arahan brief dari manajemen proyek. Saya membangun bank referensi konten untuk memandu arah kreatif secara tim dan merancang elemen motion menggunakan After Effects. Untuk menjaga akuntabilitas, saya rutin menyusun laporan evaluasi pengerjaan setiap bulannya."
+    },
+    {
+      "position": "Video Production, Jual Rumah TV",
+      "startYear": "2022",
+      "endYear": "2023",
+      "current": false,
+      "description": "Saya memproduksi konten promosi properti untuk kawasan Jakarta dan sekitarnya secara mandiri. Saya menangani langsung operasional kamera hingga proses editing video untuk menghasilkan materi tayangan yang menarik. Saya terus berkoordinasi erat dengan pemilik channel guna memastikan arah visual selaras dengan target penjualan."
+    },
+    {
+      "position": "Internship Assistant Producer, Movio Studio (PT Movio Kreasi Indonesia)",
+      "period": "Jan 2019 - Mar 2019",
+      "current": false,
+      "description": "Saya membantu produser dalam merumuskan naskah iklan dan menyusun deck kesiapan produksi. Saya berkesempatan mendapat porsi eksekusi sebagai video editor offline untuk kampanye iklan Ace Hardware Boom Sale 2019, dan turun sebagai videografer lapangan untuk proyek komersial Amway Nutrilite."
+    }
+  ],
+  "awards": [
+    {
+      "title": "Creative AI Creator",
+      "year": "2025, PR Awards Sesi 6 Universitas Bina Sarana Informatika"
+    }
+  ],
   "recentActivities": [],
   "socials": {
     "youtube": "https://www.youtube.com/@temannunggu",
