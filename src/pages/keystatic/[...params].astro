@@ -1,0 +1,76 @@
+---
+import KeystaticApp from '../../components/KeystaticApp';
+
+export const prerender = false;
+---
+
+<KeystaticApp client:only="react" />
+
+<script is:inline>
+  (function() {
+    function setupCounters() {
+      const allInputs = document.querySelectorAll('input[type="text"], textarea');
+      allInputs.forEach(el => {
+        const label = el.closest('label') || el.parentElement?.querySelector('label') || el.parentElement?.parentElement?.querySelector('label');
+        const text = (label?.textContent || '').toLowerCase();
+        const placeholder = (el.getAttribute('placeholder') || '').toLowerCase();
+
+        const isTitle = (text.includes('headline') || text.includes('judul') || placeholder.includes('headline')) && el.tagName === 'INPUT';
+        const isDeck = (text.includes('deck') || text.includes('deskripsi') || text.includes('subheadline')) && el.tagName === 'TEXTAREA';
+
+        if (isTitle) {
+          attachCounter(el, 80, 'Judul Artikel');
+        } else if (isDeck) {
+          attachCounter(el, 144, 'Deskripsi Artikel');
+        }
+      });
+    }
+
+    function attachCounter(elem, max, labelName) {
+      if (elem.dataset.counterAttached) return;
+      elem.dataset.counterAttached = 'true';
+
+      const box = document.createElement('div');
+      box.className = 'keystatic-char-counter';
+      box.style.cssText = 'display:flex; justify-content:space-between; align-items:center; font-size:11px; font-family:monospace; margin-top:5px; padding:4px 8px; border-radius:6px; transition:all 0.2s ease; font-weight:600;';
+
+      function update() {
+        const len = elem.value.length;
+        const remaining = max - len;
+        const isOver = len > max;
+
+        box.innerHTML = `
+          <span>${labelName}: ${len} / ${max} karakter</span>
+          <span>${isOver ? '⚠️ Melebihi ' + Math.abs(remaining) + ' karakter' : 'Sisa ' + remaining + ' karakter'}</span>
+        `;
+
+        if (isOver) {
+          box.style.color = '#ef4444';
+          box.style.backgroundColor = 'rgba(239, 68, 68, 0.12)';
+          box.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+          elem.style.borderColor = '#ef4444';
+        } else if (len > max * 0.85) {
+          box.style.color = '#f59e0b';
+          box.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+          box.style.border = '1px solid rgba(245, 158, 11, 0.25)';
+          elem.style.borderColor = '';
+        } else {
+          box.style.color = '#10b981';
+          box.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
+          box.style.border = '1px solid rgba(16, 185, 129, 0.2)';
+          elem.style.borderColor = '';
+        }
+      }
+
+      elem.addEventListener('input', update);
+      elem.addEventListener('change', update);
+      elem.addEventListener('keyup', update);
+      update();
+
+      elem.insertAdjacentElement('afterend', box);
+    }
+
+    setInterval(setupCounters, 400);
+    window.addEventListener('load', setupCounters);
+  })();
+</script>
