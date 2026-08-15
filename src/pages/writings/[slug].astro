@@ -196,7 +196,13 @@ if (rawHero && !rawHero.startsWith('http')) {
 }
 ---
 
-<BaseLayout title={`${post.title} – dvvn`} description={post.deck || post.title}>
+<BaseLayout 
+  title={`${post.title} – dvvn`} 
+  description={post.deck || post.title}
+  image={heroImg || 'https://itsdvvn.my.id/favicon.svg'}
+  type="article"
+  publishDate={post.publishDate ? new Date(post.publishDate).toISOString() : undefined}
+>
   <article class="max-w-none">
     <!-- 1. Breadcrumb / Category -->
     <nav class="flex items-center gap-2 text-xs font-mono mb-4 text-zinc-400" aria-label="Breadcrumb">
