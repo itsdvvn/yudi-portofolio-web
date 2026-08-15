@@ -11,6 +11,15 @@ export default config({
       path: 'src/content/profile/index',
       format: { data: 'json' },
       schema: {
+        siteTitle: fields.text({
+          label: 'Meta Title Web (SEO & Open Graph)',
+          defaultValue: 'Wahyudi Setiawan (dvvn) – Multimedia Creator & Visual Storyteller',
+        }),
+        siteDescription: fields.text({
+          label: 'Meta Deskripsi Web (SEO & Link Preview)',
+          multiline: true,
+          defaultValue: 'Personal space of Wahyudi Setiawan (dvvn). Multimedia creator focused on visual storytelling, photography, cinematic video, and creative web exploration.',
+        }),
         avatarImage: fields.image({
           label: 'Avatar / Profile Photo (Pilih / Upload File)',
           directory: 'public/images/profile',

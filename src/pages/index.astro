@@ -71,8 +71,8 @@ const eduPhotoSrc = rawEduPhoto ? (rawEduPhoto.startsWith('http') ? rawEduPhoto 
 ---
 
 <BaseLayout 
-  title="Wahyudi Setiawan (dvvn) – Multimedia Creator & Visual Storyteller" 
-  description={profileData.bio || "Personal space of Wahyudi Setiawan (dvvn). Multimedia creator focused on visual storytelling, photography, cinematic video, and creative web exploration."}
+  title={profileData.siteTitle || "Wahyudi Setiawan (dvvn) – Multimedia Creator & Visual Storyteller"} 
+  description={profileData.siteDescription || profileData.bio || "Personal space of Wahyudi Setiawan (dvvn). Multimedia creator focused on visual storytelling, photography, cinematic video, and creative web exploration."}
   image="/itsdvvn-web.jpg"
 >
   <!-- Bio / Profile Hero Section -->

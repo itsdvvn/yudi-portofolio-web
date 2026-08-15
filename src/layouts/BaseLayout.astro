@@ -10,17 +10,17 @@ interface Props {
   publishDate?: string;
 }
 
+// Read profile live at runtime so CMS edits appear instantly
+const profileData = (await reader.singletons.profile.read()) || {};
+const socials = (profileData as any)?.socials || {};
+
 const {
-  title = "Wahyudi Setiawan (dvvn) – Multimedia Creator & Visual Storyteller",
-  description = "Personal space of Wahyudi Setiawan (dvvn). Multimedia creator focused on visual storytelling, photography, cinematic video, and creative web exploration.",
+  title = (profileData as any)?.siteTitle || "Wahyudi Setiawan (dvvn) – Multimedia Creator & Visual Storyteller",
+  description = (profileData as any)?.siteDescription || (profileData as any)?.bio || "Personal space of Wahyudi Setiawan (dvvn). Multimedia creator focused on visual storytelling, photography, cinematic video, and creative web exploration.",
   image = "/itsdvvn-web.jpg",
   type = 'website',
   publishDate,
 } = Astro.props;
-
-// Read profile live at runtime so CMS edits appear instantly
-const profileData = (await reader.singletons.profile.read()) || {};
-const socials = (profileData as any)?.socials || {};
 
 const currentPath = Astro.url.pathname;
 const canonicalUrl = new URL(currentPath, 'https://itsdvvn.my.id').href;
