@@ -40,9 +40,21 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     }
     subscribeLimits.set(ip, entry);
 
-    const { email, sourceArticle } = await request.json();
+    // 2. Parse & Sanitize Request Body
+    const body = await request.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return new Response(JSON.stringify({ error: 'Format permintaan tidak valid.' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
-    if (!email || !email.includes('@') || !email.includes('.')) {
+    const { email, sourceArticle } = body;
+
+    // Strict Email Validation (RFC 5322 regex + Length check)
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+    
+    if (typeof email !== 'string' || email.length > 254 || !emailRegex.test(email.trim())) {
       return new Response(JSON.stringify({ error: 'Format email tidak valid.' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
@@ -50,7 +62,9 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const cleanArticle = (sourceArticle || 'General').trim();
+    // Sanitize source article string (strip HTML/control chars & limit to 100 chars)
+    const rawArticle = typeof sourceArticle === 'string' ? sourceArticle : 'General';
+    const cleanArticle = rawArticle.replace(/[<>'"\\]/g, '').slice(0, 100).trim() || 'General';
 
     // 2. Simpan ke PocketBase
     let pbSuccess = false;

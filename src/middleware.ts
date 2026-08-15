@@ -37,5 +37,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  return next();
+  const response = await next();
+
+  // Apply strict HTTP Security Headers to prevent clickjacking, MIME sniffing, and browser injections
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+  return response;
 });
