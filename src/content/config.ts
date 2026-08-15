@@ -1,10 +1,28 @@
 import { defineCollection, z } from 'astro:content';
 
+const editionsCollection = defineCollection({
+  type: 'data',
+  schema: z.object({
+    title: z.string(),
+    editionNumber: z.string().default('Edisi Terbaru'),
+    publishDate: z.coerce.date(),
+    publishTime: z.string().default('16.00 WIB'),
+    coverImage: z.string().optional().nullable(),
+    coverImageUrl: z.string().optional().nullable(),
+    summary: z.string().optional().nullable(),
+    featured: z.boolean().default(true),
+  }),
+});
+
 const writingsCollection = defineCollection({
   type: 'content',
   schema: () =>
     z.object({
       title: z.string(),
+      publicationType: z.enum(['reguler', 'mingguan']).default('reguler'),
+      edition: z.string().optional().nullable(),
+      rubrik: z.string().default('Artikel'),
+      isCoverStory: z.boolean().default(false),
       category: z.string().default('Article'),
       deck: z.string().optional().nullable(),
       publishDate: z.coerce.date(),
@@ -47,6 +65,7 @@ const shipsCollection = defineCollection({
 
 export const collections = {
   writings: writingsCollection,
+  editions: editionsCollection,
   thoughts: thoughtsCollection,
   ships: shipsCollection,
 };

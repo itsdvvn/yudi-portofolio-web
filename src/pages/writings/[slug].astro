@@ -203,14 +203,20 @@ if (rawHero && !rawHero.startsWith('http')) {
   type="article"
   publishDate={post.publishDate ? new Date(post.publishDate).toISOString() : undefined}
 >
-  <article class="max-w-none">
     <!-- 1. Breadcrumb / Category -->
-    <nav class="flex items-center gap-2 text-xs font-mono mb-4 text-zinc-400" aria-label="Breadcrumb">
+    <nav class="flex items-center gap-2 text-xs font-mono mb-4 text-zinc-400 flex-wrap" aria-label="Breadcrumb">
       <a href="/" class="hover:underline">home</a>
       <span>/</span>
-      <a href="/writings" class="hover:underline">writings</a>
+      <a href={post.publicationType === 'mingguan' ? '/writings#mingguan' : '/writings'} class="hover:underline">
+        {post.publicationType === 'mingguan' ? 'majalah mingguan' : 'writings'}
+      </a>
       <span>/</span>
-      <span class="text-zinc-500">{post.category || 'Article'}</span>
+      <span class="text-emerald-400 font-semibold">{post.rubrik || post.category || 'Article'}</span>
+      {post.isCoverStory && (
+        <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-600 text-white uppercase">
+          Laporan Utama
+        </span>
+      )}
     </nav>
 
     <!-- 2. Headline (H1) -->

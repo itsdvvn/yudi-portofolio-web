@@ -116,14 +116,77 @@ export default config({
     }),
   },
   collections: {
+    editions: collection({
+      label: 'Edisi Mingguan (Majalah)',
+      slugField: 'title',
+      path: 'src/content/editions/*',
+      format: { data: 'json' },
+      schema: {
+        title: fields.slug({ 
+          name: { 
+            label: 'Judul Topik Utama / Headline Edisi (e.g. Korek-korek Kocek Bokek)' 
+          } 
+        }),
+        editionNumber: fields.text({
+          label: 'Label Edisi (e.g. Edisi 9 Agustus 2026)',
+          defaultValue: 'Edisi Terbaru',
+        }),
+        publishDate: fields.date({ 
+          label: 'Tanggal Terbit Edisi', 
+          defaultValue: { kind: 'today' } 
+        }),
+        publishTime: fields.text({ 
+          label: 'Waktu Terbit (e.g. 16.00 WIB)', 
+          defaultValue: '16.00 WIB' 
+        }),
+        coverImage: fields.image({
+          label: 'Cover Majalah Mingguan (Pilih / Upload Gambar Vertikal/Portrait)',
+          directory: 'public/images/editions',
+          publicPath: '/media/editions/',
+        }),
+        coverImageUrl: fields.text({
+          label: 'Atau URL Cover CDN / R2 (Direct Link: https://media.itsdvvn.my.id/...)',
+        }),
+        summary: fields.text({
+          label: 'Ringkasan / Intro Isu Pekan Ini',
+          multiline: true,
+        }),
+        featured: fields.checkbox({
+          label: 'Jadikan Edisi Utama Terkini (Active Edition)',
+          defaultValue: true,
+        }),
+      },
+    }),
     writings: collection({
-      label: 'Writings (Blog)',
+      label: 'Writings (Artikel Harian & Mingguan)',
       slugField: 'title',
       path: 'src/content/writings/*',
       format: { contentField: 'content' },
       schema: {
         title: fields.slug({ name: { label: 'Headline (H1)' } }),
-        category: fields.text({ label: 'Category / Topic', defaultValue: 'Article' }),
+        publicationType: fields.select({
+          label: 'Tipe Publikasi',
+          description: 'Pilih apakah artikel harian/reguler atau bagian dari Majalah Edisi Mingguan',
+          options: [
+            { label: '📰 Harian (Reguler / Standalone)', value: 'reguler' },
+            { label: '📖 Mingguan (Majalah Edisi Khusus)', value: 'mingguan' },
+          ],
+          defaultValue: 'reguler',
+        }),
+        edition: fields.relationship({
+          label: 'Pilih Edisi Mingguan (Khusus artikel Mingguan)',
+          description: 'Hubungkan artikel ini ke Edisi Majalah yang bersangkutan',
+          collection: 'editions',
+        }),
+        rubrik: fields.text({
+          label: 'Rubrik / Kolom (e.g. Laporan Utama, Editorial, Ekonomi, Opini, Investigasi, Seni)',
+          defaultValue: 'Artikel',
+        }),
+        isCoverStory: fields.checkbox({
+          label: '⭐ Laporan Utama (Cover Story) Edisi Ini',
+          defaultValue: false,
+        }),
+        category: fields.text({ label: 'Kategori / Tag Utama', defaultValue: 'Article' }),
         deck: fields.text({ label: 'Deck / Subheadline', multiline: true }),
         publishDate: fields.date({ label: 'Publication Date', defaultValue: { kind: 'today' } }),
         publishTime: fields.text({ label: 'Publication Time (e.g. 14:30 WIB)', defaultValue: '10:00 AM' }),
