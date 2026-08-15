@@ -318,13 +318,12 @@
   margin-bottom: 0;
 }
 
-/* Inline Body Images & Figures in Articles (Clean & Borderless like Tempo.co) */
+/* Inline Body Images & Figures in Articles (Identical to Featured Image) */
 .prose img {
   max-width: 100%;
   width: 100%;
   height: auto;
-  border-radius: 0;
-  margin: 1.5rem auto 0.5rem auto;
+  margin: 0;
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
@@ -332,25 +331,9 @@
   display: block;
 }
 
-.article-figure {
-  margin: 1.75rem 0;
+.prose figure {
+  margin: 2rem 0;
   width: 100%;
-}
-
-.article-figure img {
-  margin: 0;
-  width: 100%;
-}
-
-.article-caption {
-  font-family: 'Lora', 'Newsreader', 'Georgia', serif;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  color: var(--text-muted);
-  font-style: italic;
-  margin-top: 0.5rem;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.65rem;
 }
 
 .prose code:not(pre code) {
