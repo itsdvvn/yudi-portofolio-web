@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import profileData from '../content/profile/index.json';
+import { reader } from '../lib/reader';
 
 interface Props {
   title?: string;
@@ -18,10 +18,13 @@ const {
   publishDate,
 } = Astro.props;
 
+// Read profile live at runtime so CMS edits appear instantly
+const profileData = (await reader.singletons.profile.read()) || {};
+const socials = (profileData as any)?.socials || {};
+
 const currentPath = Astro.url.pathname;
 const canonicalUrl = new URL(currentPath, 'https://itsdvvn.my.id').href;
 const imageUrl = image.startsWith('http') ? image : `https://itsdvvn.my.id${image}`;
-const socials = profileData?.socials || {};
 
 const jsonLd = {
   "@context": "https://schema.org",
