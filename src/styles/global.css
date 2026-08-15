@@ -6,7 +6,25 @@
 
 @layer base {
   :root {
-    /* Dark Mode (High Contrast & Clean) */
+    /* Default: Light Mode (High Contrast, Crisp & Editorial) */
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --border-hover: #cbd5e1;
+    --text-primary: #0f172a;   /* slate-900: hitam pekat tegas */
+    --text-secondary: #334155; /* slate-700: abu-abu gelap jelas */
+    --text-muted: #64748b;     /* slate-500: kontras terbaca */
+    --tag-bg: #f1f5f9;
+    --tag-border: #e2e8f0;
+    --tag-text: #1e293b;
+    --accent: #059669;
+    --status-bg: #ecfdf5;
+    --status-border: #a7f3d0;
+    --status-text: #047857;
+  }
+
+  [data-theme='dark'] {
+    /* Dark Mode Override */
     --bg: #090a0c;
     --card-bg: #12141a;
     --border: #262933;
@@ -21,24 +39,6 @@
     --status-bg: rgba(6, 78, 59, 0.5);
     --status-border: rgba(52, 211, 153, 0.4);
     --status-text: #6ee7b7;
-  }
-
-  [data-theme='light'] {
-    /* Light Mode (High Contrast & Crisp) */
-    --bg: #f8fafc;
-    --card-bg: #ffffff;
-    --border: #e2e8f0;
-    --border-hover: #cbd5e1;
-    --text-primary: #0f172a;   /* slate-900: hitam pekat */
-    --text-secondary: #334155; /* slate-700: abu-abu gelap tegas */
-    --text-muted: #64748b;     /* slate-500: kontras terbaca */
-    --tag-bg: #f1f5f9;
-    --tag-border: #e2e8f0;
-    --tag-text: #1e293b;
-    --accent: #059669;
-    --status-bg: #ecfdf5;
-    --status-border: #a7f3d0;
-    --status-text: #047857;
   }
 
   * {

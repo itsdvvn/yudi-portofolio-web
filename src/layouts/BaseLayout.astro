@@ -77,15 +77,16 @@ const jsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
     <script is:inline>
+      // Strict Default: Light Mode (without following OS dark preference)
       const theme = (() => {
         if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
           return localStorage.getItem('theme');
         }
-        return 'dark';
+        return 'light'; // Default always light
       })();
 
-      if (theme === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
       } else {
         document.documentElement.removeAttribute('data-theme');
       }
@@ -193,24 +194,27 @@ const jsonLd = {
       const sunIcons = document.querySelectorAll('.sun-icon');
       const moonIcons = document.querySelectorAll('.moon-icon');
 
-      function updateIcon(isLight) {
-        sunIcons.forEach(icon => isLight ? icon.classList.remove('hidden') : icon.classList.add('hidden'));
-        moonIcons.forEach(icon => isLight ? icon.classList.add('hidden') : icon.classList.remove('hidden'));
+      function updateIcon(isDark) {
+        // If dark mode is active, show sun icon (to switch to light); if light mode, show moon icon (to switch to dark)
+        sunIcons.forEach(icon => isDark ? icon.classList.remove('hidden') : icon.classList.add('hidden'));
+        moonIcons.forEach(icon => isDark ? icon.classList.add('hidden') : icon.classList.remove('hidden'));
       }
 
-      const isInitiallyLight = document.documentElement.getAttribute('data-theme') === 'light';
-      updateIcon(isInitiallyLight);
+      const isInitiallyDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      updateIcon(isInitiallyDark);
 
       themeToggleBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-          const isCurrentLight = document.documentElement.getAttribute('data-theme') === 'light';
-          if (isCurrentLight) {
+          const isCurrentlyDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          if (isCurrentlyDark) {
+            // Switch to Light
             document.documentElement.removeAttribute('data-theme');
-            localStorage.setItem('theme', 'dark');
+            localStorage.setItem('theme', 'light');
             updateIcon(false);
           } else {
-            document.documentElement.setAttribute('data-theme', 'light');
-            localStorage.setItem('theme', 'light');
+            // Switch to Dark
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
             updateIcon(true);
           }
         });
