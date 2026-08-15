@@ -1,12 +1,22 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { reader } from '../../lib/reader';
+import { calculateReadingTime } from '../../lib/readingTime';
+import Markdoc from '@markdoc/markdoc';
 
 const allSlugs = await reader.collections.writings.list();
 const writingsRaw = await Promise.all(
   allSlugs.map(async (slug) => {
     const data = await reader.collections.writings.read(slug);
-    return { slug, ...data };
+    if (!data) return null;
+    let readTime = data.readTime;
+    try {
+      const contentAst = await data.content();
+      const transformedContent = Markdoc.transform(contentAst.node || contentAst);
+      const htmlContent = Markdoc.renderers.html(transformedContent);
+      readTime = calculateReadingTime(htmlContent);
+    } catch (e) {}
+    return { slug, ...data, readTime };
   })
 );
 
