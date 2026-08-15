@@ -240,34 +240,43 @@
   line-height: 1.65;
 }
 
-/* Prose Editorial Serif Typography in Articles (Matching Reference Image) */
+/* Prose Editorial Serif Typography in Articles (Matching Tempo.co & Reference Style) */
 .prose {
-  font-family: 'Newsreader', 'Lora', 'Georgia', serif;
+  font-family: 'Lora', 'Newsreader', 'Georgia', serif;
   color: var(--text-secondary);
-  font-size: 1.06rem;
-  line-height: 1.85;
+  font-size: 1.05rem;
+  line-height: 1.62; /* Kerapatan baris khas jurnalisme Tempo.co */
   word-break: break-word;
-  letter-spacing: -0.003em;
+  letter-spacing: -0.005em;
 }
 
 .prose h1, .prose h2, .prose h3, .prose h4 {
   font-family: 'Inter', system-ui, sans-serif;
   color: var(--text-primary);
   font-weight: 700;
-  margin-top: 2rem;
-  margin-bottom: 0.8rem;
+  margin-top: 1.75rem;
+  margin-bottom: 0.65rem;
   letter-spacing: -0.02em;
 }
 
 .prose p {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.15rem; /* Jarak antar paragraf rapat dan padat seperti Tempo.co */
   color: var(--text-secondary);
 }
 
+/* Link di dalam artikel disamakan dengan warna oranye Blockquote */
 .prose a {
-  color: var(--accent);
+  color: #f97316; /* Warm Orange matching blockquote */
+  font-weight: 500;
   text-decoration: underline;
-  text-underline-offset: 4px;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(249, 115, 22, 0.45);
+  transition: all 0.15s ease;
+}
+
+.prose a:hover {
+  color: #ea580c;
+  text-decoration-color: #ea580c;
 }
 
 .prose strong {
@@ -280,28 +289,28 @@
 }
 
 .prose ul, .prose ol {
-  margin-bottom: 1.5rem;
-  padding-left: 1.4rem;
+  margin-bottom: 1.25rem;
+  padding-left: 1.35rem;
   color: var(--text-secondary);
 }
 
 .prose li {
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.35rem;
 }
 
 /* Matching Editorial Blockquote from Reference Image */
 .prose blockquote {
-  border-left: 4px solid #f97316; /* Vibrant warm orange matching reference photo */
-  padding-left: 1.25rem;
-  margin: 1.75rem 0;
-  font-family: 'Newsreader', 'Lora', 'Georgia', serif;
-  font-size: 1.08rem;
-  line-height: 1.8;
+  border-left: 4px solid #f97316; /* Vibrant warm orange */
+  padding-left: 1.15rem;
+  margin: 1.4rem 0;
+  font-family: 'Lora', 'Newsreader', 'Georgia', serif;
+  font-size: 1.06rem;
+  line-height: 1.62;
   color: var(--text-primary);
 }
 
 .prose blockquote p {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
 
