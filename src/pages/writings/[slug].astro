@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { reader } from '../../lib/reader';
 import { calculateReadingTime } from '../../lib/readingTime';
 import Markdoc from '@markdoc/markdoc';
+import NewsletterBox from '../../components/NewsletterBox.astro';
 
 const { slug } = Astro.params;
 const post = await reader.collections.writings.read(slug as string);
@@ -253,5 +254,8 @@ if (rawHero && !rawHero.startsWith('http')) {
     <div class="prose text-sm leading-relaxed max-w-none border-t pt-6" style="border-color: var(--border);">
       <Fragment set:html={htmlContent} />
     </div>
+
+    <!-- Newsletter Subscription Box -->
+    <NewsletterBox articleTitle={post.title} />
   </article>
 </BaseLayout>

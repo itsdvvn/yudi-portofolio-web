@@ -1,0 +1,109 @@
+---
+interface Props {
+  articleTitle?: string;
+}
+
+const { articleTitle = 'Writings' } = Astro.props;
+---
+
+<div class="newsletter-box mt-12 p-6 rounded-xl border relative overflow-hidden" style="border-color: var(--border); background-color: var(--card-bg);">
+  <!-- Subtle Gradient Accent in Background -->
+  <div class="absolute -right-12 -top-12 w-36 h-36 bg-orange-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+  <div class="relative z-10">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="text-base">✉️</span>
+      <h3 class="text-base font-medium tracking-tight" style="color: var(--text-primary);">
+        Dapatkan Notifikasi Tulisan Baru
+      </h3>
+    </div>
+    
+    <p class="text-xs leading-relaxed mb-4" style="color: var(--text-secondary);">
+      Langganan newsletter untuk menerima kabar dan tulisan terbaru langsung di email Anda. Tanpa spam, Anda dapat berhenti berlangganan kapan saja.
+    </p>
+
+    <form id="newsletter-form" class="space-y-2">
+      <input type="hidden" id="newsletter-source" value={articleTitle} />
+      
+      <div class="flex flex-col sm:flex-row gap-2">
+        <input 
+          type="email" 
+          id="newsletter-email" 
+          required 
+          placeholder="masukkan email Anda..." 
+          class="flex-1 px-3.5 py-2 text-xs rounded-lg border bg-zinc-900/40 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all font-mono"
+          style="border-color: var(--border); color: var(--text-primary);"
+        />
+        <button 
+          type="submit" 
+          id="newsletter-submit-btn"
+          class="px-4 py-2 text-xs font-mono rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-medium text-white shadow-sm"
+          style="background-color: #f97316;"
+        >
+          <span id="newsletter-btn-text">Langganan</span>
+          <span id="newsletter-btn-spinner" class="hidden animate-spin">⌛</span>
+        </button>
+      </div>
+
+      <!-- Feedback Messages -->
+      <div id="newsletter-message" class="text-[11px] hidden pt-1"></div>
+    </form>
+  </div>
+</div>
+
+<script is:inline>
+  const form = document.getElementById('newsletter-form');
+  const emailInput = document.getElementById('newsletter-email');
+  const sourceInput = document.getElementById('newsletter-source');
+  const submitBtn = document.getElementById('newsletter-submit-btn');
+  const btnText = document.getElementById('newsletter-btn-text');
+  const btnSpinner = document.getElementById('newsletter-btn-spinner');
+  const messageDiv = document.getElementById('newsletter-message');
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = emailInput.value.trim();
+      const sourceArticle = sourceInput ? sourceInput.value : 'Writings';
+
+      if (!email) return;
+
+      // Loading state
+      submitBtn.disabled = true;
+      btnText.textContent = 'Memproses...';
+      btnSpinner.classList.remove('hidden');
+      messageDiv.classList.add('hidden');
+      messageDiv.textContent = '';
+
+      try {
+        const response = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, sourceArticle }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          messageDiv.textContent = '✨ ' + (result.message || 'Terima kasih telah berlangganan!');
+          messageDiv.style.color = '#22c55e'; // Green
+          messageDiv.classList.remove('hidden');
+          emailInput.value = '';
+        } else {
+          messageDiv.textContent = '⚠️ ' + (result.error || 'Terjadi kesalahan. Coba lagi nanti.');
+          messageDiv.style.color = '#ef4444'; // Red
+          messageDiv.classList.remove('hidden');
+        }
+      } catch (err) {
+        messageDiv.textContent = '⚠️ Gagal terhubung ke server. Silakan coba lagi.';
+        messageDiv.style.color = '#ef4444';
+        messageDiv.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        btnText.textContent = 'Langganan';
+        btnSpinner.classList.add('hidden');
+      }
+    });
+  }
+</script>
