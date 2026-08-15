@@ -12,18 +12,18 @@ const shipsRaw = await Promise.all(
 
 const ships = shipsRaw
   .filter(Boolean)
+  .map((s: any) => {
+    const finalCategory = (s.category === 'Custom' && s.customCategory?.trim()) 
+      ? s.customCategory.trim() 
+      : (s.category || 'General').trim();
+    return { ...s, displayCategory: finalCategory };
+  })
   .sort((a, b) => (b.year || '').localeCompare(a.year || ''));
 
-// 1. Get profile master categories
-const profileData = await reader.singletons.profile.read();
-const masterCategories: string[] = (profileData as any)?.customCategories || [];
-
-// 2. Extract unique categories dynamically from actual items entered by the user
-const itemCategories = ships.map((s) => s.category?.trim()).filter(Boolean);
-
-// 3. Merge & Deduplicate case-insensitively while preserving proper title casing
+// Extract unique categories dynamically from actual items entered by the user
 const categoryMap = new Map<string, string>();
-for (const cat of [...masterCategories, ...itemCategories]) {
+for (const ship of ships) {
+  const cat = ship.displayCategory;
   if (cat && !categoryMap.has(cat.toLowerCase())) {
     categoryMap.set(cat.toLowerCase(), cat);
   }
@@ -54,7 +54,7 @@ const categories = ['All', ...dynamicCategories];
   <!-- Works Grid / List -->
   <div class="space-y-4" id="ships-list">
     {ships.map((ship) => (
-      <div class="ship-card" data-category={ship.category}>
+      <div class="ship-card" data-category={ship.displayCategory}>
         <div class="flex items-center justify-between mb-2 gap-2">
           <h2 class="ship-title">
             {ship.link ? (
@@ -69,7 +69,7 @@ const categories = ['All', ...dynamicCategories];
           <div class="flex items-center gap-2 shrink-0">
             <span class="text-[11px] font-mono" style="color: var(--text-muted);">{ship.year}</span>
             <span class="status-badge">
-              {ship.category}
+              {ship.displayCategory}
             </span>
           </div>
         </div>

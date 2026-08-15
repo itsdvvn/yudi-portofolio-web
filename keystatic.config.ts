@@ -97,11 +97,6 @@ export default config({
           xTwitter: fields.url({ label: 'X / Twitter URL' }),
           email: fields.text({ label: 'Email Address' }),
         }),
-        customCategories: fields.array(fields.text({ label: 'Nama Kategori (e.g. Photography, Videography, Code, Design)' }), {
-          label: '🏷️ Master Kategori (Ships & Works Portfolio)',
-          description: 'Kelola daftar kategori yang dapat dipilih saat membuat karya portofolio (seperti tag di Notion)',
-          itemLabel: (props) => props.value || 'Kategori',
-        }),
       },
     }),
   },
@@ -223,9 +218,23 @@ export default config({
       format: { contentField: 'content' },
       schema: {
         title: fields.slug({ name: { label: 'Project / Artwork Title' } }),
-        category: fields.text({
-          label: 'Category (e.g. Photography, Videography, Code, Web, Writing, Design)',
+        category: fields.select({
+          label: 'Pilih Kategori (Select Existing)',
+          description: 'Pilih dari kategori yang sering digunakan, atau pilih "Lainnya / Custom" untuk membuat kategori baru',
+          options: [
+            { label: '📷 Photography', value: 'Photography' },
+            { label: '🎥 Videography', value: 'Videography' },
+            { label: '🎨 Design & Visual Arts', value: 'Design' },
+            { label: '💻 Code & Web Development', value: 'Code' },
+            { label: '🌐 Multimedia', value: 'Multimedia' },
+            { label: '✍️ Writing & Editorial', value: 'Writing' },
+            { label: '✨ Lainnya / Buat Kategori Baru (Custom)', value: 'Custom' },
+          ],
           defaultValue: 'Photography',
+        }),
+        customCategory: fields.text({
+          label: 'Nama Kategori Baru (Hanya isi jika memilih "Lainnya / Custom")',
+          description: 'Contoh: 3D Art, Motion Graphics, Mobile App, dll.',
         }),
         description: fields.text({ label: 'Short Description / Story', multiline: true }),
         coverImage: fields.image({
