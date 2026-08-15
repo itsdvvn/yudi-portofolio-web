@@ -174,32 +174,39 @@ export default config({
             },
           },
         }),
-        publicationType: fields.select({
-          label: 'Tipe Publikasi',
-          description: 'Pilih apakah artikel harian/reguler atau bagian dari Majalah Edisi Mingguan',
-          options: [
-            { label: '📰 Harian (Reguler / Standalone)', value: 'reguler' },
-            { label: '📖 Mingguan (Majalah Edisi Khusus)', value: 'mingguan' },
-          ],
-          defaultValue: 'reguler',
-        }),
-        edition: fields.relationship({
-          label: 'Pilih Edisi Mingguan (Khusus artikel Mingguan)',
-          description: 'Hubungkan artikel ini ke Edisi Majalah yang bersangkutan',
-          collection: 'editions',
-        }),
-        rubrik: fields.text({
-          label: 'Rubrik / Kolom (e.g. Laporan Utama, Editorial, Ekonomi, Opini, Investigasi, Seni)',
-          defaultValue: 'Artikel',
-        }),
-        order: fields.integer({
-          label: 'Nomor Urutan Artikel dalam Edisi (e.g. 1 untuk Laporan Utama, 2, 3, dst)',
-          defaultValue: 1,
-        }),
-        isCoverStory: fields.checkbox({
-          label: '⭐ Laporan Utama (Cover Story) Edisi Ini',
-          defaultValue: false,
-        }),
+        publicationType: fields.conditional(
+          fields.select({
+            label: 'Tipe Publikasi',
+            description: 'Pilih apakah artikel harian/reguler atau bagian dari Majalah Edisi Mingguan',
+            options: [
+              { label: '📰 Harian (Reguler / Standalone)', value: 'reguler' },
+              { label: '📖 Mingguan (Majalah Edisi Khusus)', value: 'mingguan' },
+            ],
+            defaultValue: 'reguler',
+          }),
+          {
+            reguler: fields.object({}),
+            mingguan: fields.object({
+              edition: fields.relationship({
+                label: 'Pilih Edisi Mingguan',
+                description: 'Hubungkan artikel ini ke Edisi Majalah yang bersangkutan',
+                collection: 'editions',
+              }),
+              rubrik: fields.text({
+                label: 'Rubrik / Kolom (e.g. Laporan Utama, Editorial, Ekonomi, Opini, Investigasi)',
+                defaultValue: 'Laporan Utama',
+              }),
+              order: fields.integer({
+                label: 'Nomor Urutan Artikel dalam Edisi (e.g. 1 untuk Laporan Utama, 2, 3, dst)',
+                defaultValue: 1,
+              }),
+              isCoverStory: fields.checkbox({
+                label: '⭐ Laporan Utama (Cover Story) Edisi Ini',
+                defaultValue: false,
+              }),
+            }),
+          }
+        ),
         category: fields.text({ label: 'Kategori / Tag Utama', defaultValue: 'Article' }),
         deck: fields.text({ 
           label: 'Deck / Deskripsi Artikel (Maksimal 144 karakter)', 

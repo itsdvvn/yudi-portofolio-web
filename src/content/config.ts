@@ -19,11 +19,17 @@ const writingsCollection = defineCollection({
   schema: () =>
     z.object({
       title: z.string().max(80),
-      publicationType: z.enum(['reguler', 'mingguan']).default('reguler'),
+      publicationType: z.union([
+        z.enum(['reguler', 'mingguan']),
+        z.object({
+          discriminant: z.enum(['reguler', 'mingguan']),
+          value: z.record(z.any()).optional().nullable(),
+        }),
+      ]).default('reguler'),
       edition: z.string().optional().nullable(),
-      rubrik: z.string().default('Artikel'),
-      order: z.number().default(1),
-      isCoverStory: z.boolean().default(false),
+      rubrik: z.string().optional().nullable(),
+      order: z.number().optional().nullable(),
+      isCoverStory: z.boolean().optional().nullable(),
       category: z.string().default('Article'),
       deck: z.string().max(144).optional().nullable(),
       publishDate: z.coerce.date(),

@@ -17,7 +17,36 @@ const writingsRaw = await Promise.all(
       const htmlContent = Markdoc.renderers.html(transformedContent);
       readTime = calculateReadingTime(htmlContent);
     } catch (e) {}
-    return { slug, ...data, readTime };
+    const pubType = typeof data.publicationType === 'object' && data.publicationType !== null 
+      ? data.publicationType.discriminant 
+      : (data.publicationType || 'reguler');
+    
+    const edition = typeof data.publicationType === 'object' && data.publicationType?.value?.edition 
+      ? data.publicationType.value.edition 
+      : data.edition;
+
+    const rubrik = typeof data.publicationType === 'object' && data.publicationType?.value?.rubrik 
+      ? data.publicationType.value.rubrik 
+      : (data.rubrik || 'Artikel');
+
+    const order = typeof data.publicationType === 'object' && data.publicationType?.value?.order !== undefined 
+      ? data.publicationType.value.order 
+      : (data.order ?? 1);
+
+    const isCoverStory = typeof data.publicationType === 'object' && data.publicationType?.value?.isCoverStory !== undefined 
+      ? data.publicationType.value.isCoverStory 
+      : !!data.isCoverStory;
+
+    return { 
+      slug, 
+      ...data, 
+      publicationType: pubType, 
+      edition, 
+      rubrik, 
+      order, 
+      isCoverStory, 
+      readTime 
+    };
   })
 );
 

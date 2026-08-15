@@ -196,23 +196,64 @@ if (rawHero && !rawHero.startsWith('http')) {
   heroImg = `${rawHero}?t=${Date.now()}`;
 }
 
+const pubType = typeof post.publicationType === 'object' && post.publicationType !== null 
+  ? post.publicationType.discriminant 
+  : (post.publicationType || 'reguler');
+
+const postEdition = typeof post.publicationType === 'object' && post.publicationType?.value?.edition 
+  ? post.publicationType.value.edition 
+  : post.edition;
+
+const postRubrik = typeof post.publicationType === 'object' && post.publicationType?.value?.rubrik 
+  ? post.publicationType.value.rubrik 
+  : (post.rubrik || 'Artikel');
+
+const isCoverStory = typeof post.publicationType === 'object' && post.publicationType?.value?.isCoverStory !== undefined 
+  ? post.publicationType.value.isCoverStory 
+  : !!post.isCoverStory;
+
 // 6. If article belongs to a Weekly Magazine Edition, load the Edition & all sibling articles
 let parentEdition: any = null;
 let editionArticles: any[] = [];
 
-if (post.publicationType === 'mingguan' && post.edition) {
-  parentEdition = await reader.collections.editions.read(post.edition);
+if (pubType === 'mingguan' && postEdition) {
+  parentEdition = await reader.collections.editions.read(postEdition);
   if (parentEdition) {
     const allWritingsSlugs = await reader.collections.writings.list();
     const allWritingsData = await Promise.all(
       allWritingsSlugs.map(async (s) => {
         const item = await reader.collections.writings.read(s);
-        return { slug: s, ...item };
+        if (!item) return null;
+        const itemPubType = typeof item.publicationType === 'object' && item.publicationType !== null 
+          ? item.publicationType.discriminant 
+          : (item.publicationType || 'reguler');
+        const itemEdition = typeof item.publicationType === 'object' && item.publicationType?.value?.edition 
+          ? item.publicationType.value.edition 
+          : item.edition;
+        const itemRubrik = typeof item.publicationType === 'object' && item.publicationType?.value?.rubrik 
+          ? item.publicationType.value.rubrik 
+          : (item.rubrik || 'Artikel');
+        const itemOrder = typeof item.publicationType === 'object' && item.publicationType?.value?.order !== undefined 
+          ? item.publicationType.value.order 
+          : (item.order ?? 1);
+        const itemIsCoverStory = typeof item.publicationType === 'object' && item.publicationType?.value?.isCoverStory !== undefined 
+          ? item.publicationType.value.isCoverStory 
+          : !!item.isCoverStory;
+
+        return { 
+          slug: s, 
+          ...item, 
+          publicationType: itemPubType, 
+          edition: itemEdition, 
+          rubrik: itemRubrik, 
+          order: itemOrder, 
+          isCoverStory: itemIsCoverStory 
+        };
       })
     );
 
     editionArticles = allWritingsData
-      .filter((w) => w && !w.draft && w.publicationType === 'mingguan' && w.edition === post.edition)
+      .filter((w) => w && !w.draft && w.publicationType === 'mingguan' && w.edition === postEdition)
       .sort((a, b) => {
         const orderA = a.order ?? (a.isCoverStory ? 0 : 99);
         const orderB = b.order ?? (b.isCoverStory ? 0 : 99);
@@ -233,12 +274,12 @@ if (post.publicationType === 'mingguan' && post.edition) {
     <nav class="flex items-center gap-2 text-xs font-mono mb-4 text-zinc-400 flex-wrap" aria-label="Breadcrumb">
       <a href="/" class="hover:underline">home</a>
       <span>/</span>
-      <a href={post.publicationType === 'mingguan' ? '/writings#mingguan' : '/writings'} class="hover:underline">
-        {post.publicationType === 'mingguan' ? 'majalah mingguan' : 'writings'}
+      <a href={pubType === 'mingguan' ? '/writings#mingguan' : '/writings'} class="hover:underline">
+        {pubType === 'mingguan' ? 'majalah mingguan' : 'writings'}
       </a>
       <span>/</span>
-      <span class="text-emerald-400 font-semibold">{post.rubrik || post.category || 'Article'}</span>
-      {post.isCoverStory && (
+      <span class="text-emerald-400 font-semibold">{postRubrik || post.category || 'Article'}</span>
+      {isCoverStory && (
         <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-600 text-white uppercase">
           Laporan Utama
         </span>
