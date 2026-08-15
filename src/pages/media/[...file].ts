@@ -11,10 +11,19 @@ export const GET: APIRoute = async ({ params }) => {
     return new Response('Not found', { status: 404 });
   }
 
-  // Look in both public/images and current working directory
-  const filePath = path.resolve(process.cwd(), 'public/images', fileParam);
+  // Look in multiple candidate directories
+  const candidates = [
+    path.resolve(process.cwd(), 'public/images', fileParam),
+    path.resolve(process.cwd(), 'src/assets', fileParam),
+    path.resolve(process.cwd(), 'src/content/writings', fileParam),
+    path.resolve(process.cwd(), 'src/content', fileParam),
+    path.resolve('/root/portfolio/public/images', fileParam),
+    path.resolve('/app/public/images', fileParam),
+  ];
 
-  if (!fs.existsSync(filePath)) {
+  let filePath = candidates.find((p) => fs.existsSync(p));
+
+  if (!filePath) {
     return new Response('Media not found', { status: 404 });
   }
 
