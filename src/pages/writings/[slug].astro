@@ -114,6 +114,53 @@ const markdocConfig = {
         ].filter(Boolean));
       },
     },
+    SpotifyEmbed: {
+      render: 'SpotifyEmbed',
+      attributes: {
+        url: { type: String },
+        caption: { type: String },
+      },
+      transform(node: any) {
+        const { url, caption } = node.attributes;
+        if (!url) return null;
+
+        let cleanUrl = url.trim().split('?')[0];
+        // Normalize Spotify URL format to /embed/
+        let embedSrc = cleanUrl;
+        if (cleanUrl.includes('open.spotify.com/')) {
+          embedSrc = cleanUrl.replace('open.spotify.com/', 'open.spotify.com/embed/');
+        } else if (cleanUrl.startsWith('spotify:')) {
+          // URI format: spotify:track:id or spotify:album:id
+          const parts = cleanUrl.split(':');
+          if (parts.length >= 3) {
+            embedSrc = `https://open.spotify.com/embed/${parts[1]}/${parts[2]}`;
+          }
+        }
+
+        // Determine height based on type (track: 152px, album/playlist: 352px)
+        const isTrack = cleanUrl.includes('/track/') || cleanUrl.includes(':track:');
+        const height = isTrack ? '152' : '352';
+
+        return new Markdoc.Tag('figure', { class: 'my-8 w-full block' }, [
+          new Markdoc.Tag('div', { class: 'rounded-xl overflow-hidden shadow-sm border', style: 'border-color: var(--border);' }, [
+            new Markdoc.Tag('iframe', {
+              src: embedSrc,
+              width: '100%',
+              height: height,
+              frameborder: '0',
+              allowtransparency: 'true',
+              allow: 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture',
+              loading: 'lazy',
+              class: 'w-full block border-0',
+            }),
+          ]),
+          caption && new Markdoc.Tag('figcaption', { 
+            class: 'article-caption text-xs mt-2 text-zinc-400 italic pb-2 border-b', 
+            style: 'border-color: var(--border); font-family: \'Lora\', \'Newsreader\', serif;' 
+          }, [caption]),
+        ].filter(Boolean));
+      },
+    },
   },
 };
 

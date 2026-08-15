@@ -178,6 +178,18 @@ export default config({
                 }),
               },
             }),
+            SpotifyEmbed: block({
+              label: '🎵 Spotify Track / Album / Playlist Embed',
+              schema: {
+                url: fields.text({
+                  label: 'Spotify URL / URI',
+                  description: 'Contoh: https://open.spotify.com/track/... atau https://open.spotify.com/album/... atau https://open.spotify.com/playlist/...',
+                }),
+                caption: fields.text({
+                  label: 'Keterangan Lagu / Playlist (Opsional)',
+                }),
+              },
+            }),
           },
         }),
       },
