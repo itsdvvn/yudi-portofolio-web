@@ -12,7 +12,40 @@ if (!post || post.draft) {
 }
 
 const contentAst = await post.content();
-const transformedContent = Markdoc.transform(contentAst.node || contentAst);
+
+const markdocConfig = {
+  tags: {
+    ArticleImage: {
+      render: 'ArticleImage',
+      attributes: {
+        image: { type: String },
+        caption: { type: String },
+        credit: { type: String },
+      },
+      transform(node: any, config: any) {
+        const { image, caption, credit } = node.attributes;
+        const imgPath = image && !image.startsWith('http') && !image.startsWith('/') 
+          ? `/media/body/${image}` 
+          : image;
+
+        return new Markdoc.Tag('figure', { class: 'article-figure my-6' }, [
+          new Markdoc.Tag('img', { 
+            src: imgPath, 
+            alt: caption || 'Article Image',
+            class: 'w-full h-auto rounded-none border-0 block',
+            loading: 'lazy'
+          }),
+          (caption || credit) && new Markdoc.Tag('figcaption', { class: 'article-caption text-xs mt-2 text-zinc-400 italic' }, [
+            caption && `${caption} `,
+            credit && new Markdoc.Tag('span', { class: 'text-zinc-500 font-mono not-italic' }, [`Foto/ ${credit}`]),
+          ]),
+        ].filter(Boolean));
+      },
+    },
+  },
+};
+
+const transformedContent = Markdoc.transform(contentAst.node || contentAst, markdocConfig);
 let rawHtml = Markdoc.renderers.html(transformedContent);
 
 // Fix relative inline images to point to /media/writings/[slug]/ or /media/...

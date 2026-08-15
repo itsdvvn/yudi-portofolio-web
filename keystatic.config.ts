@@ -1,4 +1,5 @@
 import { config, fields, collection, singleton } from '@keystatic/core';
+import { block } from '@keystatic/core/content-components';
 
 export default config({
   storage: {
@@ -134,6 +135,25 @@ export default config({
               directory: 'public/images/body',
               publicPath: '/media/body/',
             },
+          },
+          components: {
+            ArticleImage: block({
+              label: '📸 Foto Artikel (Keterangan & Kredit Foto)',
+              schema: {
+                image: fields.image({
+                  label: 'Pilih / Unggah Foto',
+                  directory: 'public/images/body',
+                  publicPath: '/media/body/',
+                }),
+                caption: fields.text({
+                  label: 'Keterangan Foto (Caption)',
+                  multiline: true,
+                }),
+                credit: fields.text({
+                  label: 'Kredit Foto / Sumber (contoh: Antara/HO-Pemkab Cirebon)',
+                }),
+              },
+            }),
           },
         }),
       },
