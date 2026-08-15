@@ -67,7 +67,7 @@ if (rawHero && !rawHero.startsWith('http')) {
     {heroImg && (
       <figure class="mb-8 rounded-lg overflow-hidden border" style="border-color: var(--border);">
         <img 
-          src={`${heroImg}${heroImg.startsWith('http') ? '' : `?v=${Date.now()}`}`} 
+          src={heroImg} 
           alt={post.imageCaption || post.title} 
           class="w-full h-auto max-h-[420px] object-cover" 
           loading="eager"
