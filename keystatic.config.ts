@@ -166,12 +166,7 @@ export default config({
         title: fields.slug({ 
           name: { 
             label: 'Headline / Judul Artikel (Maksimal 80 karakter)',
-            description: 'Judul artikel ringkas, padat & SEO friendly (maks. 80 karakter)',
-            validation: {
-              length: {
-                max: 80,
-              },
-            },
+            description: 'Tulis judul artikel (maksimal 80 karakter)'
           },
         }),
         publicationType: fields.conditional(
