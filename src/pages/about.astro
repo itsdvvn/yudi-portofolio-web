@@ -1,0 +1,224 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { reader } from '../lib/reader';
+
+// Read About & Profile Data
+const aboutData = (await (reader.singletons as any).about?.read()) || (await (reader.singletons as any).profile?.read()) || {};
+
+const education = aboutData.education || [];
+const experience = aboutData.experience || [];
+const awards = aboutData.awards || [];
+const activities = aboutData.recentActivities || [];
+const roles = aboutData.roles || [];
+const rawAvatar = aboutData.avatarImage || aboutData.avatarUrl;
+const avatarSrc = rawAvatar ? (rawAvatar.startsWith('http') ? rawAvatar : `${rawAvatar}?t=${Date.now()}`) : '';
+
+const rawEduPhoto = aboutData.educationPhoto || aboutData.educationPhotoUrl;
+const eduPhotoSrc = rawEduPhoto ? (rawEduPhoto.startsWith('http') ? rawEduPhoto : `${rawEduPhoto}?t=${Date.now()}`) : '';
+---
+
+<BaseLayout 
+  title="About Me & Resume – dvvn" 
+  description={aboutData.bio || "Personal resume and background profile of Wahyudi Setiawan (dvvn)."}
+  image="/itsdvvn-web.jpg"
+>
+  <!-- Bio / Profile Hero Section -->
+  <section class="mb-12">
+    {avatarSrc && (
+      <div class="mb-6">
+        <img 
+          src={avatarSrc} 
+          alt={aboutData.headline || "Profile"} 
+          class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 shadow-sm"
+          style="border-color: var(--border);"
+        />
+      </div>
+    )}
+
+    <h1 class="text-xl sm:text-2xl font-bold mb-3 tracking-tight" style="color: var(--text-primary);">
+      {aboutData.headline || "Halo, saya Yudi 🍍"}
+    </h1>
+    
+    <p class="text-sm leading-relaxed mb-4 whitespace-pre-line" style="color: var(--text-secondary);">
+      {aboutData.bio}
+    </p>
+
+    {roles.length > 0 && (
+      <div class="mt-5">
+        <p class="text-sm font-medium mb-2.5" style="color: var(--text-primary);">
+          Secara umum, saya dikenal sebagai:
+        </p>
+        <ul class="space-y-3.5 pl-4 list-disc text-sm" style="color: var(--text-secondary);">
+          {roles.map((role: any) => (
+            <li>
+              <strong style="color: var(--text-primary);">{role.title}</strong>
+              <p class="mt-0.5 text-xs sm:text-sm leading-relaxed" style="color: var(--text-secondary);">
+                {role.description}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </section>
+
+  <!-- 🎓 Pendidikan Section -->
+  {education.length > 0 && (
+    <section class="mb-12">
+      <div class="flex items-center gap-2 mb-4">
+        <h2 class="text-base font-bold flex items-center gap-1.5" style="color: var(--text-primary);">
+          <span>🎓</span> Pendidikan
+        </h2>
+      </div>
+
+      <div class="space-y-3">
+        {education.map((edu: any) => {
+          let displayYear = edu.year;
+          if (!displayYear) {
+            if (edu.startYear) {
+              displayYear = edu.current 
+                ? `${edu.startYear} – sekarang` 
+                : (edu.endYear ? `${edu.startYear} – ${edu.endYear}` : edu.startYear);
+            } else if (edu.current) {
+              displayYear = 'Sekarang';
+            }
+          }
+
+          return (
+            <div class="ship-card p-3 sm:p-4">
+              <h3 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">
+                {edu.degree}
+              </h3>
+              <p class="text-xs sm:text-sm mb-1" style="color: var(--text-secondary);">
+                {edu.institution}
+              </p>
+              {displayYear && (
+                <span class="text-xs font-mono" style="color: var(--text-muted);">
+                  {displayYear}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {eduPhotoSrc && (
+        <div class="mt-4 rounded-xl overflow-hidden border shadow-sm" style="border-color: var(--border);">
+          <img 
+            src={eduPhotoSrc} 
+            alt="Momen Pendidikan / Wisuda" 
+            class="w-full h-auto max-h-[420px] object-cover" 
+            loading="lazy" 
+            decoding="async" 
+          />
+        </div>
+      )}
+    </section>
+  )}
+
+  <!-- 🏢 Pengalaman Section -->
+  {experience.length > 0 && (
+    <section class="mb-12">
+      <div class="flex items-center gap-2 mb-4">
+        <h2 class="text-base font-bold flex items-center gap-1.5" style="color: var(--text-primary);">
+          <span>🏢</span> Pengalaman
+        </h2>
+      </div>
+
+      <ul class="space-y-4 pl-4 list-disc text-sm" style="color: var(--text-secondary);">
+        {experience.map((exp: any) => {
+          let displayPeriod = exp.period;
+          if (!displayPeriod) {
+            if (exp.startYear) {
+              displayPeriod = exp.current 
+                ? `${exp.startYear} – sekarang` 
+                : (exp.endYear ? `${exp.startYear} – ${exp.endYear}` : exp.startYear);
+            } else if (exp.current) {
+              displayPeriod = 'Sekarang';
+            }
+          }
+
+          return (
+            <li>
+              <strong style="color: var(--text-primary);">{exp.position}</strong>
+              {displayPeriod && (
+                <span class="text-xs font-mono block sm:inline sm:ml-1" style="color: var(--text-muted);">
+                  ({displayPeriod})
+                </span>
+              )}
+              {exp.description && (
+                <p class="mt-1 text-xs sm:text-sm leading-relaxed" style="color: var(--text-secondary);">
+                  {exp.description}
+                </p>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  )}
+
+  <!-- 🏆 Penghargaan Section -->
+  {awards.length > 0 && (
+    <section class="mb-12">
+      <div class="flex items-center gap-2 mb-2">
+        <h2 class="text-base font-bold flex items-center gap-1.5" style="color: var(--text-primary);">
+          <span>🏆</span> Penghargaan
+        </h2>
+      </div>
+      <p class="text-xs sm:text-sm mb-3" style="color: var(--text-secondary);">
+        {awards.length === 1 
+          ? 'Berikut penghargaan yang telah saya peroleh:' 
+          : 'Berikut beberapa penghargaan yang telah saya peroleh:'}
+      </p>
+
+      <ul class="space-y-2 pl-4 list-disc text-xs sm:text-sm" style="color: var(--text-secondary);">
+        {awards.map((award: any) => {
+          const cleanYear = (award.year || '').trim();
+          return (
+            <li>
+              <span style="color: var(--text-primary);">{award.title}</span>
+              {cleanYear && (
+                <span class="font-mono text-xs ml-1" style="color: var(--text-muted);">
+                  ({cleanYear})
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  )}
+
+  <!-- 📣 Aktivitas Terbaru Section -->
+  {activities.length > 0 && (
+    <section class="mb-12">
+      <div class="flex items-center gap-2 mb-2">
+        <h2 class="text-base font-bold flex items-center gap-1.5" style="color: var(--text-primary);">
+          <span>📣</span> Aktivitas Terbaru
+        </h2>
+      </div>
+      <p class="text-xs sm:text-sm mb-3" style="color: var(--text-secondary);">
+        {activities.length === 1 
+          ? 'Berikut kegiatan seminar, pameran, atau karya terbaru yang telah saya lakukan:' 
+          : 'Berikut beberapa kegiatan seminar, pameran, atau karya terbaru yang telah saya lakukan:'}
+      </p>
+
+      <ul class="space-y-2 pl-4 list-disc text-xs sm:text-sm" style="color: var(--text-secondary);">
+        {activities.map((act: any) => {
+          const cleanDate = (act.locationDate || '').trim();
+          return (
+            <li>
+              <span style="color: var(--text-primary);">{act.title}</span>
+              {cleanDate && (
+                <span class="font-mono text-xs ml-1" style="color: var(--text-muted);">
+                  ({cleanDate})
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  )}
+</BaseLayout>

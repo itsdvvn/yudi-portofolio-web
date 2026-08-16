@@ -10,13 +10,17 @@ interface Props {
   publishDate?: string;
 }
 
-// Read profile live at runtime so CMS edits appear instantly
-const profileData = (await reader.singletons.profile.read()) || {};
-const socials = (profileData as any)?.socials || {};
+// Read singletons live at runtime so CMS edits appear instantly
+const siteData = (await (reader.singletons as any).site?.read()) || (await (reader.singletons as any).profile?.read()) || {};
+const aboutData = (await (reader.singletons as any).about?.read()) || (await (reader.singletons as any).profile?.read()) || {};
+const footerData = (await (reader.singletons as any).footer?.read()) || (profileData as any)?.socials || {};
+const socials = footerData || {};
+
+const showAboutNavbar = !!aboutData.showInNavbar;
 
 const {
-  title = (profileData as any)?.siteTitle || "Wahyudi Setiawan (dvvn) – Multimedia Creator & Visual Storyteller",
-  description = (profileData as any)?.siteDescription || (profileData as any)?.bio || "Personal space of Wahyudi Setiawan (dvvn). Multimedia creator focused on visual storytelling, photography, cinematic video, and creative web exploration.",
+  title = siteData.siteTitle || "Wahyudi Setiawan (dvvn) – Multimedia Creator & Visual Storyteller",
+  description = siteData.siteDescription || "Personal space of Wahyudi Setiawan (dvvn). Multimedia creator focused on visual storytelling, photography, cinematic video, and creative web exploration.",
   image = "/itsdvvn-web.jpg",
   type = 'website',
   publishDate,
@@ -120,6 +124,9 @@ const jsonLd = {
             <a href="/writings" class={`nav-link ${currentPath.startsWith('/writings') ? 'active' : ''}`}>writings</a>
             <a href="/thoughts" class={`nav-link ${currentPath.startsWith('/thoughts') ? 'active' : ''}`}>thoughts</a>
             <a href="/ships" class={`nav-link ${currentPath.startsWith('/ships') ? 'active' : ''}`}>ships</a>
+            {showAboutNavbar && (
+              <a href="/about" class={`nav-link ${currentPath.startsWith('/about') ? 'active' : ''}`}>about me</a>
+            )}
           </nav>
           
           <div class="hidden sm:flex items-center gap-2 border-l pl-3 shrink-0" style="border-color: var(--border);">

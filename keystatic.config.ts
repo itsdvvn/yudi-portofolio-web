@@ -6,9 +6,9 @@ export default config({
     kind: 'local',
   },
   singletons: {
-    profile: singleton({
-      label: 'Homepage Profile & Sections',
-      path: 'src/content/profile/index',
+    site: singleton({
+      label: 'Pengaturan Web & SEO',
+      path: 'src/content/site/index',
       format: { data: 'json' },
       schema: {
         siteTitle: fields.text({
@@ -20,17 +20,29 @@ export default config({
           multiline: true,
           defaultValue: 'Personal space of Wahyudi Setiawan (dvvn). Multimedia creator focused on visual storytelling, photography, cinematic video, and creative web exploration.',
         }),
+      },
+    }),
+    about: singleton({
+      label: 'Resume / CV & About Me',
+      path: 'src/content/about/index',
+      format: { data: 'json' },
+      schema: {
+        showInNavbar: fields.checkbox({
+          label: 'Tampilkan Menu "about me" di Navbar Publik',
+          description: 'Centang jika ingin memunculkan menu About Me / Resume di navigasi website',
+          defaultValue: false,
+        }),
         avatarImage: fields.image({
           label: 'Avatar / Profile Photo (Pilih / Upload File)',
           directory: 'public/images/profile',
           publicPath: '/media/profile/',
         }),
         avatarUrl: fields.text({
-          label: 'Atau Avatar R2 CDN URL (Opsional direct link: https://media.itsdvvn.my.id/...)',
+          label: 'Atau Avatar R2 CDN URL (Opsional: https://media.itsdvvn.my.id/...)',
         }),
         headline: fields.text({
           label: 'Greeting / Headline (H1)',
-          defaultValue: "Halo, saya Yudi",
+          defaultValue: "Halo, saya Yudi 🍍",
         }),
         bio: fields.text({
           label: 'Bio / Intro Paragraph',
@@ -103,15 +115,20 @@ export default config({
             itemLabel: (props) => props.fields.title.value || 'Aktivitas',
           }
         ),
-        socials: fields.object({
-          youtube: fields.url({ label: 'YouTube URL' }),
-          instagram: fields.url({ label: 'Instagram URL' }),
-          tiktok: fields.url({ label: 'TikTok URL' }),
-          discord: fields.url({ label: 'Discord URL' }),
-          github: fields.url({ label: 'GitHub URL' }),
-          xTwitter: fields.url({ label: 'X / Twitter URL' }),
-          email: fields.text({ label: 'Email Address' }),
-        }),
+      },
+    }),
+    footer: singleton({
+      label: 'Footer & Media Sosial Web',
+      path: 'src/content/footer/index',
+      format: { data: 'json' },
+      schema: {
+        youtube: fields.url({ label: 'YouTube URL' }),
+        instagram: fields.url({ label: 'Instagram URL' }),
+        tiktok: fields.url({ label: 'TikTok URL' }),
+        discord: fields.url({ label: 'Discord URL' }),
+        github: fields.url({ label: 'GitHub URL' }),
+        xTwitter: fields.url({ label: 'X / Twitter URL' }),
+        email: fields.text({ label: 'Email Address' }),
       },
     }),
   },
