@@ -410,17 +410,18 @@ export function KeystaticApp() {
         // Tandai agar tidak diulang
         row.dataset.hasEnhancement = 'true';
 
-        // Baca tanggal dari teks seluruh baris
+        // Baca tanggal (YYYY-MM-DD) dan jam (HH:mm) dari teks seluruh baris tabel
         const rowText = row.textContent || '';
         const dateMatch = rowText.match(/\b\d{4}-\d{2}-\d{2}\b/);
+        const timeMatch = rowText.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/);
 
         let isFuture = false;
         if (dateMatch) {
           const scheduleDateStr = dateMatch[0];
-          // Asumsikan batas akhir hari WIB
-          const itemDate = new Date(`${scheduleDateStr}T23:59:59+07:00`);
+          const scheduleTimeStr = timeMatch ? timeMatch[0] : '00:00';
+          const itemDateTime = new Date(`${scheduleDateStr}T${scheduleTimeStr}:00+07:00`);
           const now = new Date();
-          isFuture = itemDate.getTime() > now.getTime();
+          isFuture = itemDateTime.getTime() > now.getTime();
         }
 
         // 1. Badge Status (Scheduled vs Published)
