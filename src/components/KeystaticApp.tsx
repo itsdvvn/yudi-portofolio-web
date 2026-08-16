@@ -142,6 +142,11 @@ export function KeystaticApp() {
 
     // State 2: Pemasangan WordPress Gutenberg Pre-Publish Panel
     function setupWordPressPublishPanel() {
+      // HANYA pasang tombol Publish & Drawer Jadwal pada artikel Writings & Majalah Editions
+      const pathname = window.location.pathname;
+      const isScheduledContent = pathname.includes('/collection/writings/') || pathname.includes('/collection/editions/');
+      if (!isScheduledContent) return;
+
       // Cari tombol aksi utama Keystatic (Save / Create)
       const buttons = Array.from(document.querySelectorAll('button'));
       const mainBtn = buttons.find((b) => {
