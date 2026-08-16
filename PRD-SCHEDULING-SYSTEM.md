@@ -133,3 +133,11 @@ Ketika tombol `Publish…` diklik, muncul panel drawer samping kanan dengan alur
 2. **Zero Browser Alert**: Tidak boleh ada dialog `alert()` bawaan browser.
 3. **Draft Safety**: Artikel berstatus draft atau jadwal masa depan tidak boleh bocor di `sitemap.xml` atau halaman publik.
 4. **Clean Codebase**: Tidak ada manipulasi DOM destruktif yang menyebabkan blank white screen di Keystatic.
+
+---
+
+## 7. Referensi UI & Resource Komponen
+- **Astro Component Library & Patterns**: [Bearnie Docs (https://bearnie.dev/docs/)](https://bearnie.dev/docs/)  
+  *Gunakan referensi komponen Bearnie Dev (seperti `Sheet`, `Popover`, `Dialog`, `Calendar/DatePicker`, `Button Group`, dan `Accordion`) untuk panduan struktur markup, aksesibilitas (a11y), dan styling minimalis yang presisi.*
+- **Publishing Workflow Inspiration**: WordPress Gutenberg Pre-Publish Sidebar Panel.
+
