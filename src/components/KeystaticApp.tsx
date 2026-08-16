@@ -69,6 +69,11 @@ export function KeystaticApp() {
     // Sembunyikan field input jadwal & jam teknis di tengah form lembar ketik secara visual
     // Menggunakan clip/opacity/height agar React event handler tetap aktif menerima input dari drawer WordPress
     function hideCentralDatetimeFields() {
+      // HANYA jalankan saat berada di halaman form edit / create item
+      const pathname = window.location.pathname;
+      const isFormEditorPage = pathname.includes('/create') || pathname.includes('/item/');
+      if (!isFormEditorPage) return;
+
       // 1. Cari berdasarkan label atau container teks
       const labelsAndSpans = Array.from(document.querySelectorAll('label, [id*="description"], div[class*="css-"]')) as HTMLElement[];
       labelsAndSpans.forEach((el) => {
