@@ -21,3 +21,7 @@ scripts/
 
 # Keystatic local build cache
 .keystatic
+
+# Content live (VPS adalah Single Source of Truth, jangan overwrite artikel VPS dengan file lokal)
+src/content/writings/
+src/content/editions/
