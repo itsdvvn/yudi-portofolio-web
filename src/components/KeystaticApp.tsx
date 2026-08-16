@@ -215,13 +215,35 @@ export function KeystaticApp() {
         return false;
       }
 
-      // Buat / Update Modal Panel Pre-Publish (Slide-over Drawer)
+      // Buat / Update Modal Panel Pre-Publish (Slide-over Drawer + Backdrop Click Outside)
       const panelId = 'wp-gutenberg-pre-publish-drawer';
+      const backdropId = 'wp-gutenberg-drawer-backdrop';
+      
+      let backdrop = document.getElementById(backdropId);
+      if (backdrop) backdrop.remove();
       let drawer = document.getElementById(panelId);
       if (drawer) drawer.remove();
 
+      // Backdrop untuk Click-Outside Auto-Close
+      backdrop = document.createElement('div');
+      backdrop.id = backdropId;
+      backdrop.style.cssText = `
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(2px);
+        z-index: 99998;
+        transition: opacity 0.2s ease;
+      `;
+      document.body.appendChild(backdrop);
+
       drawer = document.createElement('div');
       drawer.id = panelId;
+      drawer.className = 'wp-drawer-container';
       drawer.style.cssText = `
         display: none;
         position: fixed;
@@ -230,14 +252,78 @@ export function KeystaticApp() {
         bottom: 0;
         width: 380px;
         max-width: 90vw;
-        background: #ffffff;
-        border-left: 1px solid #e0e0e0;
-        box-shadow: -6px 0 24px rgba(0,0,0,0.15);
+        background: var(--wp-drawer-bg, #ffffff);
+        border-left: 1px solid var(--wp-drawer-border, #e0e0e0);
+        box-shadow: -8px 0 32px rgba(0,0,0,0.25);
         z-index: 99999;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        color: #1e1e1e;
+        color: var(--wp-drawer-text, #1e1e1e);
         flex-direction: column;
       `;
+
+      // Inject Global CSS Variables & Dark Mode Rules for Keystatic Drawer
+      if (!document.getElementById('wp-drawer-styles')) {
+        const styleSheet = document.createElement('style');
+        styleSheet.id = 'wp-drawer-styles';
+        styleSheet.textContent = `
+          :root {
+            --wp-drawer-bg: #ffffff;
+            --wp-drawer-header-bg: #f9f9f9;
+            --wp-drawer-text: #1e1e1e;
+            --wp-drawer-muted: #646970;
+            --wp-drawer-border: #e0e0e0;
+            --wp-drawer-card-bg: #f6f7f7;
+            --wp-drawer-input-bg: #ffffff;
+            --wp-drawer-input-border: #8c8f94;
+            --wp-drawer-input-text: #1e1e1e;
+            --wp-drawer-color-scheme: light;
+          }
+          [data-theme="dark"], .dark, [class*="dark"], body[style*="background-color: rgb(18, 18, 18)"], body[style*="background: rgb(18, 18, 18)"] {
+            --wp-drawer-bg: #18181b;
+            --wp-drawer-header-bg: #1f1f23;
+            --wp-drawer-text: #f4f4f5;
+            --wp-drawer-muted: #a1a1aa;
+            --wp-drawer-border: #27272a;
+            --wp-drawer-card-bg: #202024;
+            --wp-drawer-input-bg: #27272a;
+            --wp-drawer-input-border: #3f3f46;
+            --wp-drawer-input-text: #ffffff;
+            --wp-drawer-color-scheme: dark;
+          }
+          /* Support OS Dark Mode if Keystatic is in system dark mode */
+          @media (prefers-color-scheme: dark) {
+            :root {
+              --wp-drawer-bg: #18181b;
+              --wp-drawer-header-bg: #1f1f23;
+              --wp-drawer-text: #f4f4f5;
+              --wp-drawer-muted: #a1a1aa;
+              --wp-drawer-border: #27272a;
+              --wp-drawer-card-bg: #202024;
+              --wp-drawer-input-bg: #27272a;
+              --wp-drawer-input-border: #3f3f46;
+              --wp-drawer-input-text: #ffffff;
+              --wp-drawer-color-scheme: dark;
+            }
+          }
+          .wp-custom-input {
+            color-scheme: var(--wp-drawer-color-scheme);
+            color: var(--wp-drawer-input-text) !important;
+            background-color: var(--wp-drawer-input-bg) !important;
+            border: 1px solid var(--wp-drawer-input-border) !important;
+          }
+          .wp-custom-input::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: var(--wp-calendar-icon-filter, none);
+          }
+          [data-theme="dark"] .wp-custom-input::-webkit-calendar-picker-indicator,
+          @media (prefers-color-scheme: dark) {
+            .wp-custom-input::-webkit-calendar-picker-indicator {
+              filter: invert(1);
+            }
+          }
+        `;
+        document.head.appendChild(styleSheet);
+      }
 
       const now = new Date();
       const currentHh = String(now.getHours()).padStart(2, '0');
@@ -246,18 +332,18 @@ export function KeystaticApp() {
 
       drawer.innerHTML = `
         <!-- Top Action Bar -->
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #e0e0e0; background:#f9f9f9;">
-          <button type="button" id="wp-drawer-cancel" style="background:transparent; border:1px solid #ccc; border-radius:4px; padding:6px 14px; font-size:13px; font-weight:600; cursor:pointer; color:#1e1e1e;">Cancel</button>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--wp-drawer-border); background:var(--wp-drawer-header-bg);">
+          <button type="button" id="wp-drawer-cancel" style="background:transparent; border:1px solid var(--wp-drawer-border); border-radius:4px; padding:6px 14px; font-size:13px; font-weight:600; cursor:pointer; color:var(--wp-drawer-text);">Cancel</button>
           <button type="button" id="wp-drawer-submit" style="background:#007cba; color:#fff; border:none; border-radius:4px; padding:6px 20px; font-size:13px; font-weight:600; cursor:pointer;">Publish</button>
         </div>
 
         <!-- Body Content -->
         <div style="padding:20px; overflow-y:auto; flex:1;">
-          <h3 style="font-size:16px; font-weight:600; margin:0 0 6px 0; color:#1e1e1e;">Are you ready to publish?</h3>
-          <p style="font-size:12px; color:#646970; margin:0 0 20px 0; line-height:1.4;">Double-check your settings before publishing.</p>
+          <h3 style="font-size:16px; font-weight:600; margin:0 0 6px 0; color:var(--wp-drawer-text);">Are you ready to publish?</h3>
+          <p style="font-size:12px; color:var(--wp-drawer-muted); margin:0 0 20px 0; line-height:1.4;">Double-check your settings before publishing.</p>
 
           <!-- Weekly Info Notice -->
-          <div id="wp-weekly-notice" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:6px; padding:14px; margin-bottom:18px; font-size:12px; color:#065f46; line-height:1.5;">
+          <div id="wp-weekly-notice" style="display:none; background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.3); border-radius:6px; padding:14px; margin-bottom:18px; font-size:12px; color:#10b981; line-height:1.5;">
             <div style="font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
               <span>📖</span> Majalah Edisi Mingguan
             </div>
@@ -265,40 +351,40 @@ export function KeystaticApp() {
           </div>
 
           <!-- Section: Visibility -->
-          <div style="border-top:1px solid #e0e0e0; padding:14px 0;">
+          <div style="border-top:1px solid var(--wp-drawer-border); padding:14px 0;">
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:500;">
-              <span>Visibility:</span>
+              <span style="color:var(--wp-drawer-text);">Visibility:</span>
               <span style="color:#007cba; font-weight:600;">Public</span>
             </div>
           </div>
 
           <!-- Section: Publish Scheduling -->
-          <div id="wp-schedule-section" style="border-top:1px solid #e0e0e0; padding:14px 0;">
+          <div id="wp-schedule-section" style="border-top:1px solid var(--wp-drawer-border); padding:14px 0;">
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:500; margin-bottom:12px;">
-              <span>Publish:</span>
+              <span style="color:var(--wp-drawer-text);">Publish:</span>
               <span id="wp-schedule-status-text" style="color:#007cba; font-weight:600;">Immediately</span>
             </div>
 
             <!-- Date & Time Picker Box -->
-            <div id="wp-picker-box" style="padding:14px; background:#f6f7f7; border-radius:6px; border:1px solid #dcdcde;">
+            <div id="wp-picker-box" style="padding:14px; background:var(--wp-drawer-card-bg); border-radius:6px; border:1px solid var(--wp-drawer-border);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <span style="font-size:11px; font-weight:700; color:#50575e; text-transform:uppercase;">Jadwal Rilis</span>
-                <button type="button" id="wp-btn-now" style="font-size:11px; color:#007cba; background:none; border:none; cursor:pointer; font-weight:600; text-decoration:underline;">Set to Now</button>
+                <span style="font-size:11px; font-weight:700; color:var(--wp-drawer-muted); text-transform:uppercase;">Jadwal Rilis</span>
+                <button type="button" id="wp-btn-now" style="font-size:11px; color:#38bdf8; background:none; border:none; cursor:pointer; font-weight:600; text-decoration:underline;">Set to Now</button>
               </div>
 
               <!-- Dedicated Date Picker -->
               <div style="margin-bottom:12px;">
-                <label style="display:block; font-size:11px; font-weight:600; color:#50575e; margin-bottom:4px;">📅 Pilih Tanggal</label>
-                <input type="date" id="wp-picker-date" value="${currentIsoDate}" style="width:100%; padding:8px 10px; font-size:13px; border:1px solid #8c8f94; border-radius:4px; background:#ffffff; box-sizing:border-box;" />
+                <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">📅 Pilih Tanggal</label>
+                <input type="date" id="wp-picker-date" class="wp-custom-input" value="${currentIsoDate}" style="width:100%; padding:8px 10px; font-size:13px; border-radius:4px; box-sizing:border-box; outline:none;" />
               </div>
 
               <!-- Dedicated Time Picker -->
               <div style="margin-bottom:12px;">
-                <label style="display:block; font-size:11px; font-weight:600; color:#50575e; margin-bottom:4px;">⏰ Pilih Jam (WIB)</label>
-                <input type="time" id="wp-picker-time" value="${currentHh}:${currentMm}" style="width:100%; padding:8px 10px; font-size:13px; border:1px solid #8c8f94; border-radius:4px; background:#ffffff; box-sizing:border-box;" />
+                <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">⏰ Pilih Jam (WIB)</label>
+                <input type="time" id="wp-picker-time" class="wp-custom-input" value="${currentHh}:${currentMm}" style="width:100%; padding:8px 10px; font-size:13px; border-radius:4px; box-sizing:border-box; outline:none;" />
               </div>
 
-              <div style="font-size:11px; color:#646970;">Zona waktu sistem: <strong>WIB (UTC+7)</strong></div>
+              <div style="font-size:11px; color:var(--wp-drawer-muted);">Zona waktu sistem: <strong style="color:var(--wp-drawer-text);">WIB (UTC+7)</strong></div>
             </div>
           </div>
         </div>
@@ -314,6 +400,32 @@ export function KeystaticApp() {
       const nowBtn = drawer.querySelector('#wp-btn-now') as HTMLElement;
       const weeklyNotice = drawer.querySelector('#wp-weekly-notice') as HTMLElement;
       const scheduleSec = drawer.querySelector('#wp-schedule-section') as HTMLElement;
+
+      function closeDrawer() {
+        if (drawer) drawer.style.display = 'none';
+        if (backdrop) backdrop.style.display = 'none';
+      }
+
+      function openDrawer() {
+        const isWeekly = checkIsWeeklyArticle();
+        if (isWeekly) {
+          weeklyNotice.style.display = 'block';
+          scheduleSec.style.display = 'none';
+          submitBtn.textContent = 'Publish to Edition';
+          submitBtn.style.backgroundColor = '#10b981';
+        } else {
+          weeklyNotice.style.display = 'none';
+          scheduleSec.style.display = 'block';
+          updateButtonMorph();
+        }
+        if (backdrop) backdrop.style.display = 'block';
+        if (drawer) drawer.style.display = 'flex';
+      }
+
+      // Backdrop Click-Outside Auto-Close
+      backdrop?.addEventListener('click', () => {
+        closeDrawer();
+      });
 
       // Update button label & status text based on selected date & time (Reactive Button Morphing)
       function updateButtonMorph() {
@@ -355,23 +467,12 @@ export function KeystaticApp() {
 
       // Event: Buka Drawer
       wpTriggerBtn.addEventListener('click', () => {
-        const isWeekly = checkIsWeeklyArticle();
-        if (isWeekly) {
-          weeklyNotice.style.display = 'block';
-          scheduleSec.style.display = 'none';
-          submitBtn.textContent = 'Publish to Edition';
-          submitBtn.style.backgroundColor = '#10b981';
-        } else {
-          weeklyNotice.style.display = 'none';
-          scheduleSec.style.display = 'block';
-          updateButtonMorph();
-        }
-        drawer.style.display = 'flex';
+        openDrawer();
       });
 
       // Event: Cancel Drawer
       cancelBtn?.addEventListener('click', () => {
-        drawer.style.display = 'none';
+        closeDrawer();
       });
 
       // Event: Set to Now
@@ -389,7 +490,7 @@ export function KeystaticApp() {
 
       // Event: Confirm Submit
       submitBtn?.addEventListener('click', () => {
-        drawer.style.display = 'none';
+        closeDrawer();
 
         const dateVal = datePicker?.value || currentIsoDate;
         const timeVal = timePicker?.value || `${currentHh}:${currentMm}`;
