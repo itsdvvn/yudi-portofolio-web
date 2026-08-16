@@ -131,9 +131,15 @@ export default config({
           label: 'Label Edisi (Opsional: e.g. Edisi 9 Agustus 2026)',
           description: 'Kosongkan jika ingin label otomatis terbuat dari tanggal rilis.',
         }),
-        publishDate: fields.datetime({ 
-          label: 'Jadwal Rilis Edisi (Tanggal & Jam)', 
-          defaultValue: { kind: 'now' } 
+        publishDate: fields.text({ 
+          label: 'Jadwal Rilis Edisi (Tanggal & Jam ISO)', 
+          defaultValue: () => {
+            const n = new Date();
+            const hh = String(n.getHours()).padStart(2, '0');
+            const mm = String(n.getMinutes()).padStart(2, '0');
+            const d = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+            return `${d}T${hh}:${mm}`;
+          },
         }),
         coverImage: fields.image({
           label: 'Cover Majalah Mingguan (Pilih / Upload Gambar Vertikal/Portrait)',
@@ -217,9 +223,15 @@ export default config({
             },
           },
         }),
-        publishDate: fields.datetime({ 
-          label: 'Jadwal / Waktu Terbit (Tanggal & Jam)', 
-          defaultValue: { kind: 'now' } 
+        publishDate: fields.text({ 
+          label: 'Jadwal / Waktu Terbit (Tanggal & Jam ISO)', 
+          defaultValue: () => {
+            const n = new Date();
+            const hh = String(n.getHours()).padStart(2, '0');
+            const mm = String(n.getMinutes()).padStart(2, '0');
+            const d = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+            return `${d}T${hh}:${mm}`;
+          },
         }),
         heroImage: fields.image({
           label: 'Hero / Featured Image (Pilih / Upload File)',

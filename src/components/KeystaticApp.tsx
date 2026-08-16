@@ -328,23 +328,29 @@ export function KeystaticApp() {
         const timeVal = timePicker?.value || `${currentHh}:${currentMm}`;
         const combinedIso = `${dateVal}T${timeVal}`;
 
-        // Cari input datetime/date di form Keystatic asli dan sematkan nilainya
-        const keystaticInputs = Array.from(document.querySelectorAll('input[type="datetime-local"], input[type="date"], input[type="text"]')) as HTMLInputElement[];
-        for (const input of keystaticInputs) {
-          const label = input.closest('label') || input.parentElement;
-          const text = (label?.textContent || '').toLowerCase();
-          if (text.includes('jadwal') || text.includes('publish') || text.includes('tanggal')) {
-            const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
-            if (setter) {
-              setter.call(input, combinedIso);
-              input.dispatchEvent(new Event('input', { bubbles: true }));
-              input.dispatchEvent(new Event('change', { bubbles: true }));
+        // Cari input datetime/date/text di form Keystatic asli dan sematkan nilainya secara reaktif
+        const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
+        for (const input of allInputs) {
+          const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
+          const text = (container?.textContent || '').toLowerCase();
+          
+          if (text.includes('jadwal') || text.includes('publish') || text.includes('iso') || text.includes('tanggal')) {
+            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+            if (nativeSetter) {
+              nativeSetter.call(input, combinedIso);
+            } else {
+              input.value = combinedIso;
             }
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+            input.dispatchEvent(new Event('blur', { bubbles: true }));
           }
         }
 
-        // Trigger submit form utama Keystatic
-        mainBtn.click();
+        // Delay 50ms agar state React Keystatic selesai meng-update payload form
+        setTimeout(() => {
+          mainBtn.click();
+        }, 50);
       });
     }
 
