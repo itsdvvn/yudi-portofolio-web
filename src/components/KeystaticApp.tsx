@@ -392,27 +392,22 @@ export function KeystaticApp() {
     function enhanceTableListView() {
       // Pastikan HANYA berjalan di halaman list view koleksi, bukan di form create/edit
       const pathname = window.location.pathname;
-      const isCollectionListPage = (pathname.endsWith('/collection/writings') || pathname.endsWith('/collection/writings/') || pathname.endsWith('/collection/editions') || pathname.endsWith('/collection/editions/')) && !pathname.includes('/create') && !pathname.includes('/item/');
+      const isCollectionListPage = pathname.includes('/keystatic/collection/') && !pathname.includes('/create') && !pathname.includes('/item/');
       if (!isCollectionListPage) return;
 
-      // Keystar Table menggunakan elemen [role="row"] atau <tr>
+      // Cari elemen tabel Keystatic/Keystar
       const rows = Array.from(document.querySelectorAll('[role="row"], tr')) as HTMLElement[];
       
       rows.forEach((row) => {
         // Abaikan row header kolom
         if (row.querySelector('[role="columnheader"], th')) return;
-        if (row.dataset.hasEnhancement === 'true') return;
-
-        // Wajib memiliki link item koleksi (/collection/.../item/...)
-        const link = row.querySelector('a[href*="/collection/"][href*="/item/"]') as HTMLAnchorElement | null;
-        if (!link) return;
-
-        const cell = row.querySelector('[role="rowheader"], [role="gridcell"], td') as HTMLElement | null;
-        if (!cell) return;
+        
+        // Cari seluruh sel dalam baris
+        const cells = Array.from(row.querySelectorAll('[role="gridcell"], [role="rowheader"], td')) as HTMLElement[];
+        if (cells.length === 0) return;
 
         // Baca tanggal (YYYY-MM-DD) dan jam (HH:mm) dari teks seluruh baris tabel
-        const cells = Array.from(row.querySelectorAll('[role="gridcell"], [role="rowheader"], td'));
-        const rowText = cells.length > 0 ? cells.map(c => c.textContent || '').join(' ') : (row.textContent || '');
+        const rowText = cells.map(c => c.textContent || '').join(' ');
         const dateMatch = rowText.match(/\b\d{4}-\d{2}-\d{2}\b/);
         const timeMatch = rowText.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/);
 
@@ -424,6 +419,10 @@ export function KeystaticApp() {
           const now = new Date();
           isFuture = itemDateTime.getTime() > now.getTime();
         }
+
+        // Target untuk menempelkan status badge (sel pertama yang memuat slug/judul)
+        const firstCell = cells[0];
+        if (!firstCell) return;
 
         // Cari atau buat Badge Status
         let badge = row.querySelector('.keystatic-status-badge') as HTMLElement | null;
@@ -444,10 +443,7 @@ export function KeystaticApp() {
             letter-spacing: 0.05em;
             vertical-align: middle;
           `;
-          const targetAnchor = link || cell?.querySelector('a') || cell;
-          if (targetAnchor) {
-            targetAnchor.appendChild(badge);
-          }
+          firstCell.appendChild(badge);
         }
 
         // Update status badge secara reaktif setiap detik/interval
@@ -463,46 +459,47 @@ export function KeystaticApp() {
           badge.style.border = '1px solid #a7f3d0';
         }
 
-        // 2. Quick Action Toolbar
-        if (link && link.href && !row.querySelector('.keystatic-row-actions')) {
-          const urlParts = link.href.split('/item/');
-          const itemSlug = urlParts[1];
-          if (itemSlug) {
-            const isEditions = link.href.includes('/collection/editions');
-            const webUrl = isEditions ? '/writings#mingguan' : `/writings/${itemSlug}`;
+        // 2. Quick Action Toolbar (View Item)
+        const link = row.querySelector('a') as HTMLAnchorElement | null;
+        const linkHref = link?.getAttribute('href') || '';
+        const itemSlug = linkHref.includes('/item/') ? linkHref.split('/item/')[1] : (firstCell.textContent?.trim().split(' ')[0] || '');
 
-            const actionWrapper = document.createElement('div');
-            actionWrapper.className = 'keystatic-row-actions';
-            actionWrapper.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; margin-left: auto; padding-left: 12px;';
+        if (itemSlug && !row.querySelector('.keystatic-row-actions')) {
+          const actionWrapper = document.createElement('div');
+          actionWrapper.className = 'keystatic-row-actions';
+          actionWrapper.style.cssText = 'display:inline-flex; align-items:center; gap:6px; margin-left:auto; padding-left:12px;';
 
-            const viewBtn = document.createElement('a');
-            viewBtn.href = webUrl;
-            viewBtn.target = '_blank';
-            viewBtn.rel = 'noopener noreferrer';
-            viewBtn.textContent = '↗ View';
-            viewBtn.title = 'Buka artikel di website publik';
-            viewBtn.style.cssText = `
-              padding: 2px 7px;
-              border-radius: 4px;
-              font-size: 11px;
-              font-weight: 600;
-              background: #ffffff;
-              color: #2563eb;
-              border: 1px solid #93c5fd;
-              text-decoration: none;
-              cursor: pointer;
-            `;
-            viewBtn.addEventListener('click', (e) => e.stopPropagation());
+          const isEdition = pathname.includes('editions');
+          const viewUrl = isEdition ? `/writings#edisi-${itemSlug}` : `/writings/${itemSlug}`;
 
-            actionWrapper.appendChild(viewBtn);
+          const viewBtn = document.createElement('a');
+          viewBtn.href = viewUrl;
+          viewBtn.target = '_blank';
+          viewBtn.rel = 'noopener noreferrer';
+          viewBtn.title = 'Buka & Preview Artikel';
+          viewBtn.innerHTML = '↗ View';
+          viewBtn.style.cssText = `
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: #f4f4f5;
+            color: #18181b;
+            border: 1px solid #e4e4e7;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+          `;
+          viewBtn.addEventListener('click', (e) => e.stopPropagation());
 
-            const lastCell = row.querySelector('[role="gridcell"]:last-child, td:last-child') as HTMLElement | null;
-            if (lastCell) {
-              lastCell.style.display = 'flex';
-              lastCell.style.alignItems = 'center';
-              lastCell.style.justifyContent = 'space-between';
-              lastCell.appendChild(actionWrapper);
-            }
+          actionWrapper.appendChild(viewBtn);
+
+          const lastCell = cells[cells.length - 1];
+          if (lastCell) {
+            lastCell.style.display = 'flex';
+            lastCell.style.alignItems = 'center';
+            lastCell.style.justifyContent = 'space-between';
+            lastCell.appendChild(actionWrapper);
           }
         }
       });
