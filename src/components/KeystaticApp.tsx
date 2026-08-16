@@ -11,14 +11,13 @@ export function KeystaticApp() {
       inputs.forEach((el) => {
         const input = el as HTMLInputElement | HTMLTextAreaElement;
         
-        // Abaikan jika input berada di dalam Modal Dialog (seperti Modal Edit Sitasi / Komponen Markdoc)
-        if (input.closest('[role="dialog"]') || input.closest('dialog')) return;
+        // Abaikan jika input berada di dalam Modal Dialog
+        if (input.closest('[role="dialog"]') || input.closest('dialog') || input.closest('#wp-gutenberg-pre-publish-drawer')) return;
 
         const formField = input.closest('label') || input.parentElement?.querySelector('label') || input.parentElement?.parentElement?.querySelector('label') || input.parentElement;
         const allText = ((formField?.textContent || '') + ' ' + (input.getAttribute('aria-label') || '') + ' ' + (input.placeholder || '')).toLowerCase();
 
-        // Hindari pencocokan jika ini adalah field Sumber/Referensi
-        if (allText.includes('sumber') || allText.includes('referensi')) return;
+        if (allText.includes('sumber') || allText.includes('referensi') || allText.includes('slug')) return;
 
         const isTitle = (allText.includes('headline') || allText.includes('judul artikel')) && input.tagName === 'INPUT' && !input.id?.includes('slug');
         const isDeck = (allText.includes('deck') || allText.includes('deskripsi artikel')) && input.tagName === 'TEXTAREA';
@@ -58,9 +57,7 @@ export function KeystaticApp() {
         }
       }
 
-      ['input', 'change', 'keyup', 'focus', 'paste'].forEach((evt) => {
-        input.addEventListener(evt, update);
-      });
+      input.addEventListener('input', update, { passive: true });
       update();
 
       // Cari parent terluar field (container field sebelum field berikutnya)
@@ -397,24 +394,30 @@ export function KeystaticApp() {
 
     // Enhancer untuk Table List View: Label Status & Quick Actions
     function enhanceTableListView() {
-      // Cari tabel atau list item Keystatic
-      const rows = Array.from(document.querySelectorAll('table tbody tr, [role="row"], a[href*="/collection/"]')) as HTMLElement[];
+      // Keystar Table menggunakan elemen [role="row"] atau <tr>
+      const rows = Array.from(document.querySelectorAll('[role="row"], tr')) as HTMLElement[];
       
       rows.forEach((row) => {
-        // Hanya target baris item di dalam list view koleksi
-        const link = (row.tagName === 'A' ? row : row.querySelector('a[href*="/item/"]')) as HTMLAnchorElement | null;
-        if (!link || !link.href.includes('/collection/') || !link.href.includes('/item/')) return;
+        // Abaikan row header kolom
+        if (row.querySelector('[role="columnheader"], th')) return;
         if (row.dataset.hasEnhancement === 'true') return;
+
+        // Cari sel nama atau link item
+        const link = row.querySelector('a[href*="/collection/"]') as HTMLAnchorElement | null;
+        const cell = row.querySelector('[role="rowheader"], [role="gridcell"], td') as HTMLElement | null;
+        if (!link && !cell) return;
+
+        // Tandai agar tidak diulang
         row.dataset.hasEnhancement = 'true';
 
-        // Cari tanggal di dalam baris
-        const textContent = row.textContent || '';
-        const dateMatch = textContent.match(/\b\d{4}-\d{2}-\d{2}\b/);
-        
+        // Baca tanggal dari teks seluruh baris
+        const rowText = row.textContent || '';
+        const dateMatch = rowText.match(/\b\d{4}-\d{2}-\d{2}\b/);
+
         let isFuture = false;
-        let scheduleDateStr = '';
         if (dateMatch) {
-          scheduleDateStr = dateMatch[0];
+          const scheduleDateStr = dateMatch[0];
+          // Asumsikan batas akhir hari WIB
           const itemDate = new Date(`${scheduleDateStr}T23:59:59+07:00`);
           const now = new Date();
           isFuture = itemDate.getTime() > now.getTime();
@@ -428,60 +431,73 @@ export function KeystaticApp() {
           gap: 4px;
           padding: 2px 8px;
           border-radius: 9999px;
-          font-size: 11px;
-          font-weight: 600;
+          font-size: 10px;
+          font-weight: 700;
           font-family: ui-monospace, monospace;
           text-transform: uppercase;
           margin-left: 8px;
           letter-spacing: 0.05em;
+          vertical-align: middle;
         `;
 
         if (isFuture) {
-          badge.textContent = '⏰ Scheduled';
+          badge.textContent = '⏰ SCHEDULED';
           badge.style.backgroundColor = '#ede9fe';
           badge.style.color = '#6d28d9';
           badge.style.border = '1px solid #c4b5fd';
         } else {
-          badge.textContent = '🟢 Published';
+          badge.textContent = '🟢 PUBLISHED';
           badge.style.backgroundColor = '#ecfdf5';
           badge.style.color = '#047857';
           badge.style.border = '1px solid #a7f3d0';
         }
 
-        // Sisipkan badge di dekat title/link
-        link.appendChild(badge);
+        const targetAnchor = link || cell?.querySelector('a') || cell;
+        if (targetAnchor) {
+          targetAnchor.appendChild(badge);
+        }
 
-        // 2. Quick Action Toolbar (Buka Web & Edit/Detail)
-        const actionsContainer = document.createElement('div');
-        actionsContainer.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; margin-left: auto; padding-right: 8px;';
-        
-        // Quick Action: Buka Halaman Web Publik
-        const urlParts = link.href.split('/item/');
-        const itemSlug = urlParts[1];
-        const isEditionsCollection = link.href.includes('/collection/editions');
-        const webUrl = isEditionsCollection ? '/writings#mingguan' : `/writings/${itemSlug}`;
+        // 2. Quick Action Toolbar
+        if (link && link.href) {
+          const urlParts = link.href.split('/item/');
+          const itemSlug = urlParts[1];
+          if (itemSlug) {
+            const isEditions = link.href.includes('/collection/editions');
+            const webUrl = isEditions ? '/writings#mingguan' : `/writings/${itemSlug}`;
 
-        const viewWebBtn = document.createElement('a');
-        viewWebBtn.href = webUrl;
-        viewWebBtn.target = '_blank';
-        viewWebBtn.rel = 'noopener noreferrer';
-        viewWebBtn.title = 'Buka di website publik';
-        viewWebBtn.textContent = '↗ View';
-        viewWebBtn.style.cssText = `
-          padding: 3px 8px;
-          border-radius: 4px;
-          font-size: 11px;
-          font-weight: 600;
-          background: #f4f4f5;
-          color: #3f3f46;
-          border: 1px solid #d4d4d8;
-          text-decoration: none;
-          transition: all 0.15s ease;
-        `;
-        viewWebBtn.addEventListener('click', (e) => e.stopPropagation());
+            const actionWrapper = document.createElement('div');
+            actionWrapper.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; margin-left: auto; padding-left: 12px;';
 
-        actionsContainer.appendChild(viewWebBtn);
-        row.appendChild(actionsContainer);
+            const viewBtn = document.createElement('a');
+            viewBtn.href = webUrl;
+            viewBtn.target = '_blank';
+            viewBtn.rel = 'noopener noreferrer';
+            viewBtn.textContent = '↗ View';
+            viewBtn.title = 'Buka artikel di website publik';
+            viewBtn.style.cssText = `
+              padding: 2px 7px;
+              border-radius: 4px;
+              font-size: 11px;
+              font-weight: 600;
+              background: #ffffff;
+              color: #2563eb;
+              border: 1px solid #93c5fd;
+              text-decoration: none;
+              cursor: pointer;
+            `;
+            viewBtn.addEventListener('click', (e) => e.stopPropagation());
+
+            actionWrapper.appendChild(viewBtn);
+
+            const lastCell = row.querySelector('[role="gridcell"]:last-child, td:last-child') as HTMLElement | null;
+            if (lastCell) {
+              lastCell.style.display = 'flex';
+              lastCell.style.alignItems = 'center';
+              lastCell.style.justifyContent = 'space-between';
+              lastCell.appendChild(actionWrapper);
+            }
+          }
+        }
       });
     }
 
