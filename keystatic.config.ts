@@ -1,5 +1,5 @@
 import { config, fields, collection, singleton } from '@keystatic/core';
-import { block } from '@keystatic/core/content-components';
+import { block, inline } from '@keystatic/core/content-components';
 
 export default config({
   storage: {
@@ -288,6 +288,31 @@ export default config({
                 }),
                 caption: fields.text({
                   label: 'Keterangan Lagu / Playlist (Opsional)',
+                }),
+              },
+            }),
+            Citation: inline({
+              label: '📌 Sitasi / Catatan Kaki (Superskrip [1])',
+              schema: {
+                id: fields.text({
+                  label: 'Nomor / Indeks Sitasi (contoh: 1, 2, 3)',
+                  defaultValue: '1',
+                }),
+                source: fields.text({
+                  label: 'Judul Sumber / Referensi (e.g. Laporan Tahunan Kemenkeu 2026)',
+                }),
+                author: fields.text({
+                  label: 'Penulis / Lembaga / Media (e.g. Los Panturas Ent. / BPS)',
+                }),
+                url: fields.url({
+                  label: 'Tautan / Link Sumber (Opsional: https://...)',
+                }),
+                year: fields.text({
+                  label: 'Tahun / Tanggal (Opsional: e.g. 2026)',
+                }),
+                note: fields.text({
+                  label: 'Kutipan Singkat / Catatan Tambahan (Opsional)',
+                  multiline: true,
                 }),
               },
             }),
