@@ -23,7 +23,11 @@ const editionSlug = typeof post.publicationType === 'object' && post.publication
 
 let parentEdition = null;
 if (pubType === 'mingguan' && editionSlug) {
-  parentEdition = await reader.collections.editions.read(editionSlug);
+  try {
+    parentEdition = await reader.collections.editions.read(editionSlug);
+  } catch (e) {
+    parentEdition = null;
+  }
 }
 
 if (!isArticlePublished(post, parentEdition)) {
