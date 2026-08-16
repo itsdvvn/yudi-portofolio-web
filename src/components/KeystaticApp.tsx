@@ -116,11 +116,20 @@ export function KeystaticApp() {
 
       mainBtn.parentElement?.appendChild(wpTriggerBtn);
 
-      // Cek apakah artikel terhubung ke Edisi Majalah Mingguan
+      // Cek apakah form saat ini adalah Artikel yang bertipe Mingguan
       function checkIsWeeklyArticle() {
-        const selects = Array.from(document.querySelectorAll('select, [role="combobox"]'));
+        // Cek apakah halaman saat ini adalah writings collection
+        const isWritingsPage = window.location.pathname.includes('/writings');
+        if (!isWritingsPage) return false;
+
+        // Cari select/combobox Tipe Publikasi
+        const selects = Array.from(document.querySelectorAll('button[role="combobox"], select, [aria-haspopup="listbox"]'));
         for (const sel of selects) {
-          if ((sel.textContent || '').toLowerCase().includes('mingguan')) return true;
+          const text = (sel.textContent || '').trim().toLowerCase();
+          // Hanya anggap mingguan jika text pilihan AKTIF mengandung "mingguan" atau "majalah"
+          if (text.includes('mingguan') || text.includes('majalah edisi khusus')) {
+            return true;
+          }
         }
         return false;
       }
@@ -138,7 +147,7 @@ export function KeystaticApp() {
         top: 0;
         right: 0;
         bottom: 0;
-        width: 360px;
+        width: 380px;
         max-width: 90vw;
         background: #ffffff;
         border-left: 1px solid #e0e0e0;
@@ -184,22 +193,30 @@ export function KeystaticApp() {
 
           <!-- Section: Publish Scheduling -->
           <div id="wp-schedule-section" style="border-top:1px solid #e0e0e0; padding:14px 0;">
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:500; cursor:pointer;" id="wp-toggle-schedule">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:500; margin-bottom:12px;">
               <span>Publish:</span>
               <span id="wp-schedule-status-text" style="color:#007cba; font-weight:600;">Immediately</span>
             </div>
 
             <!-- Date & Time Picker Box -->
-            <div id="wp-picker-box" style="margin-top:14px; padding:14px; background:#f6f7f7; border-radius:6px; border:1px solid #dcdcde;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span style="font-size:11px; font-weight:700; color:#50575e; text-transform:uppercase;">Waktu Tayang</span>
+            <div id="wp-picker-box" style="padding:14px; background:#f6f7f7; border-radius:6px; border:1px solid #dcdcde;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="font-size:11px; font-weight:700; color:#50575e; text-transform:uppercase;">Jadwal Rilis</span>
                 <button type="button" id="wp-btn-now" style="font-size:11px; color:#007cba; background:none; border:none; cursor:pointer; font-weight:600; text-decoration:underline;">Set to Now</button>
               </div>
 
-              <div style="margin-bottom:10px;">
-                <label style="display:block; font-size:11px; font-weight:600; color:#50575e; margin-bottom:4px;">Pilih Tanggal & Jam (WIB)</label>
-                <input type="datetime-local" id="wp-picker-datetime" value="${currentIsoDate}T${currentHh}:${currentMm}" style="width:100%; padding:8px 10px; font-size:13px; border:1px solid #8c8f94; border-radius:4px; background:#ffffff; box-sizing:border-box;" />
+              <!-- Dedicated Date Picker -->
+              <div style="margin-bottom:12px;">
+                <label style="display:block; font-size:11px; font-weight:600; color:#50575e; margin-bottom:4px;">📅 Pilih Tanggal</label>
+                <input type="date" id="wp-picker-date" value="${currentIsoDate}" style="width:100%; padding:8px 10px; font-size:13px; border:1px solid #8c8f94; border-radius:4px; background:#ffffff; box-sizing:border-box;" />
               </div>
+
+              <!-- Dedicated Time Picker -->
+              <div style="margin-bottom:12px;">
+                <label style="display:block; font-size:11px; font-weight:600; color:#50575e; margin-bottom:4px;">⏰ Pilih Jam (WIB)</label>
+                <input type="time" id="wp-picker-time" value="${currentHh}:${currentMm}" style="width:100%; padding:8px 10px; font-size:13px; border:1px solid #8c8f94; border-radius:4px; background:#ffffff; box-sizing:border-box;" />
+              </div>
+
               <div style="font-size:11px; color:#646970;">Zona waktu sistem: <strong>WIB (UTC+7)</strong></div>
             </div>
           </div>
@@ -210,23 +227,27 @@ export function KeystaticApp() {
 
       const cancelBtn = drawer.querySelector('#wp-drawer-cancel') as HTMLElement;
       const submitBtn = drawer.querySelector('#wp-drawer-submit') as HTMLButtonElement;
-      const dtPicker = drawer.querySelector('#wp-picker-datetime') as HTMLInputElement;
+      const datePicker = drawer.querySelector('#wp-picker-date') as HTMLInputElement;
+      const timePicker = drawer.querySelector('#wp-picker-time') as HTMLInputElement;
       const statusText = drawer.querySelector('#wp-schedule-status-text') as HTMLElement;
       const nowBtn = drawer.querySelector('#wp-btn-now') as HTMLElement;
       const weeklyNotice = drawer.querySelector('#wp-weekly-notice') as HTMLElement;
       const scheduleSec = drawer.querySelector('#wp-schedule-section') as HTMLElement;
 
-      // Update button label & status text based on selected datetime (Reactive Button Morphing)
+      // Update button label & status text based on selected date & time (Reactive Button Morphing)
       function updateButtonMorph() {
-        if (!dtPicker) return;
-        const selectedDate = new Date(dtPicker.value);
+        if (!datePicker || !timePicker) return;
+        const dateVal = datePicker.value || currentIsoDate;
+        const timeVal = timePicker.value || `${currentHh}:${currentMm}`;
+        const combinedIso = `${dateVal}T${timeVal}`;
+        const selectedDate = new Date(combinedIso);
         const currentNow = new Date();
         const isFuture = selectedDate.getTime() > currentNow.getTime() + 60000; // toleransi 1 menit
 
         if (isFuture) {
           submitBtn.textContent = 'Schedule';
           submitBtn.style.backgroundColor = '#4f46e5'; // Indigo untuk Schedule
-          statusText.textContent = dtPicker.value.replace('T', ' ');
+          statusText.textContent = `${dateVal} ${timeVal} WIB`;
         } else {
           submitBtn.textContent = 'Publish';
           submitBtn.style.backgroundColor = '#007cba'; // Biru untuk Publish Now
@@ -234,8 +255,10 @@ export function KeystaticApp() {
         }
       }
 
-      dtPicker?.addEventListener('change', updateButtonMorph);
-      dtPicker?.addEventListener('input', updateButtonMorph);
+      datePicker?.addEventListener('change', updateButtonMorph);
+      datePicker?.addEventListener('input', updateButtonMorph);
+      timePicker?.addEventListener('change', updateButtonMorph);
+      timePicker?.addEventListener('input', updateButtonMorph);
 
       // Event: Buka Drawer
       wpTriggerBtn.addEventListener('click', () => {
@@ -264,7 +287,8 @@ export function KeystaticApp() {
         const hh = String(n.getHours()).padStart(2, '0');
         const mm = String(n.getMinutes()).padStart(2, '0');
         const dIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
-        if (dtPicker) dtPicker.value = `${dIso}T${hh}:${mm}`;
+        if (datePicker) datePicker.value = dIso;
+        if (timePicker) timePicker.value = `${hh}:${mm}`;
         updateButtonMorph();
       });
 
@@ -272,14 +296,22 @@ export function KeystaticApp() {
       submitBtn?.addEventListener('click', () => {
         drawer.style.display = 'none';
 
-        // Cari input datetime di form Keystatic asli dan sematkan nilainya
-        const keystaticInput = document.querySelector('input[type="datetime-local"], input[type="date"]') as HTMLInputElement;
-        if (keystaticInput && dtPicker && dtPicker.value) {
-          const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
-          if (setter) {
-            setter.call(keystaticInput, dtPicker.value);
-            keystaticInput.dispatchEvent(new Event('input', { bubbles: true }));
-            keystaticInput.dispatchEvent(new Event('change', { bubbles: true }));
+        const dateVal = datePicker?.value || currentIsoDate;
+        const timeVal = timePicker?.value || `${currentHh}:${currentMm}`;
+        const combinedIso = `${dateVal}T${timeVal}`;
+
+        // Cari input datetime/date di form Keystatic asli dan sematkan nilainya
+        const keystaticInputs = Array.from(document.querySelectorAll('input[type="datetime-local"], input[type="date"], input[type="text"]')) as HTMLInputElement[];
+        for (const input of keystaticInputs) {
+          const label = input.closest('label') || input.parentElement;
+          const text = (label?.textContent || '').toLowerCase();
+          if (text.includes('jadwal') || text.includes('publish') || text.includes('tanggal')) {
+            const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+            if (setter) {
+              setter.call(input, combinedIso);
+              input.dispatchEvent(new Event('input', { bubbles: true }));
+              input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
           }
         }
 

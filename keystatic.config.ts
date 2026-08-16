@@ -202,18 +202,10 @@ export default config({
             }),
           }
         ),
-        category: fields.select({
-          label: 'Kategori / Rubrik Utama',
-          description: 'Pilih kategori terkurasi untuk artikel ini',
-          options: [
-            { label: 'Skena-kenanya (Musik, Seni & Budaya Pop)', value: 'Skena-kenanya' },
-            { label: 'Opini & Esai', value: 'Opini' },
-            { label: 'Teknologi & AI', value: 'Teknologi' },
-            { label: 'Investigasi & Liputan Khusus', value: 'Investigasi' },
-            { label: 'Sinema & Film', value: 'Sinema' },
-            { label: 'Editorial Umum', value: 'Article' },
-          ],
-          defaultValue: 'Skena-kenanya',
+        category: fields.text({ 
+          label: 'Kategori / Rubrik (e.g. Skena-kenanya, Opini, Teknologi, Musik)', 
+          description: 'Tulis nama kategori atau rubrik artikel ini secara bebas',
+          defaultValue: 'Skena-kenanya' 
         }),
         deck: fields.text({ 
           label: 'Deck / Deskripsi Artikel (Maksimal 144 karakter)', 
