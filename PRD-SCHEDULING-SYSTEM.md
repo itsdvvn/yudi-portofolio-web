@@ -140,4 +140,9 @@ Ketika tombol `Publish…` diklik, muncul panel drawer samping kanan dengan alur
 - **Astro Component Library & Patterns**: [Bearnie Docs (https://bearnie.dev/docs/)](https://bearnie.dev/docs/)  
   *Gunakan referensi komponen Bearnie Dev (seperti `Sheet`, `Popover`, `Dialog`, `Calendar/DatePicker`, `Button Group`, dan `Accordion`) untuk panduan struktur markup, aksesibilitas (a11y), dan styling minimalis yang presisi.*
 - **Publishing Workflow Inspiration**: WordPress Gutenberg Pre-Publish Sidebar Panel.
+- **Agent Token Efficiency & Minimalist Engineering**: [Ponytail Architecture (https://github.com/DietrichGebert/ponytail)](https://github.com/DietrichGebert/ponytail)  
+  *Prinsip "The best code is the code you never wrote" & "Laziest Senior Dev":*
+  - *Utamakan komponen native dan minimalis tanpa bloating dependency.*
+  - *Gunakan chunking terfokus dan modularitas tinggi untuk menghemat konsumsi token context AI saat maintenance dan pengembangan fitur selanjutnya.*
+
 
