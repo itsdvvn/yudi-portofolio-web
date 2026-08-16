@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { reader } from '../lib/reader';
+import { isArticlePublished, parsePublishDateTime } from '../lib/schedule';
 
 // 1. Read Profile Data Live from Disk
 const profileData = (await reader.singletons.profile.read()) || {};
@@ -10,11 +11,12 @@ const writingSlugs = await reader.collections.writings.list();
 const writingsRaw = await Promise.all(
   writingSlugs.map(async (slug) => {
     const data = await reader.collections.writings.read(slug);
+    if (!data) return null;
     return { slug, ...data };
   })
 );
 const recentWritings = writingsRaw
-  .filter((post) => post && !post.draft)
+  .filter((post) => post && isArticlePublished(post))
   .sort((a, b) => new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf())
   .slice(0, 4);
 

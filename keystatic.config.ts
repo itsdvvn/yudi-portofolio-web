@@ -128,16 +128,12 @@ export default config({
           } 
         }),
         editionNumber: fields.text({
-          label: 'Label Edisi (e.g. Edisi 9 Agustus 2026)',
-          defaultValue: 'Edisi Terbaru',
+          label: 'Label Edisi (Opsional: e.g. Edisi 9 Agustus 2026)',
+          description: 'Kosongkan jika ingin label otomatis terbuat dari tanggal rilis.',
         }),
-        publishDate: fields.date({ 
-          label: 'Tanggal Terbit Edisi', 
-          defaultValue: { kind: 'today' } 
-        }),
-        publishTime: fields.text({ 
-          label: 'Waktu Terbit (e.g. 16.00 WIB)', 
-          defaultValue: '16.00 WIB' 
+        publishDate: fields.datetime({ 
+          label: 'Jadwal Rilis Edisi (Tanggal & Jam)', 
+          defaultValue: { kind: 'now' } 
         }),
         coverImage: fields.image({
           label: 'Cover Majalah Mingguan (Pilih / Upload Gambar Vertikal/Portrait)',
@@ -154,6 +150,10 @@ export default config({
         featured: fields.checkbox({
           label: 'Jadikan Edisi Utama Terkini (Active Edition)',
           defaultValue: true,
+        }),
+        draft: fields.checkbox({
+          label: 'Draft (Sembunyikan dari publik)',
+          defaultValue: false,
         }),
       },
     }),
@@ -202,7 +202,19 @@ export default config({
             }),
           }
         ),
-        category: fields.text({ label: 'Kategori / Tag Utama', defaultValue: 'Article' }),
+        category: fields.select({
+          label: 'Kategori / Rubrik Utama',
+          description: 'Pilih kategori terkurasi untuk artikel ini',
+          options: [
+            { label: 'Skena-kenanya (Musik, Seni & Budaya Pop)', value: 'Skena-kenanya' },
+            { label: 'Opini & Esai', value: 'Opini' },
+            { label: 'Teknologi & AI', value: 'Teknologi' },
+            { label: 'Investigasi & Liputan Khusus', value: 'Investigasi' },
+            { label: 'Sinema & Film', value: 'Sinema' },
+            { label: 'Editorial Umum', value: 'Article' },
+          ],
+          defaultValue: 'Skena-kenanya',
+        }),
         deck: fields.text({ 
           label: 'Deck / Deskripsi Artikel (Maksimal 144 karakter)', 
           description: 'Ringkasan singkat subheadline / meta deskripsi artikel (maks. 144 karakter)',
@@ -213,7 +225,10 @@ export default config({
             },
           },
         }),
-        publishDate: fields.date({ label: 'Publication Date', defaultValue: { kind: 'today' } }),
+        publishDate: fields.datetime({ 
+          label: 'Jadwal / Waktu Terbit (Tanggal & Jam)', 
+          defaultValue: { kind: 'now' } 
+        }),
         heroImage: fields.image({
           label: 'Hero / Featured Image (Pilih / Upload File)',
           directory: 'public/images/writings',

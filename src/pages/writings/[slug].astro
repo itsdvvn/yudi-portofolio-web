@@ -2,13 +2,31 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { reader } from '../../lib/reader';
 import { calculateReadingTime } from '../../lib/readingTime';
+import { isArticlePublished, parsePublishDateTime } from '../../lib/schedule';
 import Markdoc from '@markdoc/markdoc';
 import NewsletterBox from '../../components/NewsletterBox.astro';
 
 const { slug } = Astro.params;
 const post = await reader.collections.writings.read(slug as string);
 
-if (!post || post.draft) {
+if (!post) {
+  return Astro.redirect('/writings');
+}
+
+const pubType = typeof post.publicationType === 'object' && post.publicationType !== null 
+  ? post.publicationType.discriminant 
+  : (post.publicationType || 'reguler');
+
+const editionSlug = typeof post.publicationType === 'object' && post.publicationType?.value?.edition 
+  ? post.publicationType.value.edition 
+  : (post as any).edition;
+
+let parentEdition = null;
+if (pubType === 'mingguan' && editionSlug) {
+  parentEdition = await reader.collections.editions.read(editionSlug);
+}
+
+if (!isArticlePublished(post, parentEdition)) {
   return Astro.redirect('/writings');
 }
 
@@ -252,14 +270,6 @@ if (rawHero && !rawHero.startsWith('http')) {
   heroImg = `${rawHero}?t=${Date.now()}`;
 }
 
-const pubType = typeof post.publicationType === 'object' && post.publicationType !== null 
-  ? post.publicationType.discriminant 
-  : (post.publicationType || 'reguler');
-
-const postEdition = typeof post.publicationType === 'object' && post.publicationType?.value?.edition 
-  ? post.publicationType.value.edition 
-  : post.edition;
-
 const postRubrik = typeof post.publicationType === 'object' && post.publicationType?.value?.rubrik 
   ? post.publicationType.value.rubrik 
   : (post.rubrik || 'Artikel');
@@ -268,12 +278,13 @@ const isCoverStory = typeof post.publicationType === 'object' && post.publicatio
   ? post.publicationType.value.isCoverStory 
   : !!post.isCoverStory;
 
-// 6. If article belongs to a Weekly Magazine Edition, load the Edition & all sibling articles
-let parentEdition: any = null;
+// 6. If article belongs to a Weekly Magazine Edition, load all sibling articles
 let editionArticles: any[] = [];
 
 if (pubType === 'mingguan' && postEdition) {
-  parentEdition = await reader.collections.editions.read(postEdition);
+  if (!parentEdition) {
+    parentEdition = await reader.collections.editions.read(postEdition);
+  }
   if (parentEdition) {
     const allWritingsSlugs = await reader.collections.writings.list();
     const allWritingsData = await Promise.all(

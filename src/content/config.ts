@@ -4,13 +4,13 @@ const editionsCollection = defineCollection({
   type: 'data',
   schema: z.object({
     title: z.string(),
-    editionNumber: z.string().default('Edisi Terbaru'),
+    editionNumber: z.string().optional().nullable(),
     publishDate: z.coerce.date(),
-    publishTime: z.string().default('16.00 WIB'),
     coverImage: z.string().optional().nullable(),
     coverImageUrl: z.string().optional().nullable(),
     summary: z.string().optional().nullable(),
     featured: z.boolean().default(true),
+    draft: z.boolean().default(false),
   }),
 });
 
@@ -33,7 +33,6 @@ const writingsCollection = defineCollection({
       category: z.string().default('Article'),
       deck: z.string().max(144).optional().nullable(),
       publishDate: z.coerce.date(),
-      publishTime: z.string().optional().nullable(),
       readTime: z.string().optional().nullable(),
       heroImage: z.string().optional().nullable(),
       heroImageUrl: z.string().optional().nullable(),

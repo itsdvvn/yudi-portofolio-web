@@ -2,9 +2,36 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { reader } from '../../lib/reader';
 import { calculateReadingTime } from '../../lib/readingTime';
+import { isArticlePublished, isEditionPublished, parsePublishDateTime } from '../../lib/schedule';
 import Markdoc from '@markdoc/markdoc';
 
-// 1. Fetch All Writings
+// 1. Fetch All Editions first
+const editionSlugs = await reader.collections.editions.list();
+const editionsRaw = await Promise.all(
+  editionSlugs.map(async (slug) => {
+    const data = await reader.collections.editions.read(slug);
+    if (!data) return null;
+    return { slug, ...data };
+  })
+);
+
+// Map edition dictionary for fast lookup
+const editionsMap = new Map(editionsRaw.filter(Boolean).map((e) => [e!.slug, e]));
+
+// Published Editions (termasuk auto-fallback untuk label edisi)
+const editions = editionsRaw
+  .filter((e) => e && isEditionPublished(e))
+  .map((e) => {
+    let label = e!.editionNumber;
+    if (!label || label.trim() === '' || label === 'Edisi Terbaru') {
+      const parsedDate = parsePublishDateTime(e!.publishDate);
+      label = `Edisi ${parsedDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+    }
+    return { ...e!, editionNumber: label };
+  })
+  .sort((a, b) => new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf());
+
+// 2. Fetch All Writings
 const allSlugs = await reader.collections.writings.list();
 const writingsRaw = await Promise.all(
   allSlugs.map(async (slug) => {
@@ -51,27 +78,17 @@ const writingsRaw = await Promise.all(
 );
 
 const allWritings = writingsRaw
-  .filter((post) => post && !post.draft)
+  .filter((post) => {
+    if (!post) return false;
+    const parentEdition = post.edition ? editionsMap.get(post.edition) : null;
+    return isArticlePublished(post, parentEdition);
+  })
   .sort((a, b) => new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf());
 
 // Filter Harian / Reguler (termasuk artikel lama tanpa publicationType)
 const regulerWritings = allWritings.filter(
   (p) => !p.publicationType || p.publicationType === 'reguler'
 );
-
-// 2. Fetch All Editions
-const editionSlugs = await reader.collections.editions.list();
-const editionsRaw = await Promise.all(
-  editionSlugs.map(async (slug) => {
-    const data = await reader.collections.editions.read(slug);
-    if (!data) return null;
-    return { slug, ...data };
-  })
-);
-
-const editions = editionsRaw
-  .filter(Boolean)
-  .sort((a, b) => new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf());
 
 // Featured / Latest Edition
 const featuredEdition = editions.find((e) => e.featured) || editions[0];
@@ -87,7 +104,7 @@ const otherEditionArticles = featuredEditionArticles.filter((p) => p.slug !== co
 
 function formatDate(dateStr: string) {
   if (!dateStr) return '';
-  const date = new Date(dateStr);
+  const date = parsePublishDateTime(dateStr);
   return date.toLocaleDateString('id-ID', {
     month: 'long',
     day: 'numeric',

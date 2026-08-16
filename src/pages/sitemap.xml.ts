@@ -2,6 +2,7 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { reader } from '../lib/reader';
+import { isArticlePublished, parsePublishDateTime } from '../lib/schedule';
 
 export const ALL: APIRoute = async ({ site, request }) => {
   const baseUrl = (site ? site.origin : 'https://itsdvvn.my.id').replace(/\/+$/, '');
@@ -19,15 +20,16 @@ export const ALL: APIRoute = async ({ site, request }) => {
   const writings = await Promise.all(
     writingSlugs.map(async (slug) => {
       const data = await reader.collections.writings.read(slug);
+      if (!data) return null;
       return { slug, ...data };
     })
   );
 
   const dynamicWritingPages = writings
-    .filter((post) => post && !post.draft)
+    .filter((post) => post && isArticlePublished(post))
     .map((post) => ({
       url: `${baseUrl}/writings/${post.slug}`,
-      lastmod: post.publishDate ? new Date(post.publishDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      lastmod: post.publishDate ? parsePublishDateTime(post.publishDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       changefreq: 'monthly',
       priority: '0.7',
     }));
