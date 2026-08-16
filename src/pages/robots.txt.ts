@@ -2,7 +2,7 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 
-export const GET: APIRoute = async ({ site }) => {
+export const ALL: APIRoute = async ({ site }) => {
   const baseUrl = (site ? site.origin : 'https://itsdvvn.my.id').replace(/\/+$/, '');
 
   const robots = `User-agent: *

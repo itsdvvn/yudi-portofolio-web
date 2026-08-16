@@ -3,7 +3,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { reader } from '../lib/reader';
 
-export const GET: APIRoute = async ({ site }) => {
+export const ALL: APIRoute = async ({ site, request }) => {
   const baseUrl = (site ? site.origin : 'https://itsdvvn.my.id').replace(/\/+$/, '');
 
   // 1. Static Pages
