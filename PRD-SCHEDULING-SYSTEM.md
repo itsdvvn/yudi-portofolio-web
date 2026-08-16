@@ -145,4 +145,33 @@ Ketika tombol `Publish…` diklik, muncul panel drawer samping kanan dengan alur
   - *Utamakan komponen native dan minimalis tanpa bloating dependency.*
   - *Gunakan chunking terfokus dan modularitas tinggi untuk menghemat konsumsi token context AI saat maintenance dan pengembangan fitur selanjutnya.*
 
+---
+
+## 8. 👑 Adopsi "Logika Emas" WordPress Gutenberg Core
+
+Berdasarkan dokumentasi arsitektur WordPress Core Editor (`@wordpress/data` dan Gutenberg Pre-Publish Flow), berikut adalah 4 pilar logika emas yang diadopsi ke dalam sistem kita:
+
+### 1. State Machine & Status Transitions
+WordPress tidak menganggap jadwal hanya sebagai string tanggal, melainkan sebuah **State Transition**:
+- **`draft`**: Postingan tersimpan di disk, tidak dipublikasikan ke Astro SSR.
+- **`future` (Scheduled)**: Postingan memiliki timestamp rilis `publishDate > Now (WIB)`. Di frontend Astro, data ini otomatis di-filter keluar dari query publik dan sitemap.
+- **`publish`**: Begitu waktu sistem mencapai atau melewati `publishDate`, status postingan secara otomatis dianggap aktif (`isArticlePublished = true`) tanpa perlu manual build ulang.
+
+### 2. Pre-Publish Panel Isolation (SlotFill Concept)
+- **Separation of Concerns**: Lembar drafting utama murni untuk konten (Judul, Deck, Markdoc editor, Gambar).
+- **Pre-Flight Check**: Tindakan publikasi diisolasi di dalam drawer/panel pre-publish untuk memvalidasi:
+  - *Visibility* (Publik).
+  - *Schedule vs Immediately* (Otomatis mengubah label tombol dari `Publish` menjadi `Schedule` jika tanggal dipilih di masa depan).
+  - *Parent Edition Inheritance* (Cek apakah artikel terikat dengan Majalah Mingguan).
+
+### 3. Reactive Button Morphing
+- Jika tanggal yang dipilih adalah **waktu saat ini atau masa lalu**, tombol aksi utama berlabel **`Publish`** (Warna Biru WordPress `#007cba` / Emerald `#10b981`).
+- Jika tanggal yang dipilih adalah **waktu di masa depan**, tombol aksi otomatis bertransformasi menjadi **`Schedule…`** (Warna Biru / Indigo) untuk memberi penegasan visual kepada penulis bahwa artikel dijadwalkan.
+
+### 4. Hierarchical Parent-Child State Sync
+- Pada artikel Majalah Mingguan (*Child*), logika status mengikuti hierarki WordPress:
+  $$\text{Status Child} = \text{Status Parent Edition} \land \neg(\text{Child Draft})$$
+  Artinya, jika Edisi Induk berstatus `future` (misal rilis Minggu jam 16:00 WIB), seluruh child artikel di dalamnya otomatis berstatus `future` dan akan terbit bersamaan secara instan saat Edisi Induk rilis.
+
+
 
