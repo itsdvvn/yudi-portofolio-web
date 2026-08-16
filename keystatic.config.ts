@@ -116,6 +116,25 @@ export default config({
     }),
   },
   collections: {
+    tags: collection({
+      label: 'Tags / Topik Artikel',
+      slugField: 'name',
+      path: 'src/content/tags/*',
+      format: { data: 'json' },
+      schema: {
+        name: fields.slug({
+          name: {
+            label: 'Nama Tag (e.g. Politik, AI, Film, Budaya, Musik)',
+            description: 'Tulis nama tag baru yang ingin Anda tambahkan',
+          },
+        }),
+        description: fields.text({
+          label: 'Deskripsi Tag (Opsional)',
+          description: 'Keterangan singkat tentang topik tag ini',
+          multiline: true,
+        }),
+      },
+    }),
     rubrics: collection({
       label: 'Rubrik & Kategori',
       slugField: 'name',
@@ -279,10 +298,16 @@ export default config({
         }),
         imageCaption: fields.text({ label: 'Image Caption' }),
         photoCredit: fields.text({ label: 'Photo Credit' }),
-        tags: fields.array(fields.text({ label: 'Tag' }), {
-          label: 'Tags',
-          itemLabel: (props) => props.value || 'Tag',
-        }),
+        tags: fields.array(
+          fields.relationship({
+            label: 'Pilih Tag',
+            collection: 'tags',
+          }),
+          {
+            label: 'Tags Artikel',
+            itemLabel: (props) => props.value || 'Pilih Tag...',
+          }
+        ),
         draft: fields.checkbox({ label: 'Draft', defaultValue: false }),
         content: fields.markdoc({
           label: 'Article Body Content',
