@@ -6,39 +6,62 @@ const KeystaticOriginal = makePage(config);
 
 export function KeystaticApp() {
   useEffect(() => {
-    // Live character counter murni yang membaca value dan menampilkan counter secara non-intrusif
-    // Live character counter murni: memperbarui teks deskripsi bawaan Keystatic secara reaktif
+    // Live character counter murni yang membaca value dan menampilkan counter di header label field secara non-intrusif
     function updateFieldCounters() {
       const inputs = Array.from(document.querySelectorAll('input[type="text"], textarea')) as (HTMLInputElement | HTMLTextAreaElement)[];
       
       inputs.forEach((input) => {
         if (input.closest('#wp-gutenberg-pre-publish-drawer') || input.closest('[role="dialog"]')) return;
 
-        // Cari container field
-        const container = input.closest('div[class*="css-"]') || input.parentElement?.parentElement;
-        if (!container) return;
-
-        const allText = (container.textContent || '').toLowerCase();
-        const isTitle = (allText.includes('headline') || allText.includes('judul artikel')) && input.tagName === 'INPUT' && !input.id?.includes('slug');
-        const isDeck = (allText.includes('deck') || allText.includes('deskripsi artikel')) && input.tagName === 'TEXTAREA';
+        // Cari label atau container field
+        const labelEl = input.closest('label') || input.parentElement?.querySelector('label') || input.parentElement?.parentElement?.querySelector('label');
+        const labelText = (labelEl?.textContent || '').toLowerCase();
+        
+        const isTitle = (labelText.includes('headline') || labelText.includes('judul artikel')) && input.tagName === 'INPUT' && !input.id?.includes('slug');
+        const isDeck = (labelText.includes('deck') || labelText.includes('deskripsi artikel')) && input.tagName === 'TEXTAREA';
 
         if (!isTitle && !isDeck) return;
 
+        const targetLabel = labelEl || input.parentElement?.parentElement?.querySelector('label, [role="heading"], span');
+        if (!targetLabel) return;
+
         const max = isTitle ? 80 : 144;
-        const name = isTitle ? 'Judul' : 'Deskripsi';
-        const baseDesc = isTitle ? 'Tulis judul artikel' : 'Ringkasan singkat subheadline / meta deskripsi artikel';
+        const name = isTitle ? 'Judul Artikel' : 'Deskripsi Artikel';
         const len = input.value ? input.value.length : 0;
         const remaining = max - len;
         const isOver = len > max;
 
-        // Cari elemen deskripsi bawaan Keystatic (FieldDescription)
-        // Di Keystar/Keystatic, description biasanya berada sebelum wrapper input
-        const descEl = container.querySelector('[id*="description"], p, span') as HTMLElement | null;
-        if (descEl && descEl.textContent && (descEl.textContent.includes(baseDesc) || descEl.dataset.isCounterDesc === 'true')) {
-          descEl.dataset.isCounterDesc = 'true';
-          const counterText = `${name}: ${len}/${max} karakter • ${isOver ? '⚠️ Kelebihan ' + Math.abs(remaining) + ' karakter' : 'Sisa ' + remaining + ' karakter'}`;
-          
-          descEl.innerHTML = `${baseDesc} (maksimal ${max} karakter) — <strong style="color:${isOver ? '#ef4444' : (len >= max * 0.85 ? '#f59e0b' : '#047857')}; font-family:ui-monospace, monospace;">${counterText}</strong>`;
+        // Cari atau buat wadah counter di dalam label header
+        let counterEl = targetLabel.querySelector('.keystatic-live-counter') as HTMLElement | null;
+        if (!counterEl) {
+          counterEl = document.createElement('span');
+          counterEl.className = 'keystatic-live-counter';
+          counterEl.style.cssText = `
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-family: ui-monospace, monospace;
+            font-weight: 600;
+            margin-left: 12px;
+            pointer-events: none;
+            user-select: none;
+            vertical-align: middle;
+          `;
+          targetLabel.appendChild(counterEl);
+        }
+
+        counterEl.innerHTML = `
+          <span>•</span>
+          <span>${len}/${max} karakter (${isOver ? '⚠️ Kelebihan ' + Math.abs(remaining) : 'Sisa ' + remaining})</span>
+        `;
+
+        if (isOver) {
+          counterEl.style.color = '#ef4444';
+        } else if (len >= max * 0.85) {
+          counterEl.style.color = '#f59e0b';
+        } else {
+          counterEl.style.color = '#059669';
         }
       });
     }
@@ -367,6 +390,11 @@ export function KeystaticApp() {
 
     // Enhancer untuk Table List View: Label Status & Quick Actions
     function enhanceTableListView() {
+      // Pastikan HANYA berjalan di halaman list view koleksi, bukan di form create/edit
+      const pathname = window.location.pathname;
+      const isCollectionListPage = (pathname.endsWith('/collection/writings') || pathname.endsWith('/collection/writings/') || pathname.endsWith('/collection/editions') || pathname.endsWith('/collection/editions/')) && !pathname.includes('/create') && !pathname.includes('/item/');
+      if (!isCollectionListPage) return;
+
       // Keystar Table menggunakan elemen [role="row"] atau <tr>
       const rows = Array.from(document.querySelectorAll('[role="row"], tr')) as HTMLElement[];
       
@@ -375,10 +403,12 @@ export function KeystaticApp() {
         if (row.querySelector('[role="columnheader"], th')) return;
         if (row.dataset.hasEnhancement === 'true') return;
 
-        // Cari sel nama atau link item
-        const link = row.querySelector('a[href*="/collection/"]') as HTMLAnchorElement | null;
+        // Wajib memiliki link item koleksi (/collection/.../item/...)
+        const link = row.querySelector('a[href*="/collection/"][href*="/item/"]') as HTMLAnchorElement | null;
+        if (!link) return;
+
         const cell = row.querySelector('[role="rowheader"], [role="gridcell"], td') as HTMLElement | null;
-        if (!link && !cell) return;
+        if (!cell) return;
 
         // Baca tanggal (YYYY-MM-DD) dan jam (HH:mm) dari teks seluruh baris tabel
         const cells = Array.from(row.querySelectorAll('[role="gridcell"], [role="rowheader"], td'));
