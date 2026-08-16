@@ -6,7 +6,68 @@ const KeystaticOriginal = makePage(config);
 
 export function KeystaticApp() {
   useEffect(() => {
-    // Hapus setupCounters manual agar input field bawaan React Keystatic tidak terganggu
+    // Live character counter murni yang membaca value dan menampilkan counter secara non-intrusif
+    function updateFieldCounters() {
+      const inputs = Array.from(document.querySelectorAll('input[type="text"], textarea')) as (HTMLInputElement | HTMLTextAreaElement)[];
+      
+      inputs.forEach((input) => {
+        if (input.closest('#wp-gutenberg-pre-publish-drawer') || input.closest('[role="dialog"]')) return;
+
+        // Deteksi field Judul Artikel (max 80) dan Deck (max 144)
+        const container = input.closest('div[class*="css-"]') || input.parentElement?.parentElement;
+        if (!container) return;
+
+        const labelEl = container.querySelector('label, [role="heading"], span');
+        const labelText = (labelEl?.textContent || '').toLowerCase();
+        
+        const isTitle = (labelText.includes('headline') || labelText.includes('judul artikel')) && input.tagName === 'INPUT' && !input.id?.includes('slug');
+        const isDeck = (labelText.includes('deck') || labelText.includes('deskripsi artikel')) && input.tagName === 'TEXTAREA';
+
+        if (!isTitle && !isDeck) return;
+
+        const max = isTitle ? 80 : 144;
+        const name = isTitle ? 'Judul Artikel' : 'Deskripsi Artikel';
+        const len = input.value ? input.value.length : 0;
+        const remaining = max - len;
+        const isOver = len > max;
+
+        // Cari atau buat wadah counter di dalam container field
+        let counterEl = container.querySelector('.keystatic-live-counter') as HTMLElement | null;
+        if (!counterEl) {
+          counterEl = document.createElement('div');
+          counterEl.className = 'keystatic-live-counter';
+          counterEl.style.cssText = `
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-family: ui-monospace, monospace;
+            font-weight: 600;
+            margin-top: 4px;
+            margin-bottom: 6px;
+            padding: 0 2px;
+            pointer-events: none;
+            user-select: none;
+          `;
+          container.appendChild(counterEl);
+        }
+
+        counterEl.innerHTML = `
+          <span>${name}: <strong>${len}/${max}</strong> karakter</span>
+          <span>•</span>
+          <span>${isOver ? '⚠️ Kelebihan ' + Math.abs(remaining) + ' karakter' : 'Sisa ' + remaining + ' karakter'}</span>
+        `;
+
+        if (isOver) {
+          counterEl.style.color = '#ef4444';
+        } else if (len >= max * 0.85) {
+          counterEl.style.color = '#f59e0b';
+        } else {
+          counterEl.style.color = '#71717a';
+        }
+      });
+    }
 
     // Sembunyikan field input jadwal & jam teknis di tengah form lembar ketik secara visual
     // Menggunakan clip/opacity agar React event handler tetap aktif menerima input
@@ -444,6 +505,7 @@ export function KeystaticApp() {
     }
 
     const interval = setInterval(() => {
+      updateFieldCounters();
       hideCentralDatetimeFields();
       setupWordPressPublishPanel();
       enhanceTableListView();
