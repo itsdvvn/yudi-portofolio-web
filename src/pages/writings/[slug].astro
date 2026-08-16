@@ -209,7 +209,7 @@ const markdocConfig = {
         return new Markdoc.Tag('span', { class: 'citation-wrapper relative inline-block' }, [
           new Markdoc.Tag('sup', {
             id: `cite-ref-${citeId}`,
-            class: 'citation-sup cursor-pointer select-none font-mono text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 hover:underline px-0.5 transition-colors',
+            class: 'citation-sup cursor-pointer select-none font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline px-0.5 transition-colors',
             'data-citation': tooltipData,
             'data-id': citeId,
             role: 'button',
@@ -392,41 +392,41 @@ if (pubType === 'mingguan' && postEdition) {
     {collectedCitations.length > 0 && (
       <section id="references-section" class="my-10 pt-6 border-t" style="border-color: var(--border);">
         <div class="flex items-center gap-2 mb-4">
-          <span class="text-sm font-bold tracking-tight text-zinc-100 flex items-center gap-1.5 font-mono">
+          <span class="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 font-mono">
             <span>📚</span>
             <span>Catatan & Referensi</span>
           </span>
-          <span class="text-[11px] font-mono text-zinc-500">({collectedCitations.length})</span>
+          <span class="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 font-semibold">({collectedCitations.length})</span>
         </div>
 
         <ol class="space-y-3 pl-0 list-none">
           {collectedCitations.map((cite) => (
-            <li id={`citation-entry-${cite.id}`} class="text-xs leading-relaxed text-zinc-300 flex items-start gap-2.5 p-2 rounded-lg transition-colors hover:bg-white/[0.02]">
-              <span class="font-mono text-emerald-400 font-bold shrink-0 pt-0.5 select-none">
+            <li id={`citation-entry-${cite.id}`} class="text-xs leading-relaxed text-zinc-800 dark:text-zinc-200 flex items-start gap-2.5 p-2.5 rounded-lg transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.03] border border-transparent">
+              <span class="font-mono text-emerald-600 dark:text-emerald-400 font-bold shrink-0 pt-0.5 select-none text-xs">
                 [{cite.id}]
               </span>
               <div class="min-w-0 flex-1">
-                <div class="font-medium text-zinc-200">
+                <div class="font-semibold text-zinc-900 dark:text-zinc-100">
                   {cite.source}
-                  {cite.year && <span class="text-zinc-400 font-mono text-[11px]"> ({cite.year})</span>}
+                  {cite.year && <span class="text-zinc-600 dark:text-zinc-400 font-mono text-[11px]"> ({cite.year})</span>}
                 </div>
                 {cite.author && (
-                  <div class="text-zinc-400 text-[11px] mt-0.5">
+                  <div class="text-zinc-600 dark:text-zinc-400 text-[11px] mt-0.5 font-medium">
                     {cite.author}
                   </div>
                 )}
                 {cite.note && (
-                  <div class="text-zinc-400 italic text-[11px] mt-1 pl-2 border-l-2 border-zinc-700">
+                  <div class="text-zinc-700 dark:text-zinc-300 italic text-[11px] mt-1 pl-2.5 border-l-2 border-emerald-500/40">
                     "{cite.note}"
                   </div>
                 )}
-                <div class="flex items-center gap-3 mt-1.5 text-[11px] font-mono">
+                <div class="flex items-center gap-3.5 mt-2 text-[11px] font-mono font-medium">
                   {cite.url && (
                     <a 
                       href={cite.url} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      class="text-emerald-400 hover:text-emerald-300 hover:underline inline-flex items-center gap-1"
+                      class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline inline-flex items-center gap-1"
                     >
                       <span>Buka Sumber</span>
                       <span>↗</span>
@@ -434,7 +434,7 @@ if (pubType === 'mingguan' && postEdition) {
                   )}
                   <a 
                     href={`#cite-ref-${cite.id}`} 
-                    class="text-zinc-400 hover:text-white transition-colors"
+                    class="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
                     title="Kembali ke paragraf"
                   >
                     ↑ Kembali ke teks
@@ -449,7 +449,7 @@ if (pubType === 'mingguan' && postEdition) {
 
     <!-- 📖 Majalah Mingguan Series / Edition Navigation Box (Tempo Style) -->
     {parentEdition && editionArticles.length > 0 && (
-      <section class="my-10 rounded-xl overflow-hidden border p-5 sm:p-7 bg-zinc-950 text-white shadow-xl" style="border-color: rgba(255,255,255,0.12);">
+      <section class="my-10 rounded-xl overflow-hidden border p-5 sm:p-7 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-xl" style="border-color: var(--border);">
         <!-- Edition Header -->
         <div class="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
           <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-600 text-white font-mono tracking-wider uppercase">
@@ -537,8 +537,8 @@ if (pubType === 'mingguan' && postEdition) {
   <!-- Interactive Citation Popover Tooltip Element -->
   <div 
     id="citation-popover" 
-    class="fixed hidden z-50 max-w-xs sm:max-w-sm rounded-xl p-3.5 text-left border shadow-2xl backdrop-blur-md bg-zinc-950/95 text-white transition-all duration-150 pointer-events-auto"
-    style="border-color: rgba(255,255,255,0.15);"
+    class="fixed hidden z-50 max-w-xs sm:max-w-sm rounded-xl p-3.5 text-left border shadow-2xl backdrop-blur-md bg-white/95 dark:bg-zinc-950/95 text-zinc-900 dark:text-white transition-all duration-150 pointer-events-auto"
+    style="border-color: var(--border);"
     role="tooltip"
   >
     <div id="citation-popover-content"></div>
@@ -562,15 +562,15 @@ if (pubType === 'mingguan' && postEdition) {
         try {
           const data = JSON.parse(decodeURIComponent(rawData));
           popoverContent.innerHTML = `
-            <div class="flex items-start justify-between gap-2 mb-1">
-              <span class="font-mono text-[11px] text-emerald-400 font-bold tracking-wider uppercase">Referensi [${data.id}]</span>
-              <a href="#citation-entry-${data.id}" class="text-[10px] font-mono text-zinc-400 hover:text-white transition-colors">Lihat di daftar ↓</a>
+            <div class="flex items-start justify-between gap-2 mb-1.5 pb-1 border-b" style="border-color: var(--border);">
+              <span class="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 font-bold tracking-wider uppercase">Referensi [${data.id}]</span>
+              <a href="#citation-entry-${data.id}" class="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Lihat di daftar ↓</a>
             </div>
-            <div class="text-xs font-semibold text-zinc-100 leading-snug mb-0.5">${data.source}</div>
-            ${data.author ? `<div class="text-[11px] text-zinc-400 mb-1">${data.author}${data.year ? ` (${data.year})` : ''}</div>` : ''}
-            ${data.note ? `<div class="text-[11px] text-zinc-300 italic mb-2 pl-2 border-l border-zinc-700">"${data.note}"</div>` : ''}
+            <div class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 leading-snug mb-0.5">${data.source}</div>
+            ${data.author ? `<div class="text-[11px] text-zinc-600 dark:text-zinc-400 mb-1 font-medium">${data.author}${data.year ? ` (${data.year})` : ''}</div>` : ''}
+            ${data.note ? `<div class="text-[11px] text-zinc-700 dark:text-zinc-300 italic mb-2 pl-2 border-l-2 border-emerald-500/40">"${data.note}"</div>` : ''}
             ${data.url ? `
-              <a href="${data.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs text-emerald-400 hover:underline font-mono mt-1">
+              <a href="${data.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-mono mt-1 font-medium">
                 <span>Buka Tautan Sumber</span>
                 <span>↗</span>
               </a>
