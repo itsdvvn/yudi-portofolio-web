@@ -67,24 +67,26 @@ export function KeystaticApp() {
     }
 
     // Sembunyikan field input jadwal & jam teknis di tengah form lembar ketik secara visual
-    // Menggunakan clip/opacity agar React event handler tetap aktif menerima input
+    // Menggunakan clip/opacity/height agar React event handler tetap aktif menerima input dari drawer WordPress
     function hideCentralDatetimeFields() {
-      const inputs = Array.from(document.querySelectorAll('input[type="date"], input[type="datetime-local"], input[type="text"]')) as HTMLInputElement[];
-      inputs.forEach((input) => {
-        if (input.closest('#wp-gutenberg-pre-publish-drawer')) return;
+      // 1. Cari berdasarkan label atau container teks
+      const labelsAndSpans = Array.from(document.querySelectorAll('label, [id*="description"], div[class*="css-"]')) as HTMLElement[];
+      labelsAndSpans.forEach((el) => {
+        if (el.closest('#wp-gutenberg-pre-publish-drawer') || el.closest('[role="dialog"]')) return;
 
-        const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
-        const text = (container?.textContent || '').toLowerCase();
-
+        const text = (el.textContent || '').toLowerCase();
         if (
+          text.includes('jadwal rilis majalah') ||
+          text.includes('jam rilis majalah') ||
+          text.includes('tanggal rilis artikel') ||
+          text.includes('jam rilis artikel') ||
           text.includes('jadwal rilis') || 
-          text.includes('jadwal / waktu terbit') || 
           text.includes('tanggal rilis') ||
-          text.includes('jam rilis') ||
-          text.includes('waktu rilis')
+          text.includes('jam rilis')
         ) {
-          const fieldBlock = (input.closest('div[class*="css-"]') || container) as HTMLElement;
-          if (fieldBlock && fieldBlock.style.opacity !== '0') {
+          // Cari container field terluar (div dengan class css-)
+          const fieldBlock = el.closest('div[class*="css-"]') as HTMLElement | null;
+          if (fieldBlock && fieldBlock.style.display !== 'none' && fieldBlock.style.opacity !== '0') {
             fieldBlock.style.opacity = '0';
             fieldBlock.style.position = 'absolute';
             fieldBlock.style.pointerEvents = 'none';
