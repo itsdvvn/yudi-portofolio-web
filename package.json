@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "upload:media": "node scripts/upload-media.mjs"
+    "deploy:dev": "node scripts/deploy.mjs dev",
+    "deploy:prod": "node scripts/deploy.mjs prod"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
