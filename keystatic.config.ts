@@ -121,6 +121,7 @@ export default config({
       slugField: 'title',
       path: 'src/content/editions/*',
       format: { data: 'json' },
+      columns: ['title', 'publishDate', 'publishTime', 'draft'],
       schema: {
         title: fields.slug({ 
           name: { 
@@ -169,6 +170,7 @@ export default config({
       slugField: 'title',
       path: 'src/content/writings/*',
       format: { contentField: 'content' },
+      columns: ['title', 'category', 'publishDate', 'publishTime', 'draft'],
       schema: {
         title: fields.slug({ 
           name: { 
@@ -346,6 +348,7 @@ export default config({
       slugField: 'id',
       path: 'src/content/thoughts/*',
       format: { contentField: 'content' },
+      columns: ['publishDate', 'pinned'],
       schema: {
         id: fields.slug({ name: { label: 'Short ID / Title' } }),
         pinned: fields.checkbox({
@@ -367,6 +370,7 @@ export default config({
       slugField: 'title',
       path: 'src/content/ships/*',
       format: { contentField: 'content' },
+      columns: ['title', 'category', 'year', 'featured'],
       schema: {
         title: fields.slug({ name: { label: 'Project / Artwork Title' } }),
         category: fields.select({
