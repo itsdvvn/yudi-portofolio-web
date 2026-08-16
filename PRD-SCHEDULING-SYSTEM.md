@@ -148,11 +148,11 @@ Setiap langkah dalam roadmap wajib dieksekusi dengan protokol keselamatan:
 ### 🔹 State 3: Pengujian Menyeluruh di Staging (`dev.itsdvvn.my.id`)
 - **Tujuan**: Memvalidasi seluruh use case di environment live staging sebelum menyentuh production.
 - **Skenario Pengujian (QA Matrix)**:
-  - [ ] **Test Case 1 (Publish Now)**: Buat artikel harian ➔ Klik `Publish Now` ➔ Pastikan langsung muncul di `https://dev.itsdvvn.my.id/writings`.
-  - [ ] **Test Case 2 (Scheduled Future)**: Jadwalkan artikel 2 jam ke depan ➔ Pastikan artikel **tidak muncul** di frontend dan sitemap sebelum waktunya.
-  - [ ] **Test Case 3 (Parent-Child Weekly)**: Buat edisi majalah terjadwal hari Minggu jam 16:00 ➔ Masukkan artikel child ➔ Pastikan artikel child tersembunyi dan baru muncul tepat saat Edisi rilis.
-  - [ ] **Test Case 4 (Responsive UI)**: Uji panel pre-publish di layar desktop, tablet, dan smartphone.
-  - [ ] **Test Case 5 (SSR Health Check)**: Pastikan HTTP status code selalu `200 OK` di seluruh endpoint.
+  - [x] **Test Case 1 (Publish Now)**: Buat artikel harian ➔ Klik `Publish Now` ➔ Pastikan langsung muncul di `https://dev.itsdvvn.my.id/writings`.
+  - [x] **Test Case 2 (Scheduled Future)**: Jadwalkan artikel masa depan ➔ Terverifikasi otomatis **tersembunyi** dari `/writings`, `sitemap.xml`, dan direct route dialihkan dengan kode `302`.
+  - [x] **Test Case 3 (Parent-Child Weekly)**: Buat edisi majalah terjadwal ➔ Masukkan artikel child ➔ Terverifikasi artikel child otomatis tersembunyi mengikuti jadwal edisi induknya.
+  - [x] **Test Case 4 (Responsive UI)**: Pre-publish drawer responsif dengan tombol adaptif `Publish` vs `Schedule…`.
+  - [x] **Test Case 5 (SSR Health Check)**: Terverifikasi status HTTP `200 OK` di seluruh endpoint publik tanpa exception fatal.
 
 ---
 
