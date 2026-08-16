@@ -36,6 +36,24 @@ if (pubType === 'mingguan' && editionSlug) {
   }
 }
 
+// Resolusi nama rubrik/kategori dari database rubrics jika bertindak sebagai relationship slug
+const rawCategory = post.category;
+const rawMingguanRubrik = typeof post.publicationType === 'object' && post.publicationType?.value?.rubrik 
+  ? post.publicationType.value.rubrik 
+  : (post as any).rubrik;
+
+let displayRubrik = 'Artikel';
+const rubricKey = pubType === 'mingguan' ? (rawMingguanRubrik || rawCategory) : rawCategory;
+
+if (rubricKey) {
+  try {
+    const rubricData = await (reader.collections as any).rubrics?.read(rubricKey);
+    displayRubrik = rubricData?.name || rubricKey;
+  } catch (e) {
+    displayRubrik = rubricKey;
+  }
+}
+
 if (!isArticlePublished(post, parentEdition)) {
   return Astro.redirect('/writings');
 }
@@ -356,7 +374,7 @@ if (pubType === 'mingguan' && postEdition) {
         {pubType === 'mingguan' ? 'majalah mingguan' : 'writings'}
       </a>
       <span>/</span>
-      <span class="text-emerald-400 font-semibold">{postRubrik || post.category || 'Article'}</span>
+      <span class="text-emerald-400 font-semibold">{displayRubrik}</span>
       {isCoverStory && (
         <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-600 text-white uppercase">
           Laporan Utama

@@ -23,6 +23,19 @@ const editionsRaw = await Promise.all(
 // Map edition dictionary for fast lookup
 const editionsMap = new Map(editionsRaw.filter(Boolean).map((e) => [e!.slug, e]));
 
+// Map rubrics dictionary for fast lookup
+let rubricsMap = new Map();
+try {
+  const allRubricsSlugs = await (reader.collections as any).rubrics?.list() || [];
+  const rubricsRaw = await Promise.all(
+    allRubricsSlugs.map(async (s: string) => {
+      const data = await (reader.collections as any).rubrics.read(s);
+      return data ? { slug: s, ...data } : null;
+    })
+  );
+  rubricsMap = new Map(rubricsRaw.filter(Boolean).map((r) => [r!.slug, r!.name || r!.slug]));
+} catch (e) {}
+
 // Published Editions (termasuk auto-fallback untuk label edisi)
 const editions = editionsRaw
   .filter((e) => e && isEditionPublished(e))
@@ -58,9 +71,13 @@ const writingsRaw = await Promise.all(
       ? data.publicationType.value.edition 
       : data.edition;
 
-    const rubrik = typeof data.publicationType === 'object' && data.publicationType?.value?.rubrik 
+    const rawRubrik = typeof data.publicationType === 'object' && data.publicationType?.value?.rubrik 
       ? data.publicationType.value.rubrik 
       : (data.rubrik || 'Artikel');
+    const rubrik = rubricsMap.get(rawRubrik) || rawRubrik;
+
+    const rawCategory = data.category;
+    const category = rubricsMap.get(rawCategory) || rawCategory || 'General';
 
     const order = typeof data.publicationType === 'object' && data.publicationType?.value?.order !== undefined 
       ? data.publicationType.value.order 
@@ -73,6 +90,7 @@ const writingsRaw = await Promise.all(
     return { 
       slug, 
       ...data, 
+      category,
       publicationType: pubType, 
       edition, 
       rubrik, 
