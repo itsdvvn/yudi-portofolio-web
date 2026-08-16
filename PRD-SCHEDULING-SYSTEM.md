@@ -168,10 +168,67 @@ WordPress tidak menganggap jadwal hanya sebagai string tanggal, melainkan sebuah
 - Jika tanggal yang dipilih adalah **waktu saat ini atau masa lalu**, tombol aksi utama berlabel **`Publish`** (Warna Biru WordPress `#007cba` / Emerald `#10b981`).
 - Jika tanggal yang dipilih adalah **waktu di masa depan**, tombol aksi otomatis bertransformasi menjadi **`Schedule…`** (Warna Biru / Indigo) untuk memberi penegasan visual kepada penulis bahwa artikel dijadwalkan.
 
-### 4. Hierarchical Parent-Child State Sync
-- Pada artikel Majalah Mingguan (*Child*), logika status mengikuti hierarki WordPress:
-  $$\text{Status Child} = \text{Status Parent Edition} \land \neg(\text{Child Draft})$$
-  Artinya, jika Edisi Induk berstatus `future` (misal rilis Minggu jam 16:00 WIB), seluruh child artikel di dalamnya otomatis berstatus `future` dan akan terbit bersamaan secara instan saat Edisi Induk rilis.
+---
+
+## 9. 🔌 Inventaris API, Endpoint, dan Skema Data Web Eksisting
+
+Agar implementasi fitur selanjutnya **terintegrasi 100% tanpa risiko HTTP Error 500**, seluruh struktur sistem saat ini dipetakan secara presisi:
+
+### 9.1. Daftar Endpoint API Internal (`src/pages/api/`)
+
+| Endpoint | Method | Fungsi & Payload | Integrasi Sistem |
+| :--- | :--- | :--- | :--- |
+| **`/api/subscribe`** | `POST` | Menghandle langganan newsletter pembaca via n8n / Database. Body: `{ email: string }`. | Form Subscribe di halaman artikel & footer |
+| **`/api/upload-r2`** | `POST` | Direct upload media/gambar ke Cloudflare R2 CDN (`media.itsdvvn.my.id`). | Media uploader custom di CMS |
+| **`/api/media-list`** | `GET` | Mengambil daftar file media yang tersimpan di server/R2. | Media Library Picker |
+| **`/api/admin-login`** | `POST` | Autentikasi sesi CMS Admin Yudhi. | Login gate `/admin` & `/keystatic` |
+| **`/api/admin-logout`** | `POST` | Mengakhiri sesi login Admin. | Logout button di dashboard |
+
+---
+
+### 9.2. Struktur Routing & SSR Rendering (`src/pages/`)
+
+- **`/` (`index.astro`)**: Halaman beranda utama yang menampilkan profil, latest works, dan featured articles (Harian & Edisi Mingguan).
+- **`/writings` (`writings/index.astro`)**: Tabbed portal publikasi:
+  - Tab 📰 **Harian**: Menampilkan seluruh artikel `reguler` yang sudah rilis (`isArticlePublished = true`).
+  - Tab 📖 **Mingguan**: Menampilkan Cover Story, daftar artikel per edisi, dan arsip edisi-edisi terdahulu.
+- **`/writings/[slug]` (`writings/[slug].astro`)**: Halaman baca artikel lengkap dengan reader waktu baca, superskrip sitasi interaktif (`[cite: ...]`), dan daftar referensi otomatis.
+- **`/thoughts` (`thoughts.astro`)**: Micro-posts / catatan pendek.
+- **`/ships` (`ships.astro`)**: Portofolio proyek foto, video, desain, dan web code.
+- **`/keystatic/*` (`keystatic.astro`)**: Single Page Application (SPA) Keystar UI Dashboard untuk content editing.
+- **`/sitemap.xml` (`sitemap.xml.ts`)**: Auto-generated dynamic SEO sitemap yang **hanya mengindeks konten berstatus published**.
+
+---
+
+### 9.3. Sinkronisasi Skema Data (Keystatic vs Astro Content)
+
+```
+[Keystatic CMS Form] ────────► [Filesystem Storage] ────────► [Astro SSR Readers]
+keystatic.config.ts           src/content/writings/*.mdoc    src/lib/reader.ts
+                              src/content/editions/*.json    src/lib/schedule.ts
+```
+
+#### Field-Field Krusial Koleksi `writings`:
+- `title` (*Slug*): Maksimal 80 karakter.
+- `deck` (*Textarea*): Maksimal 144 karakter (SEO meta description).
+- `publicationType` (*Conditional Object*):
+  - `reguler`: Standalone / artikel harian.
+  - `mingguan`: Memiliki properti `edition` (relationship ke koleksi `editions`), `rubrik` (string), `order` (number), `isCoverStory` (boolean).
+- `publishDate` (*Datetime/Date*): Menggunakan format standar ISO `YYYY-MM-DDTHH:mm`.
+- `draft` (*Checkbox*): `true` = draf rahasia, `false` = siap tayang.
+- `content` (*Markdoc*): Mendukung custom components `ArticleImage`, `YouTubeEmbed`, `InstagramEmbed`, `SpotifyEmbed`, dan `Citation`.
+
+---
+
+### 9.4. 🛡️ Protokol Anti-HTTP 500 (Aturan Emas Keamanan SSR)
+
+1. **Zero Mismatched Keys**:
+   - Jika suatu field ditambahkan/dihapus di `keystatic.config.ts`, wajib periksa seluruh file `.json` dan `.mdoc` di `src/content/`. Keystatic runtime akan melempar exception fatal jika menemukan key asing atau tipe data yang tidak sesuai.
+2. **Regex Datetime Strictness**:
+   - `fields.datetime` hanya menerima format `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$`. Jangan tambahkan offset string (`+07:00`) langsung ke isi file disk, biarkan helper `schedule.ts` yang menangani offset WIB saat parsing runtime.
+3. **Passive DOM Enhancement**:
+   - Skrip UI kustom di `KeystaticApp.tsx` tidak boleh menghapus atau menyembunyikan input state bawaan React dengan cara destruktif (`removeChild` / unmount paksa), melainkan menginjeksi kontrol layer di atasnya.
+
 
 
 
