@@ -7,7 +7,13 @@ import Markdoc from '@markdoc/markdoc';
 import NewsletterBox from '../../components/NewsletterBox.astro';
 
 const { slug } = Astro.params;
-const post = await reader.collections.writings.read(slug as string);
+let post = null;
+try {
+  post = await reader.collections.writings.read(slug as string);
+} catch (e) {
+  console.error(`[Astro Slug SSR] Failed reading writing ${slug}:`, e);
+  return Astro.redirect('/writings');
+}
 
 if (!post) {
   return Astro.redirect('/writings');
