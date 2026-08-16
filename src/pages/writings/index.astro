@@ -197,15 +197,6 @@ function formatDate(dateStr: string) {
   <div id="tab-content-mingguan" class="tab-pane hidden space-y-8">
     {featuredEdition ? (
       <div>
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-xs font-mono tracking-wider uppercase text-emerald-500 font-semibold flex items-center gap-1.5">
-            <span>🔴</span> Edisi Pekan Ini
-          </span>
-          <span class="text-xs font-mono" style="color: var(--text-muted);">
-            {featuredEdition.editionNumber} • {featuredEdition.publishTime || '16.00 WIB'}
-          </span>
-        </div>
-
         <!-- Featured Edition Magazine Hero Banner (Tempo Style) -->
         <div class="rounded-xl overflow-hidden border p-5 sm:p-7 transition-all shadow-md bg-gradient-to-br from-zinc-900 via-zinc-950 to-black text-white" style="border-color: rgba(255,255,255,0.1);">
           <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
@@ -223,11 +214,12 @@ function formatDate(dateStr: string) {
             <!-- Right: Edition Info & Main Story CTA -->
             <div class="flex-1 flex flex-col justify-between self-stretch w-full min-w-0">
               <div>
-                <div class="flex items-center gap-2 mb-3">
-                  <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-600 text-white font-mono tracking-wider uppercase">
-                    Edisi Khusus
+                <div class="flex items-center gap-2.5 mb-3">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono tracking-wider uppercase">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Edisi Pekan Ini
                   </span>
-                  <span class="text-xs font-mono text-zinc-300">
+                  <span class="text-xs font-mono text-zinc-400">
                     {featuredEdition.editionNumber || formatDate(featuredEdition.publishDate)}
                   </span>
                 </div>
