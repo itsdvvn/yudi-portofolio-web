@@ -122,11 +122,11 @@ Setiap langkah dalam roadmap wajib dieksekusi dengan protokol keselamatan:
 ### 🔹 State 1: Schema Cleansing & Eliminasi Redundansi (Backend/Data Layer)
 - **Tujuan**: Menghapus field manual yang berpotensi human-error dan menyinkronkan seluruh file data.
 - **Tugas**:
-  1. Hapus field `publishTime` dari `keystatic.config.ts` dan `src/content/config.ts`.
-  2. Ganti `fields.date` menjadi `fields.datetime` standar Keystatic dengan regex validasi `YYYY-MM-DDTHH:mm`.
-  3. Jadikan `editionNumber` opsional (auto-fallback: `Edisi [D MMMM YYYY]`).
-  4. Ganti teks bebas `category` menjadi `fields.select` terkurasi + preset options.
-  5. Migrasikan seluruh file `.json` dan `.mdoc` eksisting agar sinkron 100% tanpa missing/obsolete keys.
+  1. [x] Hapus field `publishTime` dari `keystatic.config.ts` dan `src/content/config.ts`.
+  2. [x] Ganti `fields.date` menjadi `fields.datetime` standar Keystatic dengan regex validasi `YYYY-MM-DDTHH:mm`.
+  3. [x] Jadikan `editionNumber` opsional (auto-fallback: `Edisi [D MMMM YYYY]`).
+  4. [x] Ganti teks bebas `category` menjadi `fields.select` terkurasi + preset options.
+  5. [x] Migrasikan seluruh file `.json` dan `.mdoc` eksisting agar sinkron 100% tanpa missing/obsolete keys.
 - **Context7 Query**: `/keystatic/keystatic` ➔ `fields.datetime configuration and collection validation`.
 
 ---
@@ -134,13 +134,13 @@ Setiap langkah dalam roadmap wajib dieksekusi dengan protokol keselamatan:
 ### 🔹 State 2: Pembangunan Komponen React Pre-Publish Panel (UI/UX Layer)
 - **Tujuan**: Membangun drawer pre-publish modern ala WordPress Gutenberg tanpa mengganggu React DOM context.
 - **Tugas**:
-  1. Buat komponen modular `src/components/cms/WordPressPublishPanel.tsx` berbasis pola referensi `Bearnie Dev` (`Sheet` / `Dialog` / `Popover`).
-  2. Implementasikan State Selector:
+  1. [x] Buat komponen modular pre-publish panel berbasis pola referensi `Bearnie Dev` (`Sheet` / `Dialog` / `Popover`) di `KeystaticApp.tsx`.
+  2. [x] Implementasikan State Selector:
      - **Publish: Immediately (Now)** ➔ Menyematkan timestamp terkini.
      - **Schedule** ➔ Time Picker visual (Jam, Menit, AM/PM) + Mini Calendar.
-  3. Implementasikan **Reactive Button Morphing**: Label tombol berubah otomatis `Publish` ➔ `Schedule…` jika tanggal dipilih di masa depan.
-  4. Implementasikan **Parent-Child Weekly Magazine Detection**: Jika artikel bertipe `📖 Mingguan`, sembunyikan time picker dan tampilkan Info Box Edisi Induk.
-  5. Hubungkan submit event ke form asli Keystatic secara pasif dan aman.
+  3. [x] Implementasikan **Reactive Button Morphing**: Label tombol berubah otomatis `Publish` ➔ `Schedule…` jika tanggal dipilih di masa depan.
+  4. [x] Implementasikan **Parent-Child Weekly Magazine Detection**: Jika artikel bertipe `📖 Mingguan`, sembunyikan time picker dan tampilkan Info Box Edisi Induk.
+  5. [x] Hubungkan submit event ke form asli Keystatic secara pasif dan aman.
 - **Context7 Query**: `/facebook/react` ➔ `React 19 portal and non-destructive form control injection`.
 
 ---
