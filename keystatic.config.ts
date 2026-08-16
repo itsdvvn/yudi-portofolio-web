@@ -116,6 +116,25 @@ export default config({
     }),
   },
   collections: {
+    rubrics: collection({
+      label: 'Rubrik & Kategori',
+      slugField: 'name',
+      path: 'src/content/rubrics/*',
+      format: { data: 'json' },
+      schema: {
+        name: fields.slug({
+          name: {
+            label: 'Nama Rubrik / Kategori (e.g. Skena-kenanya, Opini, Teknologi, Musik)',
+            description: 'Tulis nama rubrik baru yang ingin Anda tambahkan',
+          },
+        }),
+        description: fields.text({
+          label: 'Deskripsi Rubrik (Opsional)',
+          description: 'Keterangan singkat tentang topik rubrik ini',
+          multiline: true,
+        }),
+      },
+    }),
     editions: collection({
       label: 'Edisi Mingguan (Majalah)',
       slugField: 'title',
@@ -133,20 +152,32 @@ export default config({
           description: 'Kosongkan jika ingin label otomatis terbuat dari tanggal rilis.',
         }),
         publishDate: fields.date({ 
-          label: 'Tanggal Rilis Edisi', 
-          defaultValue: { kind: 'today' } 
+          label: 'Jadwal Rilis Majalah (WIB)', 
+          defaultValue: { kind: 'today' },
+          validation: { isRequired: true }
         }),
         publishTime: fields.text({
-          label: 'Jam Rilis Edisi (WIB, format: HH:mm)',
+          label: 'Jam Rilis Majalah (WIB, format: HH:mm)',
+          description: 'Format 24 jam (misal 06:00, 19:30). Sesuai Waktu Indonesia Barat (WIB).',
           defaultValue: () => {
-            const n = new Date();
-            return `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const wib = new Date(utc + (3600000 * 7));
+            const hh = String(wib.getHours()).padStart(2, '0');
+            const mm = String(wib.getMinutes()).padStart(2, '0');
+            return `${hh}:${mm}`;
           },
+          validation: {
+            match: {
+              regex: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
+              explanation: 'Format harus berupa jam valid 24 jam: HH:mm (contoh: 07:00 atau 23:30)'
+            }
+          }
         }),
         coverImage: fields.image({
-          label: 'Cover Majalah Mingguan (Pilih / Upload Gambar Vertikal/Portrait)',
-          directory: 'public/images/editions',
-          publicPath: '/media/editions/',
+          label: 'Cover Gambar Edisi',
+          directory: 'public/media/editions',
+          publicPath: '/media/editions',
         }),
         coverImageUrl: fields.text({
           label: 'Atau URL Cover CDN / R2 (Direct Link: https://media.itsdvvn.my.id/...)',
@@ -196,9 +227,10 @@ export default config({
                 description: 'Hubungkan artikel ini ke Edisi Majalah yang bersangkutan',
                 collection: 'editions',
               }),
-              rubrik: fields.text({
-                label: 'Rubrik / Kolom (e.g. Laporan Utama, Editorial, Ekonomi, Opini, Investigasi)',
-                defaultValue: 'Laporan Utama',
+              rubrik: fields.relationship({
+                label: 'Rubrik Majalah',
+                description: 'Pilih Rubrik Edisi Majalah',
+                collection: 'rubrics',
               }),
               order: fields.integer({
                 label: 'Nomor Urutan Artikel dalam Edisi (e.g. 1 untuk Laporan Utama, 2, 3, dst)',
@@ -211,10 +243,10 @@ export default config({
             }),
           }
         ),
-        category: fields.text({ 
-          label: 'Kategori / Rubrik (e.g. Skena-kenanya, Opini, Teknologi, Musik)', 
-          description: 'Tulis nama kategori atau rubrik artikel ini secara bebas',
-          defaultValue: 'Skena-kenanya' 
+        category: fields.relationship({ 
+          label: 'Kategori / Rubrik Artikel', 
+          description: 'Pilih kategori atau rubrik artikel ini dari daftar yang tersedia',
+          collection: 'rubrics',
         }),
         deck: fields.text({ 
           label: 'Deck / Deskripsi Artikel (Maksimal 144 karakter)', 
