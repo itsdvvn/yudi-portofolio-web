@@ -407,11 +407,9 @@ export function KeystaticApp() {
         const cell = row.querySelector('[role="rowheader"], [role="gridcell"], td') as HTMLElement | null;
         if (!link && !cell) return;
 
-        // Tandai agar tidak diulang
-        row.dataset.hasEnhancement = 'true';
-
         // Baca tanggal (YYYY-MM-DD) dan jam (HH:mm) dari teks seluruh baris tabel
-        const rowText = row.textContent || '';
+        const cells = Array.from(row.querySelectorAll('[role="gridcell"], [role="rowheader"], td'));
+        const rowText = cells.length > 0 ? cells.map(c => c.textContent || '').join(' ') : (row.textContent || '');
         const dateMatch = rowText.match(/\b\d{4}-\d{2}-\d{2}\b/);
         const timeMatch = rowText.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/);
 
@@ -424,23 +422,32 @@ export function KeystaticApp() {
           isFuture = itemDateTime.getTime() > now.getTime();
         }
 
-        // 1. Badge Status (Scheduled vs Published)
-        const badge = document.createElement('span');
-        badge.style.cssText = `
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          padding: 2px 8px;
-          border-radius: 9999px;
-          font-size: 10px;
-          font-weight: 700;
-          font-family: ui-monospace, monospace;
-          text-transform: uppercase;
-          margin-left: 8px;
-          letter-spacing: 0.05em;
-          vertical-align: middle;
-        `;
+        // Cari atau buat Badge Status
+        let badge = row.querySelector('.keystatic-status-badge') as HTMLElement | null;
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.className = 'keystatic-status-badge';
+          badge.style.cssText = `
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: ui-monospace, monospace;
+            text-transform: uppercase;
+            margin-left: 8px;
+            letter-spacing: 0.05em;
+            vertical-align: middle;
+          `;
+          const targetAnchor = link || cell?.querySelector('a') || cell;
+          if (targetAnchor) {
+            targetAnchor.appendChild(badge);
+          }
+        }
 
+        // Update status badge secara reaktif setiap detik/interval
         if (isFuture) {
           badge.textContent = '⏰ SCHEDULED';
           badge.style.backgroundColor = '#ede9fe';
@@ -453,13 +460,8 @@ export function KeystaticApp() {
           badge.style.border = '1px solid #a7f3d0';
         }
 
-        const targetAnchor = link || cell?.querySelector('a') || cell;
-        if (targetAnchor) {
-          targetAnchor.appendChild(badge);
-        }
-
         // 2. Quick Action Toolbar
-        if (link && link.href) {
+        if (link && link.href && !row.querySelector('.keystatic-row-actions')) {
           const urlParts = link.href.split('/item/');
           const itemSlug = urlParts[1];
           if (itemSlug) {
@@ -467,6 +469,7 @@ export function KeystaticApp() {
             const webUrl = isEditions ? '/writings#mingguan' : `/writings/${itemSlug}`;
 
             const actionWrapper = document.createElement('div');
+            actionWrapper.className = 'keystatic-row-actions';
             actionWrapper.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; margin-left: auto; padding-left: 12px;';
 
             const viewBtn = document.createElement('a');
