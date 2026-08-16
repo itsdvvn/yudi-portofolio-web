@@ -7,64 +7,38 @@ const KeystaticOriginal = makePage(config);
 export function KeystaticApp() {
   useEffect(() => {
     // Live character counter murni yang membaca value dan menampilkan counter secara non-intrusif
+    // Live character counter murni: memperbarui teks deskripsi bawaan Keystatic secara reaktif
     function updateFieldCounters() {
       const inputs = Array.from(document.querySelectorAll('input[type="text"], textarea')) as (HTMLInputElement | HTMLTextAreaElement)[];
       
       inputs.forEach((input) => {
         if (input.closest('#wp-gutenberg-pre-publish-drawer') || input.closest('[role="dialog"]')) return;
 
-        // Deteksi field Judul Artikel (max 80) dan Deck (max 144)
+        // Cari container field
         const container = input.closest('div[class*="css-"]') || input.parentElement?.parentElement;
         if (!container) return;
 
-        const labelEl = container.querySelector('label, [role="heading"], span');
-        const labelText = (labelEl?.textContent || '').toLowerCase();
-        
-        const isTitle = (labelText.includes('headline') || labelText.includes('judul artikel')) && input.tagName === 'INPUT' && !input.id?.includes('slug');
-        const isDeck = (labelText.includes('deck') || labelText.includes('deskripsi artikel')) && input.tagName === 'TEXTAREA';
+        const allText = (container.textContent || '').toLowerCase();
+        const isTitle = (allText.includes('headline') || allText.includes('judul artikel')) && input.tagName === 'INPUT' && !input.id?.includes('slug');
+        const isDeck = (allText.includes('deck') || allText.includes('deskripsi artikel')) && input.tagName === 'TEXTAREA';
 
         if (!isTitle && !isDeck) return;
 
         const max = isTitle ? 80 : 144;
-        const name = isTitle ? 'Judul Artikel' : 'Deskripsi Artikel';
+        const name = isTitle ? 'Judul' : 'Deskripsi';
+        const baseDesc = isTitle ? 'Tulis judul artikel' : 'Ringkasan singkat subheadline / meta deskripsi artikel';
         const len = input.value ? input.value.length : 0;
         const remaining = max - len;
         const isOver = len > max;
 
-        // Cari atau buat wadah counter di dalam container field
-        let counterEl = container.querySelector('.keystatic-live-counter') as HTMLElement | null;
-        if (!counterEl) {
-          counterEl = document.createElement('div');
-          counterEl.className = 'keystatic-live-counter';
-          counterEl.style.cssText = `
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            font-family: ui-monospace, monospace;
-            font-weight: 600;
-            margin-top: 4px;
-            margin-bottom: 6px;
-            padding: 0 2px;
-            pointer-events: none;
-            user-select: none;
-          `;
-          container.appendChild(counterEl);
-        }
-
-        counterEl.innerHTML = `
-          <span>${name}: <strong>${len}/${max}</strong> karakter</span>
-          <span>•</span>
-          <span>${isOver ? '⚠️ Kelebihan ' + Math.abs(remaining) + ' karakter' : 'Sisa ' + remaining + ' karakter'}</span>
-        `;
-
-        if (isOver) {
-          counterEl.style.color = '#ef4444';
-        } else if (len >= max * 0.85) {
-          counterEl.style.color = '#f59e0b';
-        } else {
-          counterEl.style.color = '#71717a';
+        // Cari elemen deskripsi bawaan Keystatic (FieldDescription)
+        // Di Keystar/Keystatic, description biasanya berada sebelum wrapper input
+        const descEl = container.querySelector('[id*="description"], p, span') as HTMLElement | null;
+        if (descEl && descEl.textContent && (descEl.textContent.includes(baseDesc) || descEl.dataset.isCounterDesc === 'true')) {
+          descEl.dataset.isCounterDesc = 'true';
+          const counterText = `${name}: ${len}/${max} karakter • ${isOver ? '⚠️ Kelebihan ' + Math.abs(remaining) + ' karakter' : 'Sisa ' + remaining + ' karakter'}`;
+          
+          descEl.innerHTML = `${baseDesc} (maksimal ${max} karakter) — <strong style="color:${isOver ? '#ef4444' : (len >= max * 0.85 ? '#f59e0b' : '#047857')}; font-family:ui-monospace, monospace;">${counterText}</strong>`;
         }
       });
     }
