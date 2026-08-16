@@ -102,28 +102,68 @@ Ketika tombol `Publish…` diklik, muncul panel drawer samping kanan dengan alur
 
 ---
 
-## 5. Rencana Tahapan Eksekusi (Roadmap)
+## 5. Rencana Tahapan Eksekusi & State Implementation
 
-### Fase 1: Validasi Skema & Engine Waktu (Core Engine)
-- [x] Sinkronisasi data content dengan regex `YYYY-MM-DDTHH:mm`.
-- [x] Pembuatan helper `src/lib/schedule.ts` berbasis offset WIB (UTC+7).
-- [x] Filter otomatis di SSR `writings/index.astro`, `writings/[slug].astro`, dan `sitemap.xml.ts`.
+Setiap langkah dalam roadmap wajib dieksekusi dengan protokol keselamatan:
+> [!IMPORTANT]
+> **MANDATORY CONTEXT7 MCP USAGE**: Setiap developer / AI Agent yang mengeksekusi tahapan di bawah **WAJIB** menggunakan `Context7 MCP` (`resolve-library-id` & `query-docs`) untuk membaca dokumentasi resmi library terkait (Astro, Keystatic Core, React 19, Tailwind, Markdoc, Date-fns/Intl) sebelum menulis kode baru.
 
-### Fase 2: Pembangunan Komponen UI Pre-Publish Panel (React Component)
-- [ ] Buat komponen React mandiri `src/components/cms/WordPressPublishPanel.tsx`.
-- [ ] Integrasikan Time Picker (Jam, Menit, AM/PM) & Date Picker interaktif.
-- [ ] Integrasikan state sinkronisasi ke form Keystatic tanpa merusak React Error Boundary.
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  State 1:    │ ──► │  State 2:    │ ──► │  State 3:    │ ──► │  State 4:    │
+│  Schema &    │     │  WordPress   │     │  Staging QA  │     │  Production  │
+│  Eliminasi   │     │  Pre-Publish │     │  & Sandbox   │     │  Deploy      │
+│  Redundansi  │     │  Component   │     │  Verification│     │  (Main Merg) │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+```
 
-### Fase 3: Pengujian di Staging (`dev.itsdvvn.my.id`)
-- [ ] Uji kasus: Publish Now (Harian).
-- [ ] Uji kasus: Schedule Masa Depan (Harian) ➔ Pastikan artikel tidak muncul di frontend sebelum jamnya.
-- [ ] Uji kasus: Artikel Mingguan ➔ Pastikan otomatis terbit saat Edisi Induk terbit.
-- [ ] Uji responsivitas UI di layar desktop & mobile.
+---
 
-### Fase 4: Merge & Deployment ke Production (`itsdvvn.my.id`)
-- [ ] Review akhir bersama User.
-- [ ] Merge branch `feat/schedule-system` ke `main`.
-- [ ] Automated deploy ke container produksi di VPS.
+### 🔹 State 1: Schema Cleansing & Eliminasi Redundansi (Backend/Data Layer)
+- **Tujuan**: Menghapus field manual yang berpotensi human-error dan menyinkronkan seluruh file data.
+- **Tugas**:
+  1. Hapus field `publishTime` dari `keystatic.config.ts` dan `src/content/config.ts`.
+  2. Ganti `fields.date` menjadi `fields.datetime` standar Keystatic dengan regex validasi `YYYY-MM-DDTHH:mm`.
+  3. Jadikan `editionNumber` opsional (auto-fallback: `Edisi [D MMMM YYYY]`).
+  4. Ganti teks bebas `category` menjadi `fields.select` terkurasi + preset options.
+  5. Migrasikan seluruh file `.json` dan `.mdoc` eksisting agar sinkron 100% tanpa missing/obsolete keys.
+- **Context7 Query**: `/keystatic/keystatic` ➔ `fields.datetime configuration and collection validation`.
+
+---
+
+### 🔹 State 2: Pembangunan Komponen React Pre-Publish Panel (UI/UX Layer)
+- **Tujuan**: Membangun drawer pre-publish modern ala WordPress Gutenberg tanpa mengganggu React DOM context.
+- **Tugas**:
+  1. Buat komponen modular `src/components/cms/WordPressPublishPanel.tsx` berbasis pola referensi `Bearnie Dev` (`Sheet` / `Dialog` / `Popover`).
+  2. Implementasikan State Selector:
+     - **Publish: Immediately (Now)** ➔ Menyematkan timestamp terkini.
+     - **Schedule** ➔ Time Picker visual (Jam, Menit, AM/PM) + Mini Calendar.
+  3. Implementasikan **Reactive Button Morphing**: Label tombol berubah otomatis `Publish` ➔ `Schedule…` jika tanggal dipilih di masa depan.
+  4. Implementasikan **Parent-Child Weekly Magazine Detection**: Jika artikel bertipe `📖 Mingguan`, sembunyikan time picker dan tampilkan Info Box Edisi Induk.
+  5. Hubungkan submit event ke form asli Keystatic secara pasif dan aman.
+- **Context7 Query**: `/facebook/react` ➔ `React 19 portal and non-destructive form control injection`.
+
+---
+
+### 🔹 State 3: Pengujian Menyeluruh di Staging (`dev.itsdvvn.my.id`)
+- **Tujuan**: Memvalidasi seluruh use case di environment live staging sebelum menyentuh production.
+- **Skenario Pengujian (QA Matrix)**:
+  - [ ] **Test Case 1 (Publish Now)**: Buat artikel harian ➔ Klik `Publish Now` ➔ Pastikan langsung muncul di `https://dev.itsdvvn.my.id/writings`.
+  - [ ] **Test Case 2 (Scheduled Future)**: Jadwalkan artikel 2 jam ke depan ➔ Pastikan artikel **tidak muncul** di frontend dan sitemap sebelum waktunya.
+  - [ ] **Test Case 3 (Parent-Child Weekly)**: Buat edisi majalah terjadwal hari Minggu jam 16:00 ➔ Masukkan artikel child ➔ Pastikan artikel child tersembunyi dan baru muncul tepat saat Edisi rilis.
+  - [ ] **Test Case 4 (Responsive UI)**: Uji panel pre-publish di layar desktop, tablet, dan smartphone.
+  - [ ] **Test Case 5 (SSR Health Check)**: Pastikan HTTP status code selalu `200 OK` di seluruh endpoint.
+
+---
+
+### 🔹 State 4: Production Release & Rollout (`itsdvvn.my.id`)
+- **Tujuan**: Merilis fitur yang sudah terbukti stabil ke publik.
+- **Tugas**:
+  1. Review final bersama User.
+  2. Buat Pull Request & Merge branch `feat/schedule-system` ke `main`.
+  3. Jalankan automated build dan restart container di `/root/portfolio` VPS.
+  4. Smoke test live di `https://itsdvvn.my.id`.
+
 
 ---
 
