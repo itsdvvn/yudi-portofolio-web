@@ -9,9 +9,14 @@ import Markdoc from '@markdoc/markdoc';
 const editionSlugs = await reader.collections.editions.list();
 const editionsRaw = await Promise.all(
   editionSlugs.map(async (slug) => {
-    const data = await reader.collections.editions.read(slug);
-    if (!data) return null;
-    return { slug, ...data };
+    try {
+      const data = await reader.collections.editions.read(slug);
+      if (!data) return null;
+      return { slug, ...data };
+    } catch (e) {
+      console.error(`[Astro SSR] Failed reading edition ${slug}:`, e);
+      return null;
+    }
   })
 );
 
@@ -35,15 +40,16 @@ const editions = editionsRaw
 const allSlugs = await reader.collections.writings.list();
 const writingsRaw = await Promise.all(
   allSlugs.map(async (slug) => {
-    const data = await reader.collections.writings.read(slug);
-    if (!data) return null;
-    let readTime = data.readTime;
     try {
-      const contentAst = await data.content();
-      const transformedContent = Markdoc.transform(contentAst.node || contentAst);
-      const htmlContent = Markdoc.renderers.html(transformedContent);
-      readTime = calculateReadingTime(htmlContent);
-    } catch (e) {}
+      const data = await reader.collections.writings.read(slug);
+      if (!data) return null;
+      let readTime = data.readTime;
+      try {
+        const contentAst = await data.content();
+        const transformedContent = Markdoc.transform(contentAst.node || contentAst);
+        const htmlContent = Markdoc.renderers.html(transformedContent);
+        readTime = calculateReadingTime(htmlContent);
+      } catch (e) {}
     const pubType = typeof data.publicationType === 'object' && data.publicationType !== null 
       ? data.publicationType.discriminant 
       : (data.publicationType || 'reguler');
@@ -74,6 +80,10 @@ const writingsRaw = await Promise.all(
       isCoverStory, 
       readTime 
     };
+    } catch (e) {
+      console.error(`[Astro SSR] Failed reading writing ${slug}:`, e);
+      return null;
+    }
   })
 );
 

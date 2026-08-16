@@ -19,9 +19,14 @@ export const ALL: APIRoute = async ({ site, request }) => {
   const writingSlugs = await reader.collections.writings.list();
   const writings = await Promise.all(
     writingSlugs.map(async (slug) => {
-      const data = await reader.collections.writings.read(slug);
-      if (!data) return null;
-      return { slug, ...data };
+      try {
+        const data = await reader.collections.writings.read(slug);
+        if (!data) return null;
+        return { slug, ...data };
+      } catch (e) {
+        console.error(`[Sitemap XML SSR] Failed reading writing ${slug}:`, e);
+        return null;
+      }
     })
   );
 

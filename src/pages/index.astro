@@ -10,9 +10,14 @@ const profileData = (await reader.singletons.profile.read()) || {};
 const writingSlugs = await reader.collections.writings.list();
 const writingsRaw = await Promise.all(
   writingSlugs.map(async (slug) => {
-    const data = await reader.collections.writings.read(slug);
-    if (!data) return null;
-    return { slug, ...data };
+    try {
+      const data = await reader.collections.writings.read(slug);
+      if (!data) return null;
+      return { slug, ...data };
+    } catch (e) {
+      console.error(`[Astro Index SSR] Failed reading writing ${slug}:`, e);
+      return null;
+    }
   })
 );
 const recentWritings = writingsRaw
