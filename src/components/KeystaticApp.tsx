@@ -73,6 +73,25 @@ export function KeystaticApp() {
       }
     }
 
+    // Sembunyikan field input jadwal teknis di tengah form lembar ketik (karena sudah ditangani oleh WordPress Pre-Publish Panel)
+    function hideCentralDatetimeFields() {
+      const inputs = Array.from(document.querySelectorAll('input[type="text"], input[type="date"], input[type="datetime-local"]')) as HTMLInputElement[];
+      inputs.forEach((input) => {
+        // Jangan sembunyikan input yang ada di dalam drawer kita
+        if (input.closest('#wp-gutenberg-pre-publish-drawer')) return;
+
+        const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
+        const text = (container?.textContent || '').toLowerCase();
+
+        if (text.includes('jadwal rilis') || text.includes('jadwal / waktu terbit') || text.includes('publication date')) {
+          const fieldBlock = input.closest('div[class*="css-"]') || container;
+          if (fieldBlock && (fieldBlock as HTMLElement).style.display !== 'none') {
+            (fieldBlock as HTMLElement).style.display = 'none';
+          }
+        }
+      });
+    }
+
     // State 2: Pemasangan WordPress Gutenberg Pre-Publish Panel
     function setupWordPressPublishPanel() {
       // Cari tombol aksi utama Keystatic (Save / Create)
@@ -322,6 +341,7 @@ export function KeystaticApp() {
 
     const interval = setInterval(() => {
       setupCounters();
+      hideCentralDatetimeFields();
       setupWordPressPublishPanel();
     }, 300);
 
