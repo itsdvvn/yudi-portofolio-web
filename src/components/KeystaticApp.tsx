@@ -395,10 +395,101 @@ export function KeystaticApp() {
       });
     }
 
+    // Enhancer untuk Table List View: Label Status & Quick Actions
+    function enhanceTableListView() {
+      // Cari tabel atau list item Keystatic
+      const rows = Array.from(document.querySelectorAll('table tbody tr, [role="row"], a[href*="/collection/"]')) as HTMLElement[];
+      
+      rows.forEach((row) => {
+        // Hanya target baris item di dalam list view koleksi
+        const link = (row.tagName === 'A' ? row : row.querySelector('a[href*="/item/"]')) as HTMLAnchorElement | null;
+        if (!link || !link.href.includes('/collection/') || !link.href.includes('/item/')) return;
+        if (row.dataset.hasEnhancement === 'true') return;
+        row.dataset.hasEnhancement = 'true';
+
+        // Cari tanggal di dalam baris
+        const textContent = row.textContent || '';
+        const dateMatch = textContent.match(/\b\d{4}-\d{2}-\d{2}\b/);
+        
+        let isFuture = false;
+        let scheduleDateStr = '';
+        if (dateMatch) {
+          scheduleDateStr = dateMatch[0];
+          const itemDate = new Date(`${scheduleDateStr}T23:59:59+07:00`);
+          const now = new Date();
+          isFuture = itemDate.getTime() > now.getTime();
+        }
+
+        // 1. Badge Status (Scheduled vs Published)
+        const badge = document.createElement('span');
+        badge.style.cssText = `
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 2px 8px;
+          border-radius: 9999px;
+          font-size: 11px;
+          font-weight: 600;
+          font-family: ui-monospace, monospace;
+          text-transform: uppercase;
+          margin-left: 8px;
+          letter-spacing: 0.05em;
+        `;
+
+        if (isFuture) {
+          badge.textContent = '⏰ Scheduled';
+          badge.style.backgroundColor = '#ede9fe';
+          badge.style.color = '#6d28d9';
+          badge.style.border = '1px solid #c4b5fd';
+        } else {
+          badge.textContent = '🟢 Published';
+          badge.style.backgroundColor = '#ecfdf5';
+          badge.style.color = '#047857';
+          badge.style.border = '1px solid #a7f3d0';
+        }
+
+        // Sisipkan badge di dekat title/link
+        link.appendChild(badge);
+
+        // 2. Quick Action Toolbar (Buka Web & Edit/Detail)
+        const actionsContainer = document.createElement('div');
+        actionsContainer.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; margin-left: auto; padding-right: 8px;';
+        
+        // Quick Action: Buka Halaman Web Publik
+        const urlParts = link.href.split('/item/');
+        const itemSlug = urlParts[1];
+        const isEditionsCollection = link.href.includes('/collection/editions');
+        const webUrl = isEditionsCollection ? '/writings#mingguan' : `/writings/${itemSlug}`;
+
+        const viewWebBtn = document.createElement('a');
+        viewWebBtn.href = webUrl;
+        viewWebBtn.target = '_blank';
+        viewWebBtn.rel = 'noopener noreferrer';
+        viewWebBtn.title = 'Buka di website publik';
+        viewWebBtn.textContent = '↗ View';
+        viewWebBtn.style.cssText = `
+          padding: 3px 8px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: 600;
+          background: #f4f4f5;
+          color: #3f3f46;
+          border: 1px solid #d4d4d8;
+          text-decoration: none;
+          transition: all 0.15s ease;
+        `;
+        viewWebBtn.addEventListener('click', (e) => e.stopPropagation());
+
+        actionsContainer.appendChild(viewWebBtn);
+        row.appendChild(actionsContainer);
+      });
+    }
+
     const interval = setInterval(() => {
       setupCounters();
       hideCentralDatetimeFields();
       setupWordPressPublishPanel();
+      enhanceTableListView();
     }, 300);
 
     return () => clearInterval(interval);
