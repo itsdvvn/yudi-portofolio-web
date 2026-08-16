@@ -10,11 +10,18 @@ export function KeystaticApp() {
       const inputs = document.querySelectorAll('input[type="text"], textarea');
       inputs.forEach((el) => {
         const input = el as HTMLInputElement | HTMLTextAreaElement;
+        
+        // Abaikan jika input berada di dalam Modal Dialog (seperti Modal Edit Sitasi / Komponen Markdoc)
+        if (input.closest('[role="dialog"]') || input.closest('dialog')) return;
+
         const formField = input.closest('label') || input.parentElement?.querySelector('label') || input.parentElement?.parentElement?.querySelector('label') || input.parentElement;
         const allText = ((formField?.textContent || '') + ' ' + (input.getAttribute('aria-label') || '') + ' ' + (input.placeholder || '')).toLowerCase();
 
-        const isTitle = (allText.includes('headline') || allText.includes('judul')) && input.tagName === 'INPUT' && !input.id?.includes('slug');
-        const isDeck = (allText.includes('deck') || allText.includes('deskripsi') || allText.includes('subheadline')) && input.tagName === 'TEXTAREA';
+        // Hindari pencocokan jika ini adalah field Sumber/Referensi
+        if (allText.includes('sumber') || allText.includes('referensi')) return;
+
+        const isTitle = (allText.includes('headline') || allText.includes('judul artikel')) && input.tagName === 'INPUT' && !input.id?.includes('slug');
+        const isDeck = (allText.includes('deck') || allText.includes('deskripsi artikel')) && input.tagName === 'TEXTAREA';
 
         if (isTitle) {
           attachBadge(input, 80, 'Judul Artikel');
