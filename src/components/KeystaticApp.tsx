@@ -73,23 +73,51 @@ export function KeystaticApp() {
       }
     }
 
-    // Sembunyikan field input jadwal teknis di tengah form lembar ketik (karena sudah ditangani oleh WordPress Pre-Publish Panel)
+    // Sembunyikan field input jadwal teknis di tengah form lembar ketik secara visual
+    // Menggunakan clip/opacity agar React event handler tetap aktif menerima input
     function hideCentralDatetimeFields() {
-      const inputs = Array.from(document.querySelectorAll('input[type="text"], input[type="date"], input[type="datetime-local"]')) as HTMLInputElement[];
+      const inputs = Array.from(document.querySelectorAll('input[type="date"], input[type="datetime-local"], input[type="text"]')) as HTMLInputElement[];
       inputs.forEach((input) => {
-        // Jangan sembunyikan input yang ada di dalam drawer kita
         if (input.closest('#wp-gutenberg-pre-publish-drawer')) return;
 
         const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
         const text = (container?.textContent || '').toLowerCase();
 
-        if (text.includes('jadwal rilis') || text.includes('jadwal / waktu terbit') || text.includes('publication date')) {
-          const fieldBlock = input.closest('div[class*="css-"]') || container;
-          if (fieldBlock && (fieldBlock as HTMLElement).style.display !== 'none') {
-            (fieldBlock as HTMLElement).style.display = 'none';
+        if (text.includes('jadwal rilis') || text.includes('jadwal / waktu terbit') || text.includes('tanggal rilis')) {
+          const fieldBlock = (input.closest('div[class*="css-"]') || container) as HTMLElement;
+          if (fieldBlock && fieldBlock.style.opacity !== '0') {
+            fieldBlock.style.opacity = '0';
+            fieldBlock.style.position = 'absolute';
+            fieldBlock.style.pointerEvents = 'none';
+            fieldBlock.style.height = '0px';
+            fieldBlock.style.overflow = 'hidden';
+            fieldBlock.style.margin = '0';
+            fieldBlock.style.padding = '0';
           }
         }
       });
+    }
+
+    // Helper untuk sinkronisasi nilai tanggal ke input form Keystatic asli
+    function syncDateToKeystatic(dateVal: string) {
+      const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
+      for (const input of allInputs) {
+        if (input.closest('#wp-gutenberg-pre-publish-drawer')) return;
+        const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
+        const text = (container?.textContent || '').toLowerCase();
+        
+        if (text.includes('jadwal') || text.includes('publish') || text.includes('tanggal')) {
+          const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+          if (nativeSetter) {
+            nativeSetter.call(input, dateVal);
+          } else {
+            input.value = dateVal;
+          }
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          input.dispatchEvent(new Event('blur', { bubbles: true }));
+        }
+      }
     }
 
     // State 2: Pemasangan WordPress Gutenberg Pre-Publish Panel
@@ -283,8 +311,14 @@ export function KeystaticApp() {
         }
       }
 
-      datePicker?.addEventListener('change', updateButtonMorph);
-      datePicker?.addEventListener('input', updateButtonMorph);
+      datePicker?.addEventListener('change', () => {
+        updateButtonMorph();
+        syncDateToKeystatic(datePicker.value);
+      });
+      datePicker?.addEventListener('input', () => {
+        updateButtonMorph();
+        syncDateToKeystatic(datePicker.value);
+      });
       timePicker?.addEventListener('change', updateButtonMorph);
       timePicker?.addEventListener('input', updateButtonMorph);
 
@@ -318,6 +352,7 @@ export function KeystaticApp() {
         if (datePicker) datePicker.value = dIso;
         if (timePicker) timePicker.value = `${hh}:${mm}`;
         updateButtonMorph();
+        syncDateToKeystatic(dIso);
       });
 
       // Event: Confirm Submit
@@ -325,30 +360,12 @@ export function KeystaticApp() {
         drawer.style.display = 'none';
 
         const dateVal = datePicker?.value || currentIsoDate;
+        syncDateToKeystatic(dateVal);
 
-        // Cari input date di form Keystatic asli dan sematkan nilainya secara reaktif
-        const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
-        for (const input of allInputs) {
-          const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
-          const text = (container?.textContent || '').toLowerCase();
-          
-          if (text.includes('jadwal') || text.includes('publish') || text.includes('tanggal')) {
-            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
-            if (nativeSetter) {
-              nativeSetter.call(input, dateVal);
-            } else {
-              input.value = dateVal;
-            }
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-            input.dispatchEvent(new Event('change', { bubbles: true }));
-            input.dispatchEvent(new Event('blur', { bubbles: true }));
-          }
-        }
-
-        // Delay 50ms agar state React Keystatic selesai meng-update payload form
+        // Delay 100ms agar state React Keystatic selesai meng-update payload form
         setTimeout(() => {
           mainBtn.click();
-        }, 50);
+        }, 100);
       });
     }
 

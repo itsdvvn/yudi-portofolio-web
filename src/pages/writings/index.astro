@@ -28,9 +28,9 @@ const editions = editionsRaw
   .filter((e) => e && isEditionPublished(e))
   .map((e) => {
     let label = e!.editionNumber;
-    if (!label || label.trim() === '' || label === 'Edisi Terbaru') {
+    if (!label || label.trim() === '' || label === 'Edisi Terbaru' || /^\d{4}-\d{2}-\d{2}$/.test(label)) {
       const parsedDate = parsePublishDateTime(e!.publishDate);
-      label = `Edisi ${parsedDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+      label = `Edisi ${parsedDate.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'long', year: 'numeric' })}`;
     }
     return { ...e!, editionNumber: label };
   })
@@ -116,6 +116,7 @@ function formatDate(dateStr: string) {
   if (!dateStr) return '';
   const date = parsePublishDateTime(dateStr);
   return date.toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jakarta',
     month: 'long',
     day: 'numeric',
     year: 'numeric',
