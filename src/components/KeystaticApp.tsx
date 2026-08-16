@@ -60,14 +60,8 @@ export function KeystaticApp() {
       input.addEventListener('input', update, { passive: true });
       update();
 
-      // Cari parent terluar field (container field sebelum field berikutnya)
-      // Struktur Keystatic/Keystar: Flex > [Label, Description, InputWrapper, Error]
-      const inputOuterWrapper = input.closest('div[class*="css-"]') || input.parentElement;
-      if (inputOuterWrapper && inputOuterWrapper.parentElement) {
-        inputOuterWrapper.parentElement.appendChild(badge);
-      } else {
-        input.insertAdjacentElement('afterend', badge);
-      }
+      // Pasang badge tepat di bawah input secara pasif tanpa mengubah tree hierarchy React
+      input.insertAdjacentElement('afterend', badge);
     }
 
     // Sembunyikan field input jadwal & jam teknis di tengah form lembar ketik secara visual
