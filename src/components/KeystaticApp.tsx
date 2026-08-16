@@ -137,19 +137,28 @@ export function KeystaticApp() {
 
       // Cek apakah form saat ini adalah Artikel yang bertipe Mingguan
       function checkIsWeeklyArticle() {
-        // Cek apakah halaman saat ini adalah writings collection
         const isWritingsPage = window.location.pathname.includes('/writings');
         if (!isWritingsPage) return false;
 
-        // Cari select/combobox Tipe Publikasi
-        const selects = Array.from(document.querySelectorAll('button[role="combobox"], select, [aria-haspopup="listbox"]'));
-        for (const sel of selects) {
-          const text = (sel.textContent || '').trim().toLowerCase();
-          // Hanya anggap mingguan jika text pilihan AKTIF mengandung "mingguan" atau "majalah"
-          if (text.includes('mingguan') || text.includes('majalah edisi khusus')) {
-            return true;
+        // Cari tombol combobox spesifik di bawah field Tipe Publikasi
+        const labels = Array.from(document.querySelectorAll('label, div[class*="css-"]'));
+        const typeField = labels.find((l) => (l.textContent || '').toLowerCase().includes('tipe publikasi'));
+        
+        if (typeField) {
+          const btn = typeField.querySelector('button[role="combobox"], [aria-haspopup="listbox"], button');
+          if (btn) {
+            const btnText = (btn.textContent || '').trim().toLowerCase();
+            // Jika tombol menampilkan "harian", maka PASTI BUKAN mingguan
+            if (btnText.includes('harian')) return false;
+            if (btnText.includes('mingguan') || btnText.includes('majalah')) return true;
           }
         }
+
+        // Cek apakah ada input field spesifik Edisi Mingguan yang tampil (seperti field relationship Edisi atau Rubrik)
+        const allLabels = Array.from(document.querySelectorAll('label')).map(l => (l.textContent || '').toLowerCase());
+        const hasWeeklyFields = allLabels.some(t => t.includes('pilih edisi mingguan') || t.includes('laporan utama (cover story)'));
+        if (hasWeeklyFields) return true;
+
         return false;
       }
 
