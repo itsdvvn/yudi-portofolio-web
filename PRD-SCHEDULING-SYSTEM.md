@@ -226,8 +226,30 @@ keystatic.config.ts           src/content/writings/*.mdoc    src/lib/reader.ts
    - Jika suatu field ditambahkan/dihapus di `keystatic.config.ts`, wajib periksa seluruh file `.json` dan `.mdoc` di `src/content/`. Keystatic runtime akan melempar exception fatal jika menemukan key asing atau tipe data yang tidak sesuai.
 2. **Regex Datetime Strictness**:
    - `fields.datetime` hanya menerima format `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$`. Jangan tambahkan offset string (`+07:00`) langsung ke isi file disk, biarkan helper `schedule.ts` yang menangani offset WIB saat parsing runtime.
-3. **Passive DOM Enhancement**:
-   - Skrip UI kustom di `KeystaticApp.tsx` tidak boleh menghapus atau menyembunyikan input state bawaan React dengan cara destruktif (`removeChild` / unmount paksa), melainkan menginjeksi kontrol layer di atasnya.
+---
+
+## 10. 🧹 Audit UI/UX: Eliminasi Redundansi & Human Error
+
+Audit menyeluruh terhadap antarmuka input dan alur kerja editorial Keystatic CMS yang berpotensi menyebabkan redundansi atau kesalahan manusia (*human error*):
+
+### 10.1. Daftar Input Redundant & Rencana Solusi Otomatisasi
+
+| Komponen / Field | Masalah Saat Ini (Human Error Risk) | Solusi Desain Baru (Otomatis & Pintar) |
+| :--- | :--- | :--- |
+| **`publishTime` (String Teks Manual)** | Penulis harus mengetik manual teks seperti `"16.00 WIB"`. Rawan typo (`16:00`, `16.00`, `jam 4`). | **Dihapus 100%**. Digantikan oleh unified `fields.datetime` dan *Time Picker* visual (AM/PM atau 24h picker). |
+| **`editionNumber` (Label Edisi)** | Penulis harus mengetik manual label seperti `"Edisi 9 Agustus 2026"`. Sering lupa atau formatnya tidak konsisten antar edisi. | **Otomatisasi Penuh**. Field dijadikan opsional; jika kosong, sistem otomatis meng-generate label dari tanggal terbit: `Edisi [D MMMM YYYY]`. |
+| **`category` (Teks Bebas Manual)** | Input teks biasa menyebabkan typo kategori (e.g. `Skena`, `skena`, `Skena-kenanya`). | **Pilihan Terkurasi (Select / Combobox)** dengan opsi preset utama + opsi kustom jika diperlukan. |
+| **Pemisahan `heroImage` vs `heroImageUrl`** | Ada 2 field terpisah (upload lokal vs URL direct CDN/PocketBase), membuat form panjang dan membingungkan. | **Unified Media Input** atau integrasi langsung ke R2 Media Library. |
+| **Input Tanggal di Tengah Form Artikel** | Letak input tanggal di tengah halaman mengganggu konsentrasi drafting penulisan. | **Dipindahkan 100% ke WordPress Pre-Publish Panel**. Lembar utama bersih untuk fokus menulis. |
+| **`readTime` (Estimasi Waktu Baca)** | Pernah ada field manual waktu baca artikel. | **100% Auto-calculated** secara dinamis dari jumlah kata dalam konten Markdoc menggunakan algoritma standar 200 wpm (kata per menit). |
+
+---
+
+### 10.2. Prinsip "Zero Friction" untuk Penulis
+1. **Fokus Menulis**: Penulis hanya mengisi Judul, Deck, dan isi Tulisan. Semua metadata teknis (tanggal rilis, jam, status terbit, slug) ditangani oleh sistem dan panel pre-publish.
+2. **Safe Defaults**: Setiap artikel baru otomatis berstatus *Draft* atau *Publish Immediately* jika tombol Publish ditekan.
+3. **No Breaking Validations**: Validasi karakter judul (80) dan deck (144) memberikan feedback visual real-time yang ramah tanpa memblokir proses pengetikan draf.
+
 
 
 
