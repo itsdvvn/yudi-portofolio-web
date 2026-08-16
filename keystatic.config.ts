@@ -131,9 +131,9 @@ export default config({
           label: 'Label Edisi (Opsional: e.g. Edisi 9 Agustus 2026)',
           description: 'Kosongkan jika ingin label otomatis terbuat dari tanggal rilis.',
         }),
-        publishDate: fields.datetime({ 
-          label: 'Jadwal Rilis Edisi (Tanggal & Jam)', 
-          defaultValue: { kind: 'now' } 
+        publishDate: fields.date({ 
+          label: 'Jadwal Rilis Edisi (Tanggal Rilis)', 
+          defaultValue: { kind: 'today' } 
         }),
         coverImage: fields.image({
           label: 'Cover Majalah Mingguan (Pilih / Upload Gambar Vertikal/Portrait)',
@@ -217,9 +217,9 @@ export default config({
             },
           },
         }),
-        publishDate: fields.datetime({ 
-          label: 'Jadwal / Waktu Terbit (Tanggal & Jam)', 
-          defaultValue: { kind: 'now' } 
+        publishDate: fields.date({ 
+          label: 'Jadwal / Waktu Terbit (Tanggal Rilis)', 
+          defaultValue: { kind: 'today' } 
         }),
         heroImage: fields.image({
           label: 'Hero / Featured Image (Pilih / Upload File)',

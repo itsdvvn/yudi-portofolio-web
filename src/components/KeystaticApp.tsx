@@ -325,21 +325,19 @@ export function KeystaticApp() {
         drawer.style.display = 'none';
 
         const dateVal = datePicker?.value || currentIsoDate;
-        const timeVal = timePicker?.value || `${currentHh}:${currentMm}`;
-        const combinedIso = `${dateVal}T${timeVal}`;
 
-        // Cari input datetime/date/text di form Keystatic asli dan sematkan nilainya secara reaktif
+        // Cari input date di form Keystatic asli dan sematkan nilainya secara reaktif
         const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
         for (const input of allInputs) {
           const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
           const text = (container?.textContent || '').toLowerCase();
           
-          if (text.includes('jadwal') || text.includes('publish') || text.includes('iso') || text.includes('tanggal')) {
+          if (text.includes('jadwal') || text.includes('publish') || text.includes('tanggal')) {
             const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
             if (nativeSetter) {
-              nativeSetter.call(input, combinedIso);
+              nativeSetter.call(input, dateVal);
             } else {
-              input.value = combinedIso;
+              input.value = dateVal;
             }
             input.dispatchEvent(new Event('input', { bubbles: true }));
             input.dispatchEvent(new Event('change', { bubbles: true }));
