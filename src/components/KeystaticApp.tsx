@@ -261,65 +261,61 @@ export function KeystaticApp() {
         flex-direction: column;
       `;
 
-      // Inject Global CSS Variables & Dark Mode Rules for Keystatic Drawer
+      // Inject Global CSS Variables & Dark Mode Rules for Keystatic Drawer (Mengikuti .kui-scheme--light / .kui-scheme--dark)
       if (!document.getElementById('wp-drawer-styles')) {
         const styleSheet = document.createElement('style');
         styleSheet.id = 'wp-drawer-styles';
         styleSheet.textContent = `
-          :root {
+          /* Mode Terang (Light) */
+          :root,
+          .kui-scheme--light {
             --wp-drawer-bg: #ffffff;
-            --wp-drawer-header-bg: #f9f9f9;
-            --wp-drawer-text: #1e1e1e;
-            --wp-drawer-muted: #646970;
-            --wp-drawer-border: #e0e0e0;
-            --wp-drawer-card-bg: #f6f7f7;
+            --wp-drawer-header-bg: #f8fafc;
+            --wp-drawer-text: #0f172a;
+            --wp-drawer-muted: #64748b;
+            --wp-drawer-border: #e2e8f0;
+            --wp-drawer-card-bg: #f1f5f9;
             --wp-drawer-input-bg: #ffffff;
-            --wp-drawer-input-border: #8c8f94;
-            --wp-drawer-input-text: #1e1e1e;
+            --wp-drawer-input-border: #cbd5e1;
+            --wp-drawer-input-text: #0f172a;
             --wp-drawer-color-scheme: light;
+            --wp-calendar-icon-filter: none;
           }
-          [data-theme="dark"], .dark, [class*="dark"], body[style*="background-color: rgb(18, 18, 18)"], body[style*="background: rgb(18, 18, 18)"] {
-            --wp-drawer-bg: #18181b;
-            --wp-drawer-header-bg: #1f1f23;
-            --wp-drawer-text: #f4f4f5;
-            --wp-drawer-muted: #a1a1aa;
-            --wp-drawer-border: #27272a;
-            --wp-drawer-card-bg: #202024;
-            --wp-drawer-input-bg: #27272a;
-            --wp-drawer-input-border: #3f3f46;
-            --wp-drawer-input-text: #ffffff;
-            --wp-drawer-color-scheme: dark;
+
+          /* Mode Gelap (Dark) - Mengikuti Toggle Keystar UI (.kui-scheme--dark) */
+          html.kui-scheme--dark,
+          body.kui-scheme--dark,
+          .kui-scheme--dark,
+          [data-color-scheme="dark"] {
+            --wp-drawer-bg: #18181b !important;
+            --wp-drawer-header-bg: #202024 !important;
+            --wp-drawer-text: #f4f4f5 !important;
+            --wp-drawer-muted: #a1a1aa !important;
+            --wp-drawer-border: #27272a !important;
+            --wp-drawer-card-bg: #27272a !important;
+            --wp-drawer-input-bg: #18181b !important;
+            --wp-drawer-input-border: #3f3f46 !important;
+            --wp-drawer-input-text: #f4f4f5 !important;
+            --wp-drawer-color-scheme: dark !important;
+            --wp-calendar-icon-filter: invert(1) !important;
           }
-          /* Support OS Dark Mode if Keystatic is in system dark mode */
-          @media (prefers-color-scheme: dark) {
-            :root {
-              --wp-drawer-bg: #18181b;
-              --wp-drawer-header-bg: #1f1f23;
-              --wp-drawer-text: #f4f4f5;
-              --wp-drawer-muted: #a1a1aa;
-              --wp-drawer-border: #27272a;
-              --wp-drawer-card-bg: #202024;
-              --wp-drawer-input-bg: #27272a;
-              --wp-drawer-input-border: #3f3f46;
-              --wp-drawer-input-text: #ffffff;
-              --wp-drawer-color-scheme: dark;
-            }
+
+          .wp-drawer-container {
+            background: var(--wp-drawer-bg) !important;
+            border-left: 1px solid var(--wp-drawer-border) !important;
+            color: var(--wp-drawer-text) !important;
           }
+
           .wp-custom-input {
-            color-scheme: var(--wp-drawer-color-scheme);
+            color-scheme: var(--wp-drawer-color-scheme) !important;
             color: var(--wp-drawer-input-text) !important;
             background-color: var(--wp-drawer-input-bg) !important;
             border: 1px solid var(--wp-drawer-input-border) !important;
           }
+
           .wp-custom-input::-webkit-calendar-picker-indicator {
             cursor: pointer;
-            filter: var(--wp-calendar-icon-filter, none);
-          }
-          [data-theme="dark"] .wp-custom-input::-webkit-calendar-picker-indicator,
-          @media (prefers-color-scheme: dark) {
-            .wp-custom-input::-webkit-calendar-picker-indicator {
-              filter: invert(1);
-            }
+            filter: var(--wp-calendar-icon-filter) !important;
           }
         `;
         document.head.appendChild(styleSheet);
