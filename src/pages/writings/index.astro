@@ -29,12 +29,12 @@ const editions = editionsRaw
   .map((e) => {
     let label = e!.editionNumber;
     if (!label || label.trim() === '' || label === 'Edisi Terbaru' || /^\d{4}-\d{2}-\d{2}$/.test(label)) {
-      const parsedDate = parsePublishDateTime(e!.publishDate);
+      const parsedDate = parsePublishDateTime(e!.publishDate, e!.publishTime);
       label = `Edisi ${parsedDate.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'long', year: 'numeric' })}`;
     }
     return { ...e!, editionNumber: label };
   })
-  .sort((a, b) => new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf());
+  .sort((a, b) => parsePublishDateTime(b.publishDate, b.publishTime).valueOf() - parsePublishDateTime(a.publishDate, a.publishTime).valueOf());
 
 // 2. Fetch All Writings
 const allSlugs = await reader.collections.writings.list();
@@ -93,7 +93,7 @@ const allWritings = writingsRaw
     const parentEdition = post.edition ? editionsMap.get(post.edition) : null;
     return isArticlePublished(post, parentEdition);
   })
-  .sort((a, b) => new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf());
+  .sort((a, b) => parsePublishDateTime(b.publishDate, b.publishTime).valueOf() - parsePublishDateTime(a.publishDate, a.publishTime).valueOf());
 
 // Filter Harian / Reguler (termasuk artikel lama tanpa publicationType)
 const regulerWritings = allWritings.filter(

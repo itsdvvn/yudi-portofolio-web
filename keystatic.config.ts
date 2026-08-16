@@ -132,8 +132,15 @@ export default config({
           description: 'Kosongkan jika ingin label otomatis terbuat dari tanggal rilis.',
         }),
         publishDate: fields.date({ 
-          label: 'Jadwal Rilis Edisi (Tanggal Rilis)', 
+          label: 'Tanggal Rilis Edisi', 
           defaultValue: { kind: 'today' } 
+        }),
+        publishTime: fields.text({
+          label: 'Jam Rilis Edisi (WIB, format: HH:mm)',
+          defaultValue: () => {
+            const n = new Date();
+            return `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
+          },
         }),
         coverImage: fields.image({
           label: 'Cover Majalah Mingguan (Pilih / Upload Gambar Vertikal/Portrait)',
@@ -218,8 +225,15 @@ export default config({
           },
         }),
         publishDate: fields.date({ 
-          label: 'Jadwal / Waktu Terbit (Tanggal Rilis)', 
+          label: 'Tanggal Rilis Artikel', 
           defaultValue: { kind: 'today' } 
+        }),
+        publishTime: fields.text({
+          label: 'Jam Rilis Artikel (WIB, format: HH:mm)',
+          defaultValue: () => {
+            const n = new Date();
+            return `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
+          },
         }),
         heroImage: fields.image({
           label: 'Hero / Featured Image (Pilih / Upload File)',

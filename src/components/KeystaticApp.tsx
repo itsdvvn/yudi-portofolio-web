@@ -73,7 +73,7 @@ export function KeystaticApp() {
       }
     }
 
-    // Sembunyikan field input jadwal teknis di tengah form lembar ketik secara visual
+    // Sembunyikan field input jadwal & jam teknis di tengah form lembar ketik secara visual
     // Menggunakan clip/opacity agar React event handler tetap aktif menerima input
     function hideCentralDatetimeFields() {
       const inputs = Array.from(document.querySelectorAll('input[type="date"], input[type="datetime-local"], input[type="text"]')) as HTMLInputElement[];
@@ -83,7 +83,13 @@ export function KeystaticApp() {
         const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
         const text = (container?.textContent || '').toLowerCase();
 
-        if (text.includes('jadwal rilis') || text.includes('jadwal / waktu terbit') || text.includes('tanggal rilis')) {
+        if (
+          text.includes('jadwal rilis') || 
+          text.includes('jadwal / waktu terbit') || 
+          text.includes('tanggal rilis') ||
+          text.includes('jam rilis') ||
+          text.includes('waktu rilis')
+        ) {
           const fieldBlock = (input.closest('div[class*="css-"]') || container) as HTMLElement;
           if (fieldBlock && fieldBlock.style.opacity !== '0') {
             fieldBlock.style.opacity = '0';
@@ -98,20 +104,32 @@ export function KeystaticApp() {
       });
     }
 
-    // Helper untuk sinkronisasi nilai tanggal ke input form Keystatic asli
-    function syncDateToKeystatic(dateVal: string) {
+    // Helper untuk sinkronisasi nilai tanggal & jam ke input form Keystatic asli
+    function syncDateToKeystatic(dateVal: string, timeVal?: string) {
       const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
       for (const input of allInputs) {
         if (input.closest('#wp-gutenberg-pre-publish-drawer')) return;
         const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
         const text = (container?.textContent || '').toLowerCase();
         
-        if (text.includes('jadwal') || text.includes('publish') || text.includes('tanggal')) {
+        if (text.includes('tanggal rilis') || text.includes('jadwal rilis') || text.includes('jadwal / waktu terbit')) {
           const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
           if (nativeSetter) {
             nativeSetter.call(input, dateVal);
           } else {
             input.value = dateVal;
+          }
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          input.dispatchEvent(new Event('blur', { bubbles: true }));
+        }
+
+        if (timeVal && (text.includes('jam rilis') || text.includes('waktu rilis'))) {
+          const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+          if (nativeSetter) {
+            nativeSetter.call(input, timeVal);
+          } else {
+            input.value = timeVal;
           }
           input.dispatchEvent(new Event('input', { bubbles: true }));
           input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -313,14 +331,20 @@ export function KeystaticApp() {
 
       datePicker?.addEventListener('change', () => {
         updateButtonMorph();
-        syncDateToKeystatic(datePicker.value);
+        syncDateToKeystatic(datePicker.value, timePicker?.value);
       });
       datePicker?.addEventListener('input', () => {
         updateButtonMorph();
-        syncDateToKeystatic(datePicker.value);
+        syncDateToKeystatic(datePicker.value, timePicker?.value);
       });
-      timePicker?.addEventListener('change', updateButtonMorph);
-      timePicker?.addEventListener('input', updateButtonMorph);
+      timePicker?.addEventListener('change', () => {
+        updateButtonMorph();
+        syncDateToKeystatic(datePicker?.value, timePicker.value);
+      });
+      timePicker?.addEventListener('input', () => {
+        updateButtonMorph();
+        syncDateToKeystatic(datePicker?.value, timePicker.value);
+      });
 
       // Event: Buka Drawer
       wpTriggerBtn.addEventListener('click', () => {
@@ -349,10 +373,11 @@ export function KeystaticApp() {
         const hh = String(n.getHours()).padStart(2, '0');
         const mm = String(n.getMinutes()).padStart(2, '0');
         const dIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+        const timeNow = `${hh}:${mm}`;
         if (datePicker) datePicker.value = dIso;
-        if (timePicker) timePicker.value = `${hh}:${mm}`;
+        if (timePicker) timePicker.value = timeNow;
         updateButtonMorph();
-        syncDateToKeystatic(dIso);
+        syncDateToKeystatic(dIso, timeNow);
       });
 
       // Event: Confirm Submit
@@ -360,7 +385,8 @@ export function KeystaticApp() {
         drawer.style.display = 'none';
 
         const dateVal = datePicker?.value || currentIsoDate;
-        syncDateToKeystatic(dateVal);
+        const timeVal = timePicker?.value || `${currentHh}:${currentMm}`;
+        syncDateToKeystatic(dateVal, timeVal);
 
         // Delay 100ms agar state React Keystatic selesai meng-update payload form
         setTimeout(() => {

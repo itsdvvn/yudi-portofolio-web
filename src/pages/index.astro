@@ -22,7 +22,7 @@ const writingsRaw = await Promise.all(
 );
 const recentWritings = writingsRaw
   .filter((post) => post && isArticlePublished(post))
-  .sort((a, b) => new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf())
+  .sort((a, b) => parsePublishDateTime(b.publishDate, b.publishTime).valueOf() - parsePublishDateTime(a.publishDate, a.publishTime).valueOf())
   .slice(0, 4);
 
 // 3. Read Ships Live
@@ -51,14 +51,15 @@ const recentThoughts = thoughtsRaw
   .sort((a, b) => {
     if (a.pinned && !b.pinned) return -1;
     if (!a.pinned && b.pinned) return 1;
-    return new Date(b.publishDate || 0).valueOf() - new Date(a.publishDate || 0).valueOf();
+    return parsePublishDateTime(b.publishDate).valueOf() - parsePublishDateTime(a.publishDate).valueOf();
   })
   .slice(0, 2);
 
 function formatDate(dateStr: string) {
   if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', {
+  const date = parsePublishDateTime(dateStr);
+  return date.toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jakarta',
     month: 'short',
     day: 'numeric',
     year: 'numeric',

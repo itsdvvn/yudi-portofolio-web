@@ -1,5 +1,6 @@
 export interface PublishScheduleInfo {
   publishDate?: string | null;
+  publishTime?: string | null;
   draft?: boolean | null;
   publicationType?: any;
   edition?: string | null;
@@ -7,20 +8,21 @@ export interface PublishScheduleInfo {
 
 export interface EditionScheduleInfo {
   publishDate?: string | null;
+  publishTime?: string | null;
   draft?: boolean | null;
 }
 
 /**
  * Mengubah tanggal dan jam ke Date objek dengan penanganan akurat Zona Waktu WIB (UTC+7)
  */
-export function parsePublishDateTime(publishDate?: string | null): Date {
+export function parsePublishDateTime(publishDate?: string | null, publishTime?: string | null): Date {
   if (!publishDate) return new Date(0);
 
-  // Jika berformat ISO datetime string (e.g. 2026-08-16T14:00)
+  // Jika publishDate sudah berisi time T
   if (publishDate.includes('T')) {
     if (!publishDate.includes('+') && !publishDate.endsWith('Z')) {
       const parts = publishDate.split('T');
-      const timePart = parts[1] || '00:00';
+      const timePart = publishTime || parts[1] || '00:00';
       const timeSegments = timePart.split(':');
       const hh = String(parseInt(timeSegments[0], 10) || 0).padStart(2, '0');
       const mm = String(parseInt(timeSegments[1], 10) || 0).padStart(2, '0');
@@ -32,8 +34,12 @@ export function parsePublishDateTime(publishDate?: string | null): Date {
     if (!isNaN(parsedIso.getTime())) return parsedIso;
   }
 
-  // Jika format hanya tanggal YYYY-MM-DD
-  const dateOnlyIso = `${publishDate}T00:00:00+07:00`;
+  // Format tanggal YYYY-MM-DD + publishTime HH:mm
+  const timeStr = publishTime ? publishTime.trim() : '00:00';
+  const timeSegments = timeStr.split(':');
+  const hh = String(parseInt(timeSegments[0], 10) || 0).padStart(2, '0');
+  const mm = String(parseInt(timeSegments[1], 10) || 0).padStart(2, '0');
+  const dateOnlyIso = `${publishDate}T${hh}:${mm}:00+07:00`;
   const parsed = new Date(dateOnlyIso);
   return isNaN(parsed.getTime()) ? new Date(publishDate) : parsed;
 }
@@ -46,7 +52,7 @@ export function isEditionPublished(edition?: EditionScheduleInfo | null): boolea
   if (edition.draft) return false;
   if (!edition.publishDate) return true;
 
-  const releaseDate = parsePublishDateTime(edition.publishDate);
+  const releaseDate = parsePublishDateTime(edition.publishDate, edition.publishTime);
   const now = new Date();
   return releaseDate.getTime() <= now.getTime();
 }
@@ -77,7 +83,7 @@ export function isArticlePublished(
 
   // Cek tanggal & jam terbit artikel itu sendiri
   if (article.publishDate) {
-    const articleReleaseDate = parsePublishDateTime(article.publishDate);
+    const articleReleaseDate = parsePublishDateTime(article.publishDate, article.publishTime);
     const now = new Date();
     if (articleReleaseDate.getTime() > now.getTime()) {
       return false;
