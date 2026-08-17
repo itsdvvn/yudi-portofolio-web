@@ -183,8 +183,9 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
           `,
         }),
       });
-    } catch (emailErr) {
-      console.error('[Newsletter Welcome Email Error]:', emailErr);
+      } catch (emailErr) {
+        console.error('[Newsletter Welcome Email Error]:', emailErr);
+      }
     }
 
     return new Response(JSON.stringify({ 
