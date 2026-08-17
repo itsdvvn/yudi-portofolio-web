@@ -182,15 +182,14 @@ const jsonLd = {
           )}
         </div>
 
-        <!-- Contact Right -->
-        <div>
-          {socials.email ? (
-            <a href={`mailto:${socials.email}`} class="text-sm font-medium hover:underline tracking-tight" style="color: var(--text-primary);">
+        <!-- Contact & Legal Right -->
+        <div class="flex items-center gap-4 text-xs font-mono">
+          <a href="/privacy" class="hover:underline tracking-tight" style="color: var(--text-muted);">
+            privacy
+          </a>
+          {socials.email && (
+            <a href={`mailto:${socials.email}`} class="text-sm font-sans font-medium hover:underline tracking-tight" style="color: var(--text-primary);">
               Contact
-            </a>
-          ) : (
-            <a href="/keystatic" class="text-xs font-mono" style="color: var(--text-muted);">
-              [cms]
             </a>
           )}
         </div>

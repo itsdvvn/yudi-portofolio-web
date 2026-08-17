@@ -13,6 +13,7 @@ export const ALL: APIRoute = async ({ site, request }) => {
     { url: `${baseUrl}/writings`, changefreq: 'daily', priority: '0.9' },
     { url: `${baseUrl}/ships`, changefreq: 'weekly', priority: '0.8' },
     { url: `${baseUrl}/thoughts`, changefreq: 'daily', priority: '0.8' },
+    { url: `${baseUrl}/privacy`, changefreq: 'monthly', priority: '0.5' },
   ];
 
   // 2. Dynamic Writings Articles
