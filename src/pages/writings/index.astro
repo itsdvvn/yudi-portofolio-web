@@ -118,15 +118,21 @@ const regulerWritings = allWritings.filter(
   (p) => !p.publicationType || p.publicationType === 'reguler'
 );
 
-// Featured / Latest Edition
-const featuredEdition = editions.find((e) => e.featured) || editions[0];
+// 3. Logika Edisi Mingguan Dinamis (Auto-Update & Persistent Stay):
+// - Jika ada edisi baru yang rilis (publishDate + time <= NOW), otomatis menjadi edisi aktif terdepan.
+// - Jika minggu ini belum ada edisi baru, edisi published terakhir akan tetap tampil (stay persistent).
+// - Jika admin secara manual mencentang 'featured', maka edisi tersebut yang diutamakan.
+const activeEdition = editions.find((e) => e.featured) || editions[0] || null;
+
+// Arsip Edisi Sebelumnya (semua edisi terbit selain activeEdition)
+const archiveEditions = activeEdition ? editions.filter((e) => e.slug !== activeEdition.slug) : [];
 
 // Get articles associated with the active/featured edition
-const featuredEditionArticles = featuredEdition
-  ? allWritings.filter((p) => p.publicationType === 'mingguan' && p.edition === featuredEdition.slug)
+const featuredEditionArticles = activeEdition
+  ? allWritings.filter((p) => p.publicationType === 'mingguan' && p.edition === activeEdition.slug)
   : [];
 
-// Identify Cover Story
+// Identify Cover Story (Artikel Utama Edisi)
 const coverStoryArticle = featuredEditionArticles.find((p) => p.isCoverStory) || featuredEditionArticles[0];
 const otherEditionArticles = featuredEditionArticles.filter((p) => p.slug !== coverStoryArticle?.slug);
 
@@ -248,17 +254,17 @@ function formatDate(dateStr: string) {
                     Edisi Khusus
                   </span>
                   <span class="text-xs font-mono text-zinc-300">
-                    {featuredEdition.editionNumber || formatDate(featuredEdition.publishDate)}
+                    {activeEdition.editionNumber || formatDate(activeEdition.publishDate)}
                   </span>
                 </div>
 
                 <h2 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white mb-3 leading-tight">
-                  {featuredEdition.title}
+                  {activeEdition.title}
                 </h2>
 
-                {featuredEdition.summary && (
+                {activeEdition.summary && (
                   <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed mb-6 whitespace-pre-line">
-                    {featuredEdition.summary}
+                    {activeEdition.summary}
                   </p>
                 )}
 
@@ -331,11 +337,11 @@ function formatDate(dateStr: string) {
     )}
 
     <!-- Past Editions Archive (Grid / Carousel) -->
-    {editions.length > 1 && (
+    {archiveEditions.length > 0 && (
       <div class="mt-12 pt-8 border-t" style="border-color: var(--border);">
         <h3 class="section-tag mb-4">Arsip Edisi Sebelumnya</h3>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {editions.slice(1).map((ed) => (
+          {archiveEditions.map((ed) => (
             <div class="ship-card p-3 flex flex-col justify-between">
               <div class="aspect-[3/4] rounded overflow-hidden mb-2 bg-zinc-900 border" style="border-color: var(--border);">
                 <img 
