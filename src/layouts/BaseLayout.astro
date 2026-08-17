@@ -96,6 +96,16 @@ const jsonLd = {
         document.documentElement.removeAttribute('data-theme');
       }
     </script>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-P5EZZ1RM1D"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-P5EZZ1RM1D');
+    </script>
   </head>
   <body class="py-6 sm:py-8 md:py-12">
     <div class="site-wrap flex-1 flex flex-col">
