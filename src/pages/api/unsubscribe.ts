@@ -27,20 +27,15 @@ export const GET: APIRoute = async ({ request }) => {
         if (searchRes.ok) {
           const data = await searchRes.json();
           if (data.items && data.items.length > 0) {
-            const subscriber = data.items[0];
-            
-            // Verifikasi token (atau jika token cocok)
-            if (!token || subscriber.token === token || !subscriber.token) {
-              const patchRes = await fetch(`${pbBase}/${subscriber.id}`, {
+            for (const subscriber of data.items) {
+              await fetch(`${pbBase}/${subscriber.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: 'unsubscribed' })
               });
-              if (patchRes.ok) {
-                success = true;
-                break;
-              }
             }
+            success = true;
+            break;
           }
         }
       } catch (e) {
