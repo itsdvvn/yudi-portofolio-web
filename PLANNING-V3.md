@@ -49,20 +49,20 @@ flowchart TD
 
 ---
 
-### 2.2 Arsitektur Alur Pengiriman Email
+### 2.2 Arsitektur Alur Pengiriman Email (Resend)
 
 ```mermaid
 flowchart LR
     subgraph VPS_Services["VPS Server (43.156.121.141)"]
-        VW["Vaultwarden / PocketBase"] -- "SMTP Auth (Port 587 / 465)" --> Resend_Tx["Resend / Brevo API"]
-        N8N["n8n Workflow (Newsletter Blast)"] -- "Resend REST API / SMTP" --> Resend_Mkt["Resend / Brevo API"]
+        VW["Vaultwarden / PocketBase"] -- "SMTP (smtp.resend.com:587)" --> Resend_Tx["Resend API (notify.itsdvvn.my.id)"]
+        N8N["n8n Workflow (Newsletter Blast)"] -- "Resend API / SMTP" --> Resend_Mkt["Resend API (mail.itsdvvn.my.id)"]
     end
 
     subgraph DNS_Cloudflare["Cloudflare DNS (itsdvvn.my.id)"]
         SPF["SPF (TXT)"]
-        DKIM["DKIM (CNAME / TXT)"]
-        DMARC["DMARC (TXT: _dmarc.notify / _dmarc.mail)"]
-        MX["MX Records (Inbound / Route)"]
+        DKIM["DKIM (TXT / CNAME)"]
+        DMARC["DMARC (TXT: _dmarc)"]
+        MX["MX Records"]
     end
 
     Resend_Tx --> DNS_Cloudflare
