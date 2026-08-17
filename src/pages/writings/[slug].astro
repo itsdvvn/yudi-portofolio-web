@@ -310,9 +310,13 @@ const isCoverStory = typeof post.publicationType === 'object' && post.publicatio
 // 6. If article belongs to a Weekly Magazine Edition, load all sibling articles
 let editionArticles: any[] = [];
 
-if (pubType === 'mingguan' && postEdition) {
+if (pubType === 'mingguan' && editionSlug) {
   if (!parentEdition) {
-    parentEdition = await reader.collections.editions.read(postEdition);
+    try {
+      parentEdition = await reader.collections.editions.read(editionSlug);
+    } catch (e) {
+      parentEdition = null;
+    }
   }
   if (parentEdition) {
     const allWritingsSlugs = await reader.collections.writings.list();
@@ -349,7 +353,7 @@ if (pubType === 'mingguan' && postEdition) {
     );
 
     editionArticles = allWritingsData
-      .filter((w) => w && !w.draft && w.publicationType === 'mingguan' && w.edition === postEdition)
+      .filter((w) => w && !w.draft && w.publicationType === 'mingguan' && w.edition === editionSlug)
       .sort((a, b) => {
         const orderA = a.order ?? (a.isCoverStory ? 0 : 99);
         const orderB = b.order ?? (b.isCoverStory ? 0 : 99);
