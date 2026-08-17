@@ -493,7 +493,7 @@ if (pubType === 'mingguan' && editionSlug) {
 
     <!-- 📖 Majalah Mingguan Series / Edition Navigation Box (Tempo Style) -->
     {parentEdition && editionArticles.length > 0 && (
-      <section class="my-10 rounded-xl overflow-hidden border p-5 sm:p-7 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-xl" style="border-color: var(--border);">
+      <section class="my-10 rounded-xl overflow-hidden border p-5 sm:p-7 bg-zinc-950 text-white shadow-xl" style="border-color: var(--border);">
         <!-- Edition Header -->
         <div class="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
           <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-600 text-white font-mono tracking-wider uppercase">
@@ -512,7 +512,7 @@ if (pubType === 'mingguan' && editionSlug) {
               alt={parentEdition.title} 
               class="w-full h-full object-cover" 
               loading="lazy"
-              decoding="async"
+              decoding="async" 
             />
           </div>
           <div class="min-w-0 flex-1">
@@ -521,7 +521,7 @@ if (pubType === 'mingguan' && editionSlug) {
             </h3>
             <a 
               href="/writings#mingguan" 
-              class="text-xs font-mono text-zinc-400 hover:text-white transition-colors inline-flex items-center gap-1 mt-0.5"
+              class="text-xs font-mono text-zinc-300 hover:text-white transition-colors inline-flex items-center gap-1 mt-0.5"
             >
               <span>Lihat Edisi Selengkapnya</span>
               <span class="text-sm">→</span>
@@ -540,7 +540,7 @@ if (pubType === 'mingguan' && editionSlug) {
                 class={`py-3 sm:py-3.5 flex items-start gap-3 transition-colors block group ${
                   isCurrent 
                     ? 'text-rose-400 font-semibold' 
-                    : 'text-zinc-200 hover:text-white hover:bg-white/[0.02]'
+                    : 'text-zinc-200 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
                 <!-- Active / Current Indicator Arrow -->
@@ -548,7 +548,7 @@ if (pubType === 'mingguan' && editionSlug) {
                   {isCurrent ? (
                     <span class="text-rose-500 font-bold text-sm">→</span>
                   ) : (
-                    <span class="text-zinc-600 font-mono text-xs group-hover:text-zinc-400">{idx + 1}</span>
+                    <span class="text-zinc-500 font-mono text-xs group-hover:text-zinc-300">{idx + 1}</span>
                   )}
                 </div>
 
@@ -556,7 +556,7 @@ if (pubType === 'mingguan' && editionSlug) {
                 <div class="min-w-0 flex-1">
                   {item.rubrik && (
                     <span class={`text-[10px] font-mono uppercase tracking-wider block mb-0.5 ${
-                      isCurrent ? 'text-rose-400' : 'text-zinc-400 group-hover:text-zinc-300'
+                      isCurrent ? 'text-rose-400' : 'text-zinc-400 group-hover:text-zinc-200'
                     }`}>
                       {item.rubrik}
                     </span>

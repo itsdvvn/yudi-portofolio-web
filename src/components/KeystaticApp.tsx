@@ -74,33 +74,29 @@ export function KeystaticApp() {
       const isFormEditorPage = pathname.includes('/create') || pathname.includes('/item/');
       if (!isFormEditorPage) return;
 
-      // Cari langsung input spesifik tanggal & jam di lembar form (bukan di drawer publish)
-      const inputs = Array.from(document.querySelectorAll('input[type="date"], input[type="text"]')) as HTMLInputElement[];
-      inputs.forEach((input) => {
-        if (input.closest('#wp-gutenberg-pre-publish-drawer') || input.closest('[role="dialog"]')) return;
-
-        const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
-        const text = (container?.textContent || '').toLowerCase();
+      // Cari semua label atau teks heading yang memuat kata jadwal rilis / jam rilis
+      const labelsAndDivs = Array.from(document.querySelectorAll('label, div[class*="css-"], h3, span, p')) as HTMLElement[];
+      labelsAndDivs.forEach((el) => {
+        if (el.closest('#wp-gutenberg-pre-publish-drawer') || el.closest('[role="dialog"]')) return;
+        const text = (el.textContent || '').trim().toLowerCase();
 
         if (
-          text.includes('jadwal rilis majalah') ||
-          text.includes('jam rilis majalah') ||
-          text.includes('tanggal rilis artikel') ||
-          text.includes('jam rilis artikel') ||
-          text.includes('jadwal rilis') ||
-          text.includes('tanggal rilis') ||
-          text.includes('jam rilis')
+          text.startsWith('jadwal rilis majalah') ||
+          text.startsWith('jam rilis majalah') ||
+          text.startsWith('tanggal rilis artikel') ||
+          text.startsWith('jam rilis artikel') ||
+          text.startsWith('jadwal rilis') ||
+          text.startsWith('tanggal rilis') ||
+          text.startsWith('jam rilis')
         ) {
-          // Cari field container terdekat (biasanya parent 2 atau 3 level dari input)
-          const fieldBlock = (input.closest('[role="group"]') || input.closest('div[class*="css-"]') || container) as HTMLElement;
-          if (fieldBlock && fieldBlock !== document.body && fieldBlock.style.opacity !== '0') {
-            fieldBlock.style.opacity = '0';
+          // Cari container terdekat dari field tersebut
+          const fieldBlock = (el.closest('[role="group"]') || el.closest('div[class*="css-"]') || el.parentElement?.parentElement || el.parentElement) as HTMLElement;
+          if (fieldBlock && fieldBlock !== document.body && fieldBlock.style.display !== 'none') {
+            fieldBlock.style.display = 'none';
             fieldBlock.style.position = 'absolute';
             fieldBlock.style.pointerEvents = 'none';
             fieldBlock.style.height = '0px';
             fieldBlock.style.overflow = 'hidden';
-            fieldBlock.style.margin = '0';
-            fieldBlock.style.padding = '0';
           }
         }
       });
