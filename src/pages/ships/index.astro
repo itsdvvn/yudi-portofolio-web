@@ -55,18 +55,18 @@ const categories = ['All', ...dynamicCategories];
   <div class="space-y-4" id="ships-list">
     {ships.map((ship) => (
       <div class="ship-card" data-category={ship.displayCategory}>
-        <div class="flex items-center justify-between mb-2 gap-2">
-          <h2 class="ship-title">
+        <div class="flex items-start sm:items-center justify-between mb-2.5 gap-3">
+          <h2 class="ship-title min-w-0">
             {ship.link ? (
-              <a href={ship.link} target="_blank" rel="noopener noreferrer" class="hover:underline underline-offset-4 flex items-center gap-1">
-                {ship.title}
-                <span style="color: var(--text-muted); font-size: 0.75rem;">↗</span>
+              <a href={ship.link} target="_blank" rel="noopener noreferrer" class="hover:underline underline-offset-4 inline-flex items-center gap-1.5 leading-snug">
+                <span>{ship.title}</span>
+                <span class="text-xs shrink-0" style="color: var(--text-muted);">↗</span>
               </a>
             ) : (
-              ship.title
+              <span class="leading-snug">{ship.title}</span>
             )}
           </h2>
-          <div class="flex items-center gap-2 shrink-0">
+          <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
             <span class="text-[11px] font-mono" style="color: var(--text-muted);">{ship.year}</span>
             <span class="status-badge">
               {ship.displayCategory}

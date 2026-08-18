@@ -181,7 +181,7 @@
   border-radius: 8px;
   padding: 1.15rem;
   transition: border-color 0.2s ease, transform 0.2s ease;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .ship-card:hover {
@@ -193,6 +193,9 @@
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-primary);
+  word-break: normal;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .ship-desc {
