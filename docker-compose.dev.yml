@@ -1,0 +1,26 @@
+services:
+  portfolio-dev:
+    build: .
+    container_name: yudi-portfolio-dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - HOST=0.0.0.0
+      - PORT=4321
+    volumes:
+      - ./src/content:/app/src/content
+      - ./public/images:/app/dist/client/images
+      - ./public/images:/app/public/images
+    networks:
+      - server_web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portfolio-dev.rule=Host(`dev.itsdvvn.my.id`)"
+      - "traefik.http.routers.portfolio-dev.entrypoints=websecure"
+      - "traefik.http.routers.portfolio-dev.tls.certresolver=myresolver"
+      - "traefik.http.services.portfolio-dev.loadbalancer.server.port=4321"
+
+networks:
+  server_web:
+    external: true
