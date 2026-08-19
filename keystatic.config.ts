@@ -145,10 +145,6 @@ export default config({
             label: 'Nama Lengkap / Nama Pena Penulis',
             description: 'Nama yang akan tampil pada kartu profil dan arsip tulisan',
           },
-          slug: {
-            label: 'Slug URL Penulis',
-            description: 'Identifier unik untuk link URL (misal: /writings/author/nama-penulis)',
-          },
         }),
         bio: fields.text({
           label: 'Bio / Deskripsi Profil Penulis (Wajib)',
