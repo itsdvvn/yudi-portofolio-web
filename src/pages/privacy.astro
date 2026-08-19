@@ -3,73 +3,142 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout 
-  title="Privacy Policy – dvvn" 
-  description="Kebijakan Privasi dan transparansi pengelolaan data di situs personal Wahyudi Setiawan (dvvn)."
+  title="Kebijakan Privasi & Cookie – dvvn" 
+  description="Informasi transparan dan jelas mengenai kebijakan privasi, penggunaan cookie, dan pengelolaan data di situs personal Wahyudi Setiawan (dvvn)."
 >
   <article class="max-w-2xl">
     <header class="mb-8">
-      <h1 class="text-2xl font-bold tracking-tight mb-2" style="color: var(--text-primary);">
-        Kebijakan Privasi (Privacy Policy)
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono mb-3" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); color: #10b981;">
+        <span>🔒</span>
+        <span>Privasi & Transparansi Data</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2" style="color: var(--text-primary);">
+        Kebijakan Privasi & Penggunaan Cookie
       </h1>
       <p class="text-xs font-mono" style="color: var(--text-muted);">
-        Terakhir diperbarui: 17 Agustus 2026
+        Terakhir diperbarui: 19 Agustus 2026
       </p>
     </header>
 
-    <div class="space-y-6 text-sm leading-relaxed" style="color: var(--text-secondary);">
+    <div class="space-y-8 text-sm leading-relaxed" style="color: var(--text-secondary);">
+      <!-- 1. Prinsip Utama -->
       <section>
-        <h2 class="text-base font-bold mb-2" style="color: var(--text-primary);">
-          1. Pendahuluan
+        <h2 class="text-base font-bold mb-2.5 flex items-center gap-2" style="color: var(--text-primary);">
+          <span>1.</span>
+          <span>Prinsip Utama: Privasi Anda adalah Prioritas</span>
         </h2>
         <p>
-          Selamat datang di situs personal <strong>dvvn (itsdvvn.my.id)</strong> yang dikelola oleh Wahyudi Setiawan. Privasi Anda sebagai pengunjung adalah hal yang sangat saya hargai. Halaman ini menjelaskan bagaimana data dan informasi teknis diperlakukan saat Anda menjelajahi website ini.
+          Selamat datang di situs personal <strong>dvvn (itsdvvn.my.id)</strong> yang dikelola oleh Wahyudi Setiawan. Saya percaya bahwa internet harus tetap menjadi tempat yang nyaman dan menghargai privasi penggunanya.
+        </p>
+        <p class="mt-2">
+          Situs ini dirancang dengan prinsip <strong>Minimasi Data (Data Minimalism)</strong>: saya hanya menyimpan informasi teknis sekecil mungkin yang benar-benar dibutuhkan agar website dapat berfungsi dengan cepat, aman, dan nyaman saat Anda baca.
         </p>
       </section>
 
-      <section>
-        <h2 class="text-base font-bold mb-2" style="color: var(--text-primary);">
-          2. Data yang Dikumpulkan & Penyimpanan Lokal
+      <!-- 2. Penjelasan Lengkap Soal Cookie & Penyimpanan Lokal -->
+      <section class="p-4 sm:p-5 rounded-xl border" style="background: rgba(255, 255, 255, 0.02); border-color: var(--border);">
+        <h2 class="text-base font-bold mb-3 flex items-center gap-2" style="color: var(--text-primary);">
+          <span>🍪</span>
+          <span>2. Apa itu Cookie & Bagaimana Situs Ini Menggunakannya?</span>
         </h2>
-        <p class="mb-2">
-          Situs ini dirancang dengan prinsip minimasi data (<em>data minimalism</em>):
+        <p class="mb-3">
+          <strong>Cookie & Local Storage</strong> adalah berkas teks kecil yang disimpan oleh peramban (browser) di perangkat Anda ketika mengunjungi sebuah situs web. Anggap ini seperti <em>catatan pengingat mini</em> agar Anda tidak perlu mengatur ulang preferensi setiap kali berpindah halaman.
         </p>
-        <ul class="list-disc pl-5 space-y-1.5">
-          <li>
-            <strong>Preferensi Tema (Light/Dark Mode):</strong> Website ini menggunakan fitur <code>localStorage</code> pada peramban (browser) Anda murni untuk menyimpan preferensi tampilan mode terang atau gelap. Informasi ini tersimpan secara lokal di perangkat Anda dan tidak dikirimkan ke server mana pun.
+        
+        <h3 class="text-xs font-mono uppercase font-bold tracking-wider mb-2 text-emerald-500">
+          Cookie & Data yang Kami Gunakan:
+        </h3>
+        <div class="space-y-3">
+          <div class="border-l-2 border-emerald-500 pl-3">
+            <h4 class="font-semibold text-sm" style="color: var(--text-primary);">A. Preferensi Tampilan (Tema Gelap / Terang)</h4>
+            <p class="text-xs mt-0.5">
+              Disimpan via <code>localStorage (theme: 'dark' | 'light')</code>. Tujuannya murni agar saat Anda beralih halaman atau kembali berkunjung, tema pilihan Anda tetap aktif dan mata Anda tidak silau secara mendadak.
+            </p>
+          </div>
+
+          <div class="border-l-2 border-emerald-500 pl-3">
+            <h4 class="font-semibold text-sm" style="color: var(--text-primary);">B. Status Persetujuan Cookie</h4>
+            <p class="text-xs mt-0.5">
+              Disimpan via <code>localStorage (cookie_consent: 'accepted')</code> agar banner pemberitahuan cookie tidak muncul terus-menerus setelah Anda menyetujuinya.
+            </p>
+          </div>
+
+          <div class="border-l-2 border-emerald-500 pl-3">
+            <h4 class="font-semibold text-sm" style="color: var(--text-primary);">C. Keamanan & Performa Jaringan (Cloudflare CDN)</h4>
+            <p class="text-xs mt-0.5">
+              Cookie teknis keamanan dari jaringan Cloudflare (seperti token proteksi bot dan pencegahan serangan DDoS) serta optimasi routing agar halaman terbuka secepat mungkin dari server terdekat.
+            </p>
+          </div>
+
+          <div class="border-l-2 border-emerald-500 pl-3">
+            <h4 class="font-semibold text-sm" style="color: var(--text-primary);">D. Sesi Pengelola Konten (Khusus Admin / Editor)</h4>
+            <p class="text-xs mt-0.5">
+              Cookie otorisasi sementara saat admin masuk ke dashboard Keystatic CMS untuk menulis atau menyunting artikel.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Apa yang TIDAK Kami Lakukan (Jaminan Bebas Pelacak Iklan) -->
+      <section>
+        <h2 class="text-base font-bold mb-3 flex items-center gap-2" style="color: var(--text-primary);">
+          <span>🛡️</span>
+          <span>3. Apa yang TIDAK Kami Lakukan (Zero-Tracking Guarantee)</span>
+        </h2>
+        <ul class="space-y-2 text-xs sm:text-sm">
+          <li class="flex items-start gap-2">
+            <span class="text-rose-500 font-bold shrink-0">✕</span>
+            <span><strong>Tidak Ada Pelacak Iklan Pihak Ketiga:</strong> Situs ini bebas dari Google Ads Remarketing, Meta Pixel, TikTok Pixel, atau jaringan iklan pihak ketiga yang mengintai aktivitas Anda.</span>
           </li>
-          <li>
-            <strong>Formulir Berlangganan / Kontak:</strong> Jika Anda secara sukarela memasukkan alamat email untuk berlangganan majalah mingguan atau menghubungi saya, alamat email tersebut hanya akan digunakan untuk keperluan komunikasi terkait dan tidak akan pernah diperjualbelikan atau dibagikan kepada pihak ketiga.
+          <li class="flex items-start gap-2">
+            <span class="text-rose-500 font-bold shrink-0">✕</span>
+            <span><strong>Tidak Ada Penjualan Data:</strong> Data atau alamat email yang Anda kirimkan untuk kontak tidak akan pernah dijual, disewakan, atau dibagikan ke pihak mana pun untuk keperluan komersial.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-rose-500 font-bold shrink-0">✕</span>
+            <span><strong>Tidak Ada Cross-Site Tracking:</strong> Kami tidak melacak riwayat penjelajahan Anda di luar domain <code>itsdvvn.my.id</code>.</span>
           </li>
         </ul>
       </section>
 
+      <!-- 4. Konten Media Tersemat (Embedded Content) -->
       <section>
-        <h2 class="text-base font-bold mb-2" style="color: var(--text-primary);">
-          3. Tautan Pihak Ketiga
+        <h2 class="text-base font-bold mb-2.5 flex items-center gap-2" style="color: var(--text-primary);">
+          <span>4.</span>
+          <span>Konten Tersemat dari Platform Eksternal</span>
         </h2>
         <p>
-          Situs ini dapat memuat tautan menuju platform eksternal seperti YouTube, Instagram, TikTok, GitHub, atau situs referensi jurnalistik lainnya. Saya tidak memiliki kendali atas kebijakan privasi platform pihak ketiga tersebut dan menyarankan Anda untuk membaca kebijakan privasi masing-masing platform saat mengunjunginya.
+          Beberapa artikel atau studi kasus portofolio dapat memuat pemutar media tersemat (*embed*) resmi seperti Spotify, YouTube, atau Vimeo. Ketika Anda memutar media tersebut, platform pihak ketiga terkait mungkin menetapkan cookie mereka sendiri sesuai dengan kebijakan privasi masing-masing layanan.
         </p>
       </section>
 
+      <!-- 5. Hak & Kendali Penuh Pengunjung -->
       <section>
-        <h2 class="text-base font-bold mb-2" style="color: var(--text-primary);">
-          4. Perubahan Kebijakan
+        <h2 class="text-base font-bold mb-2.5 flex items-center gap-2" style="color: var(--text-primary);">
+          <span>5.</span>
+          <span>Bagaimana Cara Anda Mengontrol atau Menghapus Cookie?</span>
         </h2>
         <p>
-          Kebijakan privasi ini dapat diperbarui sewaktu-waktu guna menyesuaikan dengan perkembangan fitur website. Setiap perubahan akan dicantumkan pada halaman ini dengan tanggal pembaruan terbaru.
+          Anda memiliki hak dan kendali penuh 100% atas browser Anda. Anda dapat menghapus atau menonaktifkan cookie dan <code>localStorage</code> kapan saja melalui menu pengaturan peramban:
         </p>
+        <ul class="list-disc pl-5 mt-2 space-y-1 text-xs">
+          <li><strong>Google Chrome:</strong> Settings → Privacy and security → Cookies and other site data.</li>
+          <li><strong>Mozilla Firefox:</strong> Settings → Privacy & Security → Cookies and Site Data.</li>
+          <li><strong>Apple Safari:</strong> Preferences → Privacy → Manage Website Data.</li>
+        </ul>
       </section>
 
-      <section class="pt-4 border-t" style="border-color: var(--border);">
-        <h2 class="text-base font-bold mb-2" style="color: var(--text-primary);">
-          5. Kontak
+      <!-- 6. Kontak & Pertanyaan -->
+      <section class="pt-6 border-t" style="border-color: var(--border);">
+        <h2 class="text-base font-bold mb-2 flex items-center gap-2" style="color: var(--text-primary);">
+          <span>6.</span>
+          <span>Pertanyaan Lebih Lanjut</span>
         </h2>
         <p>
-          Jika Anda memiliki pertanyaan mengenai kebijakan privasi ini, silakan hubungi saya melalui email di:  
-          <a href="mailto:swahyuinfo@gmail.com" class="font-mono text-xs underline hover:opacity-80" style="color: var(--accent, #007cba);">
-            swahyuinfo@gmail.com
-          </a>
+          Jika Anda memiliki pertanyaan atau masukan seputar privasi dan cookie di situs ini, saya dengan senang hati siap berdiskusi. Anda dapat menghubungi saya langsung melalui:
+        </p>
+        <p class="mt-2 font-mono text-xs">
+          Email: <a href="mailto:swahyuinfo@gmail.com" class="underline text-emerald-500 hover:text-emerald-400">swahyuinfo@gmail.com</a>
         </p>
       </section>
     </div>

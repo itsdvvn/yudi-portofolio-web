@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { reader } from '../lib/reader';
+import CookieConsent from '../components/CookieConsent.astro';
 
 interface Props {
   title?: string;
@@ -240,5 +241,6 @@ const jsonLd = {
         });
       });
     </script>
+    <CookieConsent />
   </body>
 </html>

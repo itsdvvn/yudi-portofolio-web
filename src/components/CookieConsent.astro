@@ -1,0 +1,90 @@
+---
+// Component: CookieConsent.astro
+// Sleek, minimal, non-intrusive cookie consent banner
+---
+
+<div
+  id="cookie-consent-banner"
+  class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-50 transform translate-y-24 opacity-0 pointer-events-none transition-all duration-500 ease-out"
+  role="region"
+  aria-label="Pemberitahuan Cookie"
+>
+  <div
+    class="p-4 sm:p-5 rounded-2xl shadow-2xl backdrop-blur-xl border flex flex-col gap-3"
+    style="background: var(--bg-card, rgba(24, 24, 27, 0.85)); border-color: var(--border); box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.35);"
+  >
+    <!-- Header with Icon & Close -->
+    <div class="flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">🍪</span>
+        <span class="text-xs font-mono font-bold tracking-tight uppercase" style="color: var(--text-primary);">
+          Cookie & Privasi
+        </span>
+      </div>
+      <button
+        id="cookie-dismiss-btn"
+        class="w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-60 hover:opacity-100 transition-opacity"
+        style="color: var(--text-muted);"
+        aria-label="Tutup pemberitahuan"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- Description Text -->
+    <p class="text-xs leading-relaxed" style="color: var(--text-secondary);">
+      Situs ini menggunakan cookie esensial dan penyimpanan lokal untuk mengingat preferensi tema Anda (<em>Dark/Light mode</em>) serta performa website. <strong>Bebas dari pelacak iklan pihak ketiga</strong>.
+    </p>
+
+    <!-- Buttons -->
+    <div class="flex items-center justify-between gap-3 pt-1">
+      <a
+        href="/privacy"
+        class="text-[11px] font-mono underline hover:text-emerald-400 transition-colors"
+        style="color: var(--text-muted);"
+      >
+        Pelajari rincian →
+      </a>
+      <button
+        id="cookie-accept-btn"
+        class="px-4 py-1.5 rounded-lg text-xs font-mono font-semibold bg-emerald-500 hover:bg-emerald-400 text-zinc-950 transition-all duration-200 shadow-sm active:scale-95 cursor-pointer"
+      >
+        Saya Mengerti
+      </button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    const banner = document.getElementById('cookie-consent-banner');
+    const acceptBtn = document.getElementById('cookie-accept-btn');
+    const dismissBtn = document.getElementById('cookie-dismiss-btn');
+
+    if (!banner) return;
+
+    // Check if consent has already been given
+    const consent = localStorage.getItem('cookie_consent');
+    if (!consent) {
+      // Show with smooth transition after 1.2s delay
+      setTimeout(() => {
+        banner.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+        banner.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+      }, 1200);
+    }
+
+    function closeBanner(value) {
+      localStorage.setItem('cookie_consent', value || 'accepted');
+      banner.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+      banner.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+    }
+
+    if (acceptBtn) {
+      acceptBtn.addEventListener('click', () => closeBanner('accepted'));
+    }
+
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', () => closeBanner('dismissed'));
+    }
+  })();
+</script>
