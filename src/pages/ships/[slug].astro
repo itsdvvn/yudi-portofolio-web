@@ -318,11 +318,11 @@ const heroMedia = ship.coverImage || ship.coverImageUrl;
 
     <!-- 🖼️ 3. Featured Hero Media Banner -->
     {heroMedia && (
-      <figure class="mb-10 rounded-2xl overflow-hidden border shadow-sm" style="border-color: var(--border);">
+      <figure class="mb-10 rounded-2xl overflow-hidden border shadow-sm bg-black/[0.02] dark:bg-white/[0.02]" style="border-color: var(--border);">
         <img
           src={heroMedia}
           alt={ship.title}
-          class="w-full h-auto max-h-[500px] object-cover"
+          class="w-full h-auto block object-cover"
           loading="eager"
         />
       </figure>
