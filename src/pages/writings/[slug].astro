@@ -63,14 +63,20 @@ const passwordClue = (post as any).passwordClue || '';
 
 let htmlContent = '';
 let collectedCitations: CitationItem[] = [];
-let computedReadTime = (post as any).readTime || '3 min read';
+let computedReadTime = (post as any).readTime || '1 min read';
 
-if (!isLocked) {
+try {
   const contentAst = await post.content();
-  const rendered = renderWritingHtml(contentAst, slug as string);
-  htmlContent = rendered.htmlContent;
-  collectedCitations = rendered.citations;
-  computedReadTime = calculateReadingTime(htmlContent);
+  if (contentAst) {
+    const rendered = renderWritingHtml(contentAst, slug as string);
+    computedReadTime = calculateReadingTime(rendered.htmlContent);
+    if (!isLocked) {
+      htmlContent = rendered.htmlContent;
+      collectedCitations = rendered.citations;
+    }
+  }
+} catch (e) {
+  computedReadTime = '1 min read';
 }
 
 function formatDate(dateStr: string) {
