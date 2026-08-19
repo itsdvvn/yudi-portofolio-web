@@ -152,6 +152,21 @@ if (pubType === 'mingguan' && editionSlug) {
       });
   }
 }
+
+let authorName = 'dvvn';
+let profileBio = 'Visual storyteller, developer, and writer.';
+let avatarImg = '/itsdvvn-web.jpg';
+
+try {
+  const profile = await reader.singletons.profile.read();
+  if (profile) {
+    authorName = profile.name || authorName;
+    profileBio = profile.bio || profileBio;
+    if (profile.avatar) {
+      avatarImg = profile.avatar.startsWith('http') ? profile.avatar : `${profile.avatar}?t=${Date.now()}`;
+    }
+  }
+} catch (e) {}
 ---
 
 <BaseLayout 
