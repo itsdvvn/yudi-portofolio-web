@@ -10,15 +10,35 @@ import Markdoc from '@markdoc/markdoc';
 const { slug } = Astro.params;
 
 let author = null;
+let resolvedSlug = slug as string;
+
 try {
-  author = await (reader.collections as any).authors?.read(slug as string);
+  author = await (reader.collections as any).authors?.read(resolvedSlug);
 } catch (e) {
   author = null;
 }
 
 if (!author) {
-  // Fallback check: if slug is 'dvvn', load default profile
-  if (slug === 'dvvn') {
+  try {
+    const allAuthorSlugs = (await (reader.collections as any).authors?.list()) || [];
+    for (const s of allAuthorSlugs) {
+      const item = await (reader.collections as any).authors?.read(s);
+      if (
+        item &&
+        (s.toLowerCase() === resolvedSlug.toLowerCase() ||
+          item.name?.toLowerCase().trim().replace(/\s+/g, '-') === resolvedSlug.toLowerCase())
+      ) {
+        author = item;
+        resolvedSlug = s;
+        break;
+      }
+    }
+  } catch (e) {}
+}
+
+if (!author) {
+  // Fallback check: if slug is 'dvvn' or 'yudi', load default profile
+  if (slug === 'dvvn' || slug === 'yudi') {
     author = {
       name: 'dvvn',
       bio: 'Visual storyteller, multimedia creator, and developer focused on cinematic video, photography, and creative web development.',

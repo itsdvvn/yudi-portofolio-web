@@ -138,11 +138,16 @@ export default config({
       slugField: 'name',
       path: 'src/content/authors/*',
       format: { data: 'json' },
+      columns: ['name', 'isDefault'],
       schema: {
         name: fields.slug({
           name: {
             label: 'Nama Lengkap / Nama Pena Penulis',
             description: 'Nama yang akan tampil pada kartu profil dan arsip tulisan',
+          },
+          slug: {
+            label: 'Slug URL Penulis',
+            description: 'Identifier unik untuk link URL (misal: /writings/author/nama-penulis)',
           },
         }),
         bio: fields.text({
