@@ -334,6 +334,19 @@ export default config({
           }
         ),
         draft: fields.checkbox({ label: 'Draft', defaultValue: false }),
+        isLocked: fields.checkbox({
+          label: '🔒 Kunci Artikel Ini (Password Protected)',
+          description: 'Aktifkan jika artikel ini bersifat privat dan pembaca wajib memasukkan kata sandi',
+          defaultValue: false,
+        }),
+        password: fields.text({
+          label: 'Kata Sandi Pembuka Artikel',
+          description: 'Password untuk membuka artikel (diperlukan jika artikel dikunci)',
+        }),
+        passwordClue: fields.text({
+          label: 'Clue / Petunjuk Password',
+          description: 'Petunjuk ramah untuk pembaca (misal: "Makanan kesukaan", "Nama panggilan", dll.)',
+        }),
         content: fields.markdoc({
           label: 'Article Body Content',
           options: {

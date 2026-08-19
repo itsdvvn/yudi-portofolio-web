@@ -43,6 +43,9 @@ const writingsCollection = defineCollection({
       photoCredit: z.string().optional().nullable(),
       tags: z.array(z.string()).default([]),
       draft: z.boolean().default(false),
+      isLocked: z.boolean().default(false),
+      password: z.string().optional().nullable(),
+      passwordClue: z.string().optional().nullable(),
     }),
 });
 
