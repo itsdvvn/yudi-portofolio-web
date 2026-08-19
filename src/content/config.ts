@@ -46,7 +46,22 @@ const writingsCollection = defineCollection({
       isLocked: z.boolean().default(false),
       password: z.string().optional().nullable(),
       passwordClue: z.string().optional().nullable(),
+      author: z.string().optional().nullable(),
     }),
+});
+
+const authorsCollection = defineCollection({
+  type: 'data',
+  schema: z.object({
+    name: z.string(),
+    bio: z.string(),
+    avatar: z.string().optional().nullable(),
+    avatarUrl: z.string().optional().nullable(),
+    instagram: z.string().optional().nullable(),
+    xTwitter: z.string().optional().nullable(),
+    website: z.string().optional().nullable(),
+    isDefault: z.boolean().default(false),
+  }),
 });
 
 const thoughtsCollection = defineCollection({
@@ -84,6 +99,7 @@ const shipsCollection = defineCollection({
 export const collections = {
   writings: writingsCollection,
   editions: editionsCollection,
+  authors: authorsCollection,
   thoughts: thoughtsCollection,
   ships: shipsCollection,
 };

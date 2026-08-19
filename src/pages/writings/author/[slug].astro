@@ -1,0 +1,310 @@
+---
+export const prerender = false;
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { reader } from '../../../lib/reader';
+import { calculateReadingTime } from '../../../lib/readingTime';
+import { isArticlePublished, parsePublishDateTime } from '../../../lib/schedule';
+import Markdoc from '@markdoc/markdoc';
+
+const { slug } = Astro.params;
+
+let author = null;
+try {
+  author = await (reader.collections as any).authors?.read(slug as string);
+} catch (e) {
+  author = null;
+}
+
+if (!author) {
+  // Fallback check: if slug is 'dvvn', load default profile
+  if (slug === 'dvvn') {
+    author = {
+      name: 'dvvn',
+      bio: 'Visual storyteller, multimedia creator, and developer focused on cinematic video, photography, and creative web development.',
+      avatar: '/itsdvvn-web.jpg',
+      avatarUrl: '',
+      instagram: 'https://www.instagram.com/itsdvvn/',
+      xTwitter: 'https://x.com',
+      website: 'https://itsdvvn.my.id',
+      isDefault: true,
+    };
+  } else {
+    return Astro.redirect('/writings');
+  }
+}
+
+// 1. Fetch Editions Map for schedule resolution
+const editionSlugs = await reader.collections.editions.list();
+const editionsRaw = await Promise.all(
+  editionSlugs.map(async (edSlug) => {
+    try {
+      const data = await reader.collections.editions.read(edSlug);
+      return data ? { slug: edSlug, ...data } : null;
+    } catch {
+      return null;
+    }
+  })
+);
+const editionsMap = new Map(editionsRaw.filter(Boolean).map((e) => [e!.slug, e]));
+
+// 2. Fetch Rubrics Map
+let rubricsMap = new Map();
+try {
+  const allRubricsSlugs = (await (reader.collections as any).rubrics?.list()) || [];
+  const rubricsRaw = await Promise.all(
+    allRubricsSlugs.map(async (s: string) => {
+      const data = await (reader.collections as any).rubrics.read(s);
+      return data ? { slug: s, ...data } : null;
+    })
+  );
+  rubricsMap = new Map(rubricsRaw.filter(Boolean).map((r) => [r!.slug, r!.name || r!.slug]));
+} catch (e) {}
+
+// 3. Fetch All Writings and Filter by this Author
+const allSlugs = await reader.collections.writings.list();
+const writingsRaw = await Promise.all(
+  allSlugs.map(async (artSlug) => {
+    try {
+      const data = await reader.collections.writings.read(artSlug);
+      if (!data) return null;
+
+      let readTime = data.readTime;
+      try {
+        const contentAst = await data.content();
+        const transformed = Markdoc.transform(contentAst.node || contentAst);
+        const html = Markdoc.renderers.html(transformed);
+        readTime = calculateReadingTime(html);
+      } catch (e) {}
+
+      const pubType = typeof data.publicationType === 'object' && data.publicationType !== null 
+        ? data.publicationType.discriminant 
+        : (data.publicationType || 'reguler');
+
+      const edition = typeof data.publicationType === 'object' && data.publicationType?.value?.edition 
+        ? data.publicationType.value.edition 
+        : (data as any).edition;
+
+      const rubrik = typeof data.publicationType === 'object' && data.publicationType?.value?.rubrik 
+        ? data.publicationType.value.rubrik 
+        : (data as any).rubrik;
+
+      const rawCategory = data.category || 'Article';
+      const category = rubricsMap.get(rawCategory) || rawCategory;
+
+      return {
+        slug: artSlug,
+        ...data,
+        category,
+        publicationType: pubType,
+        edition,
+        rubrik,
+        readTime,
+      };
+    } catch {
+      return null;
+    }
+  })
+);
+
+const isDefaultAuthor = !!author.isDefault;
+
+const authorArticles = writingsRaw
+  .filter((post) => {
+    if (!post) return false;
+    const parentEdition = post.edition ? editionsMap.get(post.edition) : null;
+    if (!isArticlePublished(post, parentEdition)) return false;
+
+    // Matching condition: post.author === slug, or if this author is default, also match unassigned author
+    if (post.author === slug) return true;
+    if (isDefaultAuthor && (!post.author || post.author === 'dvvn')) return true;
+
+    return false;
+  })
+  .sort((a, b) => parsePublishDateTime(b.publishDate, b.publishTime).valueOf() - parsePublishDateTime(a.publishDate, a.publishTime).valueOf());
+
+function formatDate(dateStr: string) {
+  if (!dateStr) return '';
+  const date = parsePublishDateTime(dateStr);
+  return date.toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jakarta',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+const rawAvatar = author.avatar || author.avatarUrl || '/itsdvvn-web.jpg';
+const avatarImg = rawAvatar.startsWith('http') ? rawAvatar : `${rawAvatar}?t=${Date.now()}`;
+---
+
+<BaseLayout 
+  title={`Penulis: ${author.name} – dvvn`} 
+  description={author.bio || `Koleksi artikel dan liputan oleh ${author.name}.`}
+  image={avatarImg}
+>
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-2 text-xs font-mono mb-6 text-zinc-400 flex-wrap" aria-label="Breadcrumb">
+    <a href="/" class="hover:underline">home</a>
+    <span>/</span>
+    <a href="/writings" class="hover:underline">writings</a>
+    <span>/</span>
+    <span style="color: var(--text-muted);">author</span>
+    <span>/</span>
+    <span class="text-emerald-400 font-semibold">{author.name}</span>
+  </nav>
+
+  <!-- Author Hero Profile Header Card -->
+  <div 
+    class="p-5 sm:p-7 rounded-2xl border mb-10 transition-all shadow-sm"
+    style="background: var(--card-bg); border-color: var(--border);"
+  >
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+      <!-- Avatar -->
+      <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border shadow-md" style="border-color: var(--border); background: var(--tag-bg);">
+        <img 
+          src={avatarImg} 
+          alt={author.name} 
+          class="w-full h-full object-cover" 
+          loading="eager"
+        />
+      </div>
+
+      <!-- Info & Bio -->
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2.5 flex-wrap mb-1.5">
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight" style="color: var(--text-primary);">
+            {author.name}
+          </h1>
+          {author.isDefault && (
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+              Penulis Utama
+            </span>
+          )}
+        </div>
+
+        <p class="text-xs sm:text-sm leading-relaxed mb-3.5" style="color: var(--text-secondary);">
+          {author.bio}
+        </p>
+
+        <!-- Metrics & Social Links -->
+        <div class="flex items-center flex-wrap gap-4 text-xs font-mono pt-2 border-t" style="border-color: var(--border); color: var(--text-muted);">
+          <span class="inline-flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-medium">
+            <span>📚</span>
+            <span>{authorArticles.length} Tulisan Terbit</span>
+          </span>
+
+          {author.instagram && (
+            <a 
+              href={author.instagram.startsWith('http') ? author.instagram : `https://instagram.com/${author.instagram.replace('@', '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-emerald-500 transition-colors inline-flex items-center gap-1"
+            >
+              <span>Instagram ↗</span>
+            </a>
+          )}
+
+          {author.xTwitter && (
+            <a 
+              href={author.xTwitter.startsWith('http') ? author.xTwitter : `https://x.com/${author.xTwitter.replace('@', '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-emerald-500 transition-colors inline-flex items-center gap-1"
+            >
+              <span>X (Twitter) ↗</span>
+            </a>
+          )}
+
+          {author.website && (
+            <a 
+              href={author.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-emerald-500 transition-colors inline-flex items-center gap-1"
+            >
+              <span>Website ↗</span>
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Articles List Header -->
+  <div class="flex items-center justify-between mb-6 pb-2 border-b" style="border-color: var(--border);">
+    <h2 class="text-sm sm:text-base font-semibold font-mono tracking-tight" style="color: var(--text-primary);">
+      Koleksi Tulisan oleh {author.name}
+    </h2>
+    <span class="text-xs font-mono text-zinc-400">({authorArticles.length})</span>
+  </div>
+
+  <!-- Articles Grid / List -->
+  {authorArticles.length > 0 ? (
+    <div class="space-y-4">
+      {authorArticles.map((post) => {
+        const rawHero = post.heroImage || post.heroImageUrl;
+        const heroThumb = rawHero ? (rawHero.startsWith('http') ? rawHero : `${rawHero}?t=${Date.now()}`) : '';
+
+        return (
+          <a 
+            href={`/writings/${post.slug}`} 
+            class="ship-card p-3.5 sm:p-4 flex flex-col sm:flex-row gap-4 items-start group hover:border-zinc-500 transition-all block"
+          >
+            {heroThumb && (
+              <div class="w-full sm:w-36 sm:h-24 h-44 rounded-md overflow-hidden bg-zinc-900 shrink-0 border" style="border-color: var(--border);">
+                <img 
+                  src={heroThumb} 
+                  alt={post.title} 
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                  loading="lazy" 
+                />
+              </div>
+            )}
+            <div class="flex-1 flex flex-col justify-between min-w-0 w-full">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-500 font-medium">
+                      {post.category || 'Article'}
+                    </span>
+                    {post.isLocked && (
+                      <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold font-mono bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                        🔒 Terkunci
+                      </span>
+                    )}
+                  </div>
+                  <span class="post-date text-[11px] font-mono shrink-0">
+                    {formatDate(post.publishDate)}
+                  </span>
+                </div>
+                <h3 class="text-base font-semibold group-hover:text-emerald-400 transition-colors leading-snug mb-1.5" style="color: var(--text-primary);">
+                  {post.title}
+                </h3>
+                {post.deck && (
+                  <p class="text-xs leading-relaxed line-clamp-2" style="color: var(--text-secondary);">
+                    {post.deck}
+                  </p>
+                )}
+              </div>
+              <div class="flex items-center gap-3 text-[11px] font-mono mt-3 pt-2 border-t" style="border-color: var(--border); color: var(--text-muted);">
+                <span>{post.readTime || '3 min read'}</span>
+                <span>•</span>
+                <span class="group-hover:translate-x-0.5 transition-transform text-emerald-400">baca selengkapnya →</span>
+              </div>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  ) : (
+    <div class="p-8 text-center rounded-xl border" style="border-color: var(--border); background: var(--card-bg);">
+      <p class="text-xs sm:text-sm" style="color: var(--text-muted);">
+        Penulis ini belum memiliki artikel yang dipublikasikan.
+      </p>
+      <a href="/writings" class="mt-3 inline-block text-xs font-mono text-emerald-500 hover:underline">
+        ← Kembali ke daftar tulisan
+      </a>
+    </div>
+  )}
+</BaseLayout>

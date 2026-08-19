@@ -133,6 +133,42 @@ export default config({
     }),
   },
   collections: {
+    authors: collection({
+      label: 'Penulis (Authors)',
+      slugField: 'name',
+      path: 'src/content/authors/*',
+      format: { data: 'json' },
+      schema: {
+        name: fields.slug({
+          name: {
+            label: 'Nama Lengkap / Nama Pena Penulis',
+            description: 'Nama yang akan tampil pada kartu profil dan arsip tulisan',
+          },
+        }),
+        bio: fields.text({
+          label: 'Bio / Deskripsi Profil Penulis (Wajib)',
+          description: 'Keterangan ringkas tentang profil, keahlian, atau latar belakang penulis',
+          multiline: true,
+          validation: { isRequired: true },
+        }),
+        avatar: fields.image({
+          label: 'Foto Profil / Avatar (Pilih / Upload File)',
+          directory: 'public/images/authors',
+          publicPath: '/media/authors/',
+        }),
+        avatarUrl: fields.text({
+          label: 'Atau Avatar CDN / R2 URL (Opsional: https://media.itsdvvn.my.id/...)',
+        }),
+        instagram: fields.text({ label: 'Username / URL Instagram (Opsional)' }),
+        xTwitter: fields.text({ label: 'Username / URL X / Twitter (Opsional)' }),
+        website: fields.text({ label: 'Website Pribadi (Opsional)' }),
+        isDefault: fields.checkbox({
+          label: 'Jadikan Penulis Utama / Default',
+          description: 'Otomatis digunakan jika artikel tidak memilih penulis tertentu',
+          defaultValue: false,
+        }),
+      },
+    }),
     tags: collection({
       label: 'Tags / Topik Artikel',
       slugField: 'name',
@@ -333,6 +369,11 @@ export default config({
             itemLabel: (props) => props.value || 'Pilih Tag...',
           }
         ),
+        author: fields.relationship({
+          label: '✍️ Pilih Penulis (Author)',
+          collection: 'authors',
+          description: 'Pilih profil penulis untuk tulisan ini (jika dikosongkan, akan menggunakan profil default)',
+        }),
         draft: fields.checkbox({ label: 'Draft', defaultValue: false }),
         isLocked: fields.checkbox({
           label: '🔒 Kunci Artikel Ini (Password Protected)',

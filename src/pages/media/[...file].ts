@@ -31,10 +31,12 @@ export const GET: APIRoute = async ({ params }) => {
     path.resolve(process.cwd(), 'public/images/writings', fileParam),
     path.resolve(process.cwd(), 'public/images/body', fileParam),
     path.resolve(process.cwd(), 'public/images/profile', fileParam),
+    path.resolve(process.cwd(), 'public/images/authors', fileParam),
     path.resolve(process.cwd(), 'public/images/education', fileParam),
     path.resolve('/app/public/images', fileParam),
     path.resolve('/app/public/images/ships', fileParam),
     path.resolve('/app/public/images/writings', fileParam),
+    path.resolve('/app/public/images/authors', fileParam),
     path.resolve('/app/public/images/body', fileParam),
   ];
 

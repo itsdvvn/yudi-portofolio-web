@@ -153,20 +153,41 @@ if (pubType === 'mingguan' && editionSlug) {
   }
 }
 
-let authorName = 'dvvn';
-let profileBio = 'Visual storyteller, developer, and writer.';
-let avatarImg = '/itsdvvn-web.jpg';
+// 7. Resolve Dynamic Author Profile
+let authorSlug = (post as any).author || 'dvvn';
+let authorData: any = null;
 
-try {
-  const profile = await reader.singletons.profile.read();
-  if (profile) {
-    authorName = profile.name || authorName;
-    profileBio = profile.bio || profileBio;
-    if (profile.avatar) {
-      avatarImg = profile.avatar.startsWith('http') ? profile.avatar : `${profile.avatar}?t=${Date.now()}`;
+if ((post as any).author) {
+  try {
+    authorData = await (reader.collections as any).authors?.read((post as any).author);
+  } catch (e) {}
+}
+
+if (!authorData) {
+  try {
+    const allAuthorSlugs = (await (reader.collections as any).authors?.list()) || [];
+    for (const s of allAuthorSlugs) {
+      const item = await (reader.collections as any).authors?.read(s);
+      if (item && item.isDefault) {
+        authorData = item;
+        authorSlug = s;
+        break;
+      }
     }
-  }
-} catch (e) {}
+    if (!authorData && allAuthorSlugs.includes('dvvn')) {
+      authorData = await (reader.collections as any).authors?.read('dvvn');
+      authorSlug = 'dvvn';
+    }
+  } catch (e) {}
+}
+
+const authorName = authorData?.name || 'dvvn';
+const authorBio = authorData?.bio || 'Visual storyteller, developer, and writer.';
+const rawAvatar = authorData?.avatar || authorData?.avatarUrl || '/itsdvvn-web.jpg';
+const avatarImg = rawAvatar.startsWith('http') ? rawAvatar : `${rawAvatar}?t=${Date.now()}`;
+const authorInstagram = authorData?.instagram || '';
+const authorXTwitter = authorData?.xTwitter || '';
+const authorWebsite = authorData?.website || '';
 ---
 
 <BaseLayout 
@@ -205,8 +226,19 @@ try {
       </p>
     )}
 
-    <!-- 4. Publication Date, Updated Date & Read Time -->
+    <!-- 4. Publication Date, Author, Updated Date & Read Time -->
     <div class="flex items-center flex-wrap gap-2 text-xs font-mono mb-6" style="color: var(--text-muted);">
+      <a 
+        href={`/writings/author/${authorSlug}`} 
+        class="inline-flex items-center gap-1.5 font-medium hover:text-emerald-500 transition-colors" 
+        style="color: var(--text-primary);"
+      >
+        <span class="w-4 h-4 rounded-full overflow-hidden inline-block shrink-0 border" style="border-color: var(--border);">
+          <img src={avatarImg} alt={authorName} class="w-full h-full object-cover" />
+        </span>
+        <span>{authorName}</span>
+      </a>
+      <span>•</span>
       <span>Diterbitkan: {formatDate(post.publishDate)}</span>
       {post.updatedDate && (
         <>
@@ -484,22 +516,74 @@ try {
     </div>
 
     <!-- 7. Author Bio Card -->
-    <div class="mt-8 p-4 sm:p-5 rounded-xl border flex items-center gap-4" style="background: rgba(255,255,255,0.02); border-color: var(--border);">
-      <div class="w-12 h-12 rounded-full overflow-hidden shrink-0 border" style="border-color: var(--border);">
+    <div class="mt-8 p-4 sm:p-5 rounded-xl border flex items-start gap-4 transition-all shadow-sm" style="background: var(--card-bg); border-color: var(--border);">
+      <a 
+        href={`/writings/author/${authorSlug}`} 
+        class="w-12 h-12 rounded-full overflow-hidden shrink-0 border block group transition-transform hover:scale-105" 
+        style="border-color: var(--border);"
+        title={`Lihat profil ${authorName}`}
+      >
         <img 
           src={avatarImg} 
           alt={authorName} 
           class="w-full h-full object-cover" 
           loading="lazy"
         />
-      </div>
+      </a>
       <div class="min-w-0 flex-1">
-        <h4 class="text-sm font-semibold" style="color: var(--text-primary);">
-          {authorName}
-        </h4>
-        <p class="text-xs mt-0.5 line-clamp-2" style="color: var(--text-muted);">
-          {profileBio}
+        <div class="flex items-center justify-between gap-2 flex-wrap mb-1">
+          <a 
+            href={`/writings/author/${authorSlug}`} 
+            class="text-sm font-semibold hover:text-emerald-500 transition-colors inline-flex items-center gap-1.5" 
+            style="color: var(--text-primary);"
+          >
+            <span>{authorName}</span>
+          </a>
+          <a 
+            href={`/writings/author/${authorSlug}`} 
+            class="text-[11px] font-mono text-emerald-500 hover:underline inline-flex items-center gap-0.5"
+          >
+            <span>Lihat semua tulisan</span>
+            <span>→</span>
+          </a>
+        </div>
+        <p class="text-xs leading-relaxed mb-2.5" style="color: var(--text-secondary);">
+          {authorBio}
         </p>
+        {(authorInstagram || authorXTwitter || authorWebsite) && (
+          <div class="flex items-center gap-3.5 text-[11px] font-mono pt-1.5 border-t" style="border-color: var(--border); color: var(--text-muted);">
+            {authorInstagram && (
+              <a 
+                href={authorInstagram.startsWith('http') ? authorInstagram : `https://instagram.com/${authorInstagram.replace('@', '')}`} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="hover:text-emerald-500 transition-colors"
+              >
+                Instagram ↗
+              </a>
+            )}
+            {authorXTwitter && (
+              <a 
+                href={authorXTwitter.startsWith('http') ? authorXTwitter : `https://x.com/${authorXTwitter.replace('@', '')}`} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="hover:text-emerald-500 transition-colors"
+              >
+                X (Twitter) ↗
+              </a>
+            )}
+            {authorWebsite && (
+              <a 
+                href={authorWebsite} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="hover:text-emerald-500 transition-colors"
+              >
+                Website ↗
+              </a>
+            )}
+          </div>
+        )}
       </div>
     </div>
 
