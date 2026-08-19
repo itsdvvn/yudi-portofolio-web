@@ -8,6 +8,7 @@ interface Props {
   image?: string;
   type?: 'website' | 'article';
   publishDate?: string;
+  updatedDate?: string;
 }
 
 // Read singletons live at runtime so CMS edits appear instantly
@@ -24,6 +25,7 @@ const {
   image = "/itsdvvn-web.jpg",
   type = 'website',
   publishDate,
+  updatedDate,
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
@@ -37,6 +39,7 @@ const jsonLd = {
   "description": description,
   "url": canonicalUrl,
   ...(type === 'article' && publishDate ? { "datePublished": publishDate } : {}),
+  ...(type === 'article' && (updatedDate || publishDate) ? { "dateModified": updatedDate || publishDate } : {}),
   "author": {
     "@type": "Person",
     "name": "Wahyudi Setiawan",

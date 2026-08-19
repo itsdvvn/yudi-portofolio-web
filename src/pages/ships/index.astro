@@ -54,17 +54,13 @@ const categories = ['All', ...dynamicCategories];
   <!-- Works Grid / List -->
   <div class="space-y-4" id="ships-list">
     {ships.map((ship) => (
-      <div class="ship-card" data-category={ship.displayCategory}>
+      <div class="ship-card group transition-all duration-200" data-category={ship.displayCategory}>
         <div class="flex items-start sm:items-center justify-between mb-2.5 gap-3">
-          <h2 class="ship-title min-w-0">
-            {ship.link ? (
-              <a href={ship.link} target="_blank" rel="noopener noreferrer" class="hover:underline underline-offset-4 inline-flex items-center gap-1.5 leading-snug">
-                <span>{ship.title}</span>
-                <span class="text-xs shrink-0" style="color: var(--text-muted);">↗</span>
-              </a>
-            ) : (
-              <span class="leading-snug">{ship.title}</span>
-            )}
+          <h2 class="ship-title min-w-0 text-base sm:text-lg font-bold">
+            <a href={`/ships/${ship.slug}`} class="hover:underline underline-offset-4 inline-flex items-center gap-1.5 leading-snug" style="color: var(--text-primary);">
+              <span>{ship.title}</span>
+              <span class="text-xs opacity-60 group-hover:translate-x-0.5 transition-transform">→</span>
+            </a>
           </h2>
           <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
             <span class="text-[11px] font-mono" style="color: var(--text-muted);">{ship.year}</span>
@@ -75,7 +71,7 @@ const categories = ['All', ...dynamicCategories];
         </div>
 
         {(ship.coverImage || ship.coverImageUrl) && (
-          <div class="mb-3 rounded overflow-hidden border" style="border-color: var(--border);">
+          <a href={`/ships/${ship.slug}`} class="block mb-3 rounded-xl overflow-hidden border transition-opacity hover:opacity-95" style="border-color: var(--border);">
             <img 
               src={ship.coverImage || ship.coverImageUrl} 
               alt={ship.title} 
@@ -83,14 +79,14 @@ const categories = ['All', ...dynamicCategories];
               loading="lazy" 
               decoding="async" 
             />
-          </div>
+          </a>
         )}
 
-        <p class="ship-desc mb-3">
+        <p class="ship-desc mb-3 text-xs sm:text-sm leading-relaxed" style="color: var(--text-secondary);">
           {ship.description}
         </p>
 
-        <div class="flex items-center justify-between flex-wrap gap-2 pt-2 border-t" style="border-color: var(--border);">
+        <div class="flex items-center justify-between flex-wrap gap-2 pt-2.5 border-t" style="border-color: var(--border);">
           <div class="flex gap-1.5 flex-wrap">
             {(ship.tools || []).map((tool) => (
               <span class="tech-tag">
@@ -99,20 +95,27 @@ const categories = ['All', ...dynamicCategories];
             ))}
           </div>
 
-          <div class="flex gap-3 text-xs font-mono">
-            {ship.videoUrl && (
-              <a href={ship.videoUrl} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--accent);">
-                watch video ↗
-              </a>
-            )}
+          <div class="flex gap-3 text-xs font-mono items-center">
+            <a href={`/ships/${ship.slug}`} class="hover:underline font-semibold flex items-center gap-1" style="color: var(--accent, #007cba);">
+              <span>case study</span>
+              <span>→</span>
+            </a>
             {ship.link && (
-              <a href={ship.link} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--text-primary);">
-                view work ↗
+              <a href={ship.link} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5 opacity-80 hover:opacity-100" style="color: var(--text-primary);">
+                <span>live</span>
+                <span class="text-[10px]">↗</span>
               </a>
             )}
             {ship.github && (
-              <a href={ship.github} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5" style="color: var(--text-muted);">
-                source ↗
+              <a href={ship.github} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5 opacity-80 hover:opacity-100" style="color: var(--text-muted);">
+                <span>source</span>
+                <span class="text-[10px]">↗</span>
+              </a>
+            )}
+            {ship.videoUrl && (
+              <a href={ship.videoUrl} target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-0.5 opacity-80 hover:opacity-100" style="color: var(--accent);">
+                <span>video</span>
+                <span class="text-[10px]">↗</span>
               </a>
             )}
           </div>

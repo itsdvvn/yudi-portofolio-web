@@ -369,6 +369,7 @@ if (pubType === 'mingguan' && editionSlug) {
   image={heroImg || 'https://itsdvvn.my.id/favicon.svg'}
   type="article"
   publishDate={post.publishDate ? new Date(post.publishDate).toISOString() : undefined}
+  updatedDate={post.updatedDate ? new Date(post.updatedDate).toISOString() : undefined}
 >
     <!-- 1. Breadcrumb / Category -->
     <nav class="flex items-center gap-2 text-xs font-mono mb-4 text-zinc-400 flex-wrap" aria-label="Breadcrumb">
@@ -398,9 +399,17 @@ if (pubType === 'mingguan' && editionSlug) {
       </p>
     )}
 
-    <!-- 4. Publication Date & Read Time -->
-    <div class="flex items-center gap-2 text-xs font-mono mb-6" style="color: var(--text-muted);">
-      <span>{formatDate(post.publishDate)}</span>
+    <!-- 4. Publication Date, Updated Date & Read Time -->
+    <div class="flex items-center flex-wrap gap-2 text-xs font-mono mb-6" style="color: var(--text-muted);">
+      <span>Diterbitkan: {formatDate(post.publishDate)}</span>
+      {post.updatedDate && (
+        <>
+          <span>•</span>
+          <span class="text-amber-500/90 dark:text-amber-400/90 font-medium">
+            Diperbarui: {formatDate(post.updatedDate)}{post.updatedTime ? `, ${post.updatedTime} WIB` : ''}
+          </span>
+        </>
+      )}
       <span>•</span>
       <span>{computedReadTime || post.readTime || '1 min read'}</span>
     </div>

@@ -305,6 +305,14 @@ export default config({
             return `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
           },
         }),
+        updatedDate: fields.date({
+          label: 'Tanggal Terakhir Diperbarui (Opsional / Otomatis)',
+          description: 'Akan terisi otomatis saat Anda menekan tombol Update revisi artikel',
+        }),
+        updatedTime: fields.text({
+          label: 'Jam Terakhir Diperbarui (WIB, format: HH:mm)',
+          description: 'Format 24 jam (misal 14:30)',
+        }),
         heroImage: fields.image({
           label: 'Hero / Featured Image (Pilih / Upload File)',
           directory: 'public/images/writings',
@@ -465,7 +473,9 @@ export default config({
           label: 'Nama Kategori Baru (Hanya isi jika memilih "Lainnya / Custom")',
           description: 'Contoh: 3D Art, Motion Graphics, Mobile App, dll.',
         }),
-        description: fields.text({ label: 'Short Description / Story', multiline: true }),
+        description: fields.text({ label: 'Short Description / Story (Executive Summary)', multiline: true }),
+        client: fields.text({ label: 'Client / Event / Publisher (Opsional, e.g. PT Multimedia / Personal Work)' }),
+        role: fields.text({ label: 'Peran / Role (e.g. Director of Photography / Lead Developer / Designer)' }),
         coverImage: fields.image({
           label: 'Cover / Thumbnail Image (Pilih / Upload File)',
           directory: 'public/images/ships',
@@ -474,17 +484,103 @@ export default config({
         coverImageUrl: fields.text({
           label: 'Atau Cover R2 CDN URL (Opsional: https://media.itsdvvn.my.id/...)',
         }),
-        videoUrl: fields.url({ label: 'Video URL (YouTube / Vimeo / Google Drive / Direct link)' }),
-        link: fields.url({ label: 'Live Link / Portfolio URL (Behance, Instagram, Demo, etc.)' }),
+        videoUrl: fields.url({ label: 'Featured Video URL (YouTube / Vimeo / Direct link)' }),
+        link: fields.url({ label: 'Live Link / Portfolio URL (Behance, Instagram, Live Site, Demo)' }),
         github: fields.url({ label: 'GitHub Repo (if code project)' }),
         tools: fields.array(fields.text({ label: 'Tool / Gear' }), {
-          label: 'Tools & Gear (e.g. Sony A7IV, Premiere Pro, Figma, Astro)',
+          label: 'Tools & Gear (e.g. Sony A7IV, Premiere Pro, Figma, Astro, Tailwind)',
           itemLabel: (props) => props.value || 'Tool',
         }),
         year: fields.text({ label: 'Year', defaultValue: '2025' }),
         featured: fields.checkbox({ label: 'Featured on Homepage', defaultValue: false }),
+        publishDate: fields.date({ label: 'Publish Date', defaultValue: { kind: 'today' } }),
+        updatedDate: fields.date({ label: 'Updated Date (Terakhir Diperbarui)' }),
         content: fields.markdoc({
-          label: 'Project Showcase / Behind the Scenes / Case Study',
+          label: 'Project Case Study / Behind the Scenes / Detail Cerita Lengkap',
+          options: {
+            image: {
+              directory: 'public/images/ships/body',
+              publicPath: '/media/ships/body/',
+            },
+          },
+          components: {
+            ProjectGallery: block({
+              label: '🖼️ Galeri Foto Projek (Multiple Showcase)',
+              schema: {
+                title: fields.text({ label: 'Judul Galeri (Opsional)' }),
+                images: fields.array(
+                  fields.object({
+                    image: fields.image({
+                      label: 'Foto Galeri',
+                      directory: 'public/images/ships/gallery',
+                      publicPath: '/media/ships/gallery/',
+                    }),
+                    imageUrl: fields.text({ label: 'Atau R2 / CDN URL (Opsional)' }),
+                    caption: fields.text({ label: 'Caption Foto' }),
+                  }),
+                  {
+                    label: 'Daftar Foto Galeri',
+                    itemLabel: (props) => props.fields.caption.value || 'Foto Galeri',
+                  }
+                ),
+              },
+            }),
+            VideoShowcase: block({
+              label: '🎬 Video Showcase / Embed',
+              schema: {
+                url: fields.text({
+                  label: 'Video URL (YouTube / Vimeo / MP4)',
+                  description: 'Contoh: https://www.youtube.com/watch?v=... atau https://vimeo.com/...',
+                }),
+                caption: fields.text({ label: 'Keterangan Video (Opsional)' }),
+              },
+            }),
+            BeforeAfter: block({
+              label: '🌓 Perbandingan Before & After (Color Grading / Editing)',
+              schema: {
+                beforeImage: fields.image({
+                  label: 'Foto Sebelum (Before / Raw)',
+                  directory: 'public/images/ships/before-after',
+                  publicPath: '/media/ships/before-after/',
+                }),
+                beforeImageUrl: fields.text({ label: 'Atau URL Before' }),
+                afterImage: fields.image({
+                  label: 'Foto Sesudah (After / Graded / Final)',
+                  directory: 'public/images/ships/before-after',
+                  publicPath: '/media/ships/before-after/',
+                }),
+                afterImageUrl: fields.text({ label: 'Atau URL After' }),
+                caption: fields.text({ label: 'Keterangan Perbandingan (Opsional)' }),
+              },
+            }),
+            ProjectStat: block({
+              label: '📊 Highlight Angka / Metrik Projek',
+              schema: {
+                stats: fields.array(
+                  fields.object({
+                    value: fields.text({ label: 'Nilai Metrik (e.g. 500K+, 100%, 4K 60fps, 10 Hari)' }),
+                    label: fields.text({ label: 'Keterangan Metrik (e.g. Views, Performance Score, Format, Waktu Produksi)' }),
+                  }),
+                  {
+                    label: 'Daftar Metrik',
+                    itemLabel: (props) => `${props.fields.value.value || ''} - ${props.fields.label.value || ''}`,
+                  }
+                ),
+              },
+            }),
+            ArticleImage: block({
+              label: '📸 Foto Tunggal dengan Caption',
+              schema: {
+                image: fields.image({
+                  label: 'Pilih Foto',
+                  directory: 'public/images/ships/body',
+                  publicPath: '/media/ships/body/',
+                }),
+                imageUrl: fields.text({ label: 'Atau URL Foto (CDN)' }),
+                caption: fields.text({ label: 'Keterangan Foto' }),
+              },
+            }),
+          },
         }),
       },
     }),

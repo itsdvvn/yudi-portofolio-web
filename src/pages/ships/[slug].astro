@@ -1,0 +1,417 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { reader } from '../../lib/reader';
+import Markdoc from '@markdoc/markdoc';
+
+const { slug } = Astro.params;
+let ship = null;
+
+try {
+  ship = await reader.collections.ships.read(slug as string);
+} catch (e) {
+  console.error(`[Astro Ships SSR] Failed reading ship ${slug}:`, e);
+  return Astro.redirect('/ships');
+}
+
+if (!ship) {
+  return Astro.redirect('/ships');
+}
+
+// Load all ships for Previous / Next Navigation
+const allShipSlugs = await reader.collections.ships.list();
+const allShips = (
+  await Promise.all(
+    allShipSlugs.map(async (s) => {
+      const data = await reader.collections.ships.read(s);
+      if (!data) return null;
+      return { slug: s, ...data };
+    })
+  )
+)
+  .filter(Boolean)
+  .sort((a, b) => (b.year || '').localeCompare(a.year || ''));
+
+const currentIndex = allShips.findIndex((s) => s.slug === slug);
+const prevShip = currentIndex > 0 ? allShips[currentIndex - 1] : null;
+const nextShip = currentIndex < allShips.length - 1 ? allShips[currentIndex + 1] : null;
+
+// Determine display category
+const displayCategory =
+  ship.category === 'Custom' && (ship as any).customCategory?.trim()
+    ? (ship as any).customCategory.trim()
+    : ship.category || 'General';
+
+// Parse Markdoc Content if available
+let htmlContent = '';
+if (ship.content) {
+  try {
+    const contentAst = await ship.content();
+    
+    const markdocConfig = {
+      tags: {
+        ProjectGallery: {
+          render: 'ProjectGallery',
+          attributes: {
+            title: { type: String },
+            images: { type: Array },
+          },
+          transform(node: any) {
+            const { title, images } = node.attributes;
+            const items = images || [];
+            if (!items.length) return null;
+
+            const imageNodes = items.map((img: any, idx: number) => {
+              const src = img.imageUrl || img.image || '';
+              const caption = img.caption || '';
+              return new Markdoc.Tag('div', { class: 'gallery-item group relative overflow-hidden rounded-xl border bg-black/5 dark:bg-white/5', style: 'border-color: var(--border);' }, [
+                new Markdoc.Tag('img', {
+                  src: src,
+                  alt: caption || `Project Gallery Image ${idx + 1}`,
+                  class: 'w-full h-56 sm:h-72 object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer',
+                  loading: 'lazy',
+                  onclick: `window.openLightbox && window.openLightbox('${src}', '${caption.replace(/'/g, "\\'")}')`
+                }),
+                caption && new Markdoc.Tag('div', { class: 'p-3 text-xs border-t text-zinc-600 dark:text-zinc-400', style: 'border-color: var(--border);' }, [caption])
+              ].filter(Boolean));
+            });
+
+            return new Markdoc.Tag('section', { class: 'my-10 space-y-3' }, [
+              title && new Markdoc.Tag('h3', { class: 'text-base font-semibold tracking-tight', style: 'color: var(--text-primary);' }, [title]),
+              new Markdoc.Tag('div', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-4' }, imageNodes)
+            ].filter(Boolean));
+          }
+        },
+        VideoShowcase: {
+          render: 'VideoShowcase',
+          attributes: {
+            url: { type: String },
+            caption: { type: String },
+          },
+          transform(node: any) {
+            const { url, caption } = node.attributes;
+            if (!url) return null;
+
+            let embedUrl = url;
+            if (url.includes('youtube.com/watch?v=')) {
+              embedUrl = url.replace('watch?v=', 'embed/').split('&')[0];
+            } else if (url.includes('youtu.be/')) {
+              const id = url.split('youtu.be/')[1]?.split('?')[0];
+              embedUrl = `https://www.youtube.com/embed/${id}`;
+            } else if (url.includes('vimeo.com/')) {
+              const id = url.split('vimeo.com/')[1]?.split('?')[0];
+              embedUrl = `https://player.vimeo.com/video/${id}`;
+            }
+
+            return new Markdoc.Tag('figure', { class: 'my-8 w-full block' }, [
+              new Markdoc.Tag('div', { class: 'aspect-video rounded-xl overflow-hidden shadow-lg border bg-black', style: 'border-color: var(--border);' }, [
+                new Markdoc.Tag('iframe', {
+                  src: embedUrl,
+                  class: 'w-full h-full border-0',
+                  allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+                  allowfullscreen: 'true',
+                  loading: 'lazy',
+                })
+              ]),
+              caption && new Markdoc.Tag('figcaption', { class: 'text-xs mt-2.5 text-zinc-500 dark:text-zinc-400 text-center italic' }, [caption])
+            ].filter(Boolean));
+          }
+        },
+        BeforeAfter: {
+          render: 'BeforeAfter',
+          attributes: {
+            beforeImage: { type: String },
+            beforeImageUrl: { type: String },
+            afterImage: { type: String },
+            afterImageUrl: { type: String },
+            caption: { type: String },
+          },
+          transform(node: any) {
+            const { beforeImage, beforeImageUrl, afterImage, afterImageUrl, caption } = node.attributes;
+            const bSrc = beforeImageUrl || beforeImage || '';
+            const aSrc = afterImageUrl || afterImage || '';
+            if (!bSrc || !aSrc) return null;
+
+            return new Markdoc.Tag('div', { class: 'before-after-wrapper my-8 space-y-2' }, [
+              new Markdoc.Tag('div', { class: 'grid grid-cols-1 sm:grid-cols-2 gap-3' }, [
+                new Markdoc.Tag('div', { class: 'relative rounded-xl overflow-hidden border', style: 'border-color: var(--border);' }, [
+                  new Markdoc.Tag('span', { class: 'absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-black/70 text-white uppercase tracking-wider z-10 backdrop-blur-sm' }, ['Before / Raw']),
+                  new Markdoc.Tag('img', { src: bSrc, alt: 'Before', class: 'w-full h-64 object-cover' })
+                ]),
+                new Markdoc.Tag('div', { class: 'relative rounded-xl overflow-hidden border', style: 'border-color: var(--border);' }, [
+                  new Markdoc.Tag('span', { class: 'absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-600/90 text-white uppercase tracking-wider z-10 backdrop-blur-sm' }, ['After / Graded']),
+                  new Markdoc.Tag('img', { src: aSrc, alt: 'After', class: 'w-full h-64 object-cover' })
+                ])
+              ]),
+              caption && new Markdoc.Tag('p', { class: 'text-xs text-zinc-500 dark:text-zinc-400 italic text-center' }, [caption])
+            ].filter(Boolean));
+          }
+        },
+        ProjectStat: {
+          render: 'ProjectStat',
+          attributes: {
+            stats: { type: Array },
+          },
+          transform(node: any) {
+            const { stats } = node.attributes;
+            const items = stats || [];
+            if (!items.length) return null;
+
+            const statBoxes = items.map((st: any) => {
+              return new Markdoc.Tag('div', { class: 'p-4 rounded-xl border flex flex-col items-center justify-center text-center bg-black/[0.02] dark:bg-white/[0.02]', style: 'border-color: var(--border);' }, [
+                new Markdoc.Tag('span', { class: 'text-2xl sm:text-3xl font-extrabold font-mono tracking-tight', style: 'color: var(--text-primary);' }, [st.value || '']),
+                new Markdoc.Tag('span', { class: 'text-xs font-mono mt-1 text-zinc-500 dark:text-zinc-400 uppercase tracking-wide' }, [st.label || ''])
+              ]);
+            });
+
+            return new Markdoc.Tag('div', { class: `my-8 grid grid-cols-2 sm:grid-cols-${Math.min(items.length, 4)} gap-3` }, statBoxes);
+          }
+        },
+        ArticleImage: {
+          render: 'ArticleImage',
+          attributes: {
+            image: { type: String },
+            imageUrl: { type: String },
+            caption: { type: String },
+          },
+          transform(node: any) {
+            const { image, imageUrl, caption } = node.attributes;
+            const src = imageUrl || image;
+            if (!src) return null;
+
+            return new Markdoc.Tag('figure', { class: 'my-8 max-w-2xl mx-auto block' }, [
+              new Markdoc.Tag('div', { class: 'rounded-xl overflow-hidden border shadow-sm', style: 'border-color: var(--border);' }, [
+                new Markdoc.Tag('img', { 
+                  src: src, 
+                  alt: caption || 'Project Media',
+                  class: 'w-full h-auto object-cover max-h-[500px] cursor-pointer',
+                  loading: 'lazy',
+                  onclick: `window.openLightbox && window.openLightbox('${src}', '${(caption || '').replace(/'/g, "\\'")}')`
+                })
+              ]),
+              caption && new Markdoc.Tag('figcaption', { class: 'text-xs mt-2 text-zinc-500 dark:text-zinc-400 italic text-center' }, [caption])
+            ].filter(Boolean));
+          }
+        }
+      }
+    };
+
+    const transformed = Markdoc.transform(contentAst.node || contentAst, markdocConfig);
+    htmlContent = Markdoc.renderers.html(transformed);
+  } catch (e) {
+    console.error(`[Astro Ships Markdoc] Failed parsing content for ${slug}:`, e);
+  }
+}
+
+const heroMedia = ship.coverImage || ship.coverImageUrl;
+---
+
+<BaseLayout
+  title={`${ship.title} – ships & works`}
+  description={ship.description || `Case study and project details for ${ship.title}`}
+  image={heroMedia || '/itsdvvn-web.jpg'}
+>
+  <article class="max-w-3xl mx-auto">
+    <!-- 🧭 1. Sleek Case Study Breadcrumb -->
+    <nav class="flex items-center gap-2 text-xs font-mono mb-6" style="color: var(--text-muted);">
+      <a href="/ships" class="hover:underline flex items-center gap-1">
+        <span>←</span>
+        <span>ships & works</span>
+      </a>
+      <span>/</span>
+      <span class="px-2 py-0.5 rounded text-[11px] font-semibold" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-primary);">
+        {displayCategory}
+      </span>
+      {ship.year && (
+        <span class="text-zinc-500 dark:text-zinc-400">({ship.year})</span>
+      )}
+    </nav>
+
+    <!-- 🚀 2. Case Study Hero Header -->
+    <header class="mb-8">
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-4 leading-tight" style="color: var(--text-primary);">
+        {ship.title}
+      </h1>
+
+      <!-- Executive Summary / Lead Story -->
+      {ship.description && (
+        <p class="text-base sm:text-lg leading-relaxed mb-6 font-normal" style="color: var(--text-secondary);">
+          {ship.description}
+        </p>
+      )}
+
+      <!-- Metadata & Action Bar Grid -->
+      <div class="p-4 sm:p-5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-black/[0.02] dark:bg-white/[0.02]" style="border-color: var(--border);">
+        <div class="space-y-1.5 text-xs font-mono">
+          {ship.role && (
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-500 dark:text-zinc-400 uppercase text-[10px] w-16 shrink-0">Role:</span>
+              <span class="font-medium" style="color: var(--text-primary);">{ship.role}</span>
+            </div>
+          )}
+          {ship.client && (
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-500 dark:text-zinc-400 uppercase text-[10px] w-16 shrink-0">Client:</span>
+              <span class="font-medium" style="color: var(--text-primary);">{ship.client}</span>
+            </div>
+          )}
+          {ship.year && (
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-500 dark:text-zinc-400 uppercase text-[10px] w-16 shrink-0">Year:</span>
+              <span style="color: var(--text-primary);">{ship.year}</span>
+            </div>
+          )}
+        </div>
+
+        <!-- Launch / Action Buttons -->
+        <div class="flex items-center gap-2.5 flex-wrap">
+          {ship.link && (
+            <a
+              href={ship.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all hover:opacity-90 shadow-sm"
+              style="background-color: var(--accent, #007cba); color: #ffffff;"
+            >
+              <span>Live Project</span>
+              <span>↗</span>
+            </a>
+          )}
+          {ship.github && (
+            <a
+              href={ship.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium border transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style="border-color: var(--border); color: var(--text-primary);"
+            >
+              <span>Source Repo</span>
+              <span>↗</span>
+            </a>
+          )}
+          {ship.videoUrl && (
+            <a
+              href={ship.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium border transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style="border-color: var(--border); color: var(--text-primary);"
+            >
+              <span>Video Link</span>
+              <span>↗</span>
+            </a>
+          )}
+        </div>
+      </div>
+
+      <!-- Tools & Stack Tags -->
+      {ship.tools && ship.tools.length > 0 && (
+        <div class="mt-4 flex items-center gap-1.5 flex-wrap">
+          <span class="text-[11px] font-mono mr-1 text-zinc-500 dark:text-zinc-400">Stack & Gear:</span>
+          {ship.tools.map((tool: string) => (
+            <span class="tech-tag text-[11px] font-mono px-2.5 py-0.5 rounded" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-secondary);">
+              {tool}
+            </span>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <!-- 🖼️ 3. Featured Hero Media Banner -->
+    {heroMedia && (
+      <figure class="mb-10 rounded-2xl overflow-hidden border shadow-sm" style="border-color: var(--border);">
+        <img
+          src={heroMedia}
+          alt={ship.title}
+          class="w-full h-auto max-h-[500px] object-cover"
+          loading="eager"
+        />
+      </figure>
+    )}
+
+    <!-- 📖 4. Long-form Case Study Story / Behind the Scenes Content -->
+    {htmlContent ? (
+      <section class="case-study-body prose dark:prose-invert max-w-none text-sm sm:text-base leading-relaxed border-t pt-8" style="border-color: var(--border);">
+        <Fragment set:html={htmlContent} />
+      </section>
+    ) : (
+      <div class="py-8 text-center border-t text-xs font-mono italic" style="border-color: var(--border); color: var(--text-muted);">
+        Studi kasus naratif sedang dalam tahap penyusunan.
+      </div>
+    )}
+
+    <!-- ⏭️ 5. Next & Previous Project Navigation Cards -->
+    <footer class="mt-14 pt-8 border-t space-y-6" style="border-color: var(--border);">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          Explore Other Works
+        </span>
+        <a href="/ships" class="text-xs font-mono hover:underline flex items-center gap-1" style="color: var(--accent, #007cba);">
+          <span>All works</span>
+          <span>→</span>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {prevShip ? (
+          <a href={`/ships/${prevShip.slug}`} class="p-4 rounded-xl border transition-all hover:border-zinc-500 flex flex-col justify-between group" style="border-color: var(--border); background: var(--card-bg, transparent);">
+            <div class="text-[11px] font-mono text-zinc-500 mb-1 flex items-center gap-1 group-hover:-translate-x-0.5 transition-transform">
+              <span>←</span>
+              <span>Previous Project</span>
+            </div>
+            <span class="text-sm font-bold group-hover:underline line-clamp-1" style="color: var(--text-primary);">
+              {prevShip.title}
+            </span>
+          </a>
+        ) : (
+          <div class="p-4 rounded-xl border border-dashed opacity-40 flex items-center justify-center text-xs font-mono text-zinc-500" style="border-color: var(--border);">
+            Start of Projects
+          </div>
+        )}
+
+        {nextShip ? (
+          <a href={`/ships/${nextShip.slug}`} class="p-4 rounded-xl border transition-all hover:border-zinc-500 flex flex-col justify-between items-end text-right group" style="border-color: var(--border); background: var(--card-bg, transparent);">
+            <div class="text-[11px] font-mono text-zinc-500 mb-1 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+              <span>Next Project</span>
+              <span>→</span>
+            </div>
+            <span class="text-sm font-bold group-hover:underline line-clamp-1" style="color: var(--text-primary);">
+              {nextShip.title}
+            </span>
+          </a>
+        ) : (
+          <div class="p-4 rounded-xl border border-dashed opacity-40 flex items-center justify-center text-xs font-mono text-zinc-500" style="border-color: var(--border);">
+            Latest Project Reached
+          </div>
+        )}
+      </div>
+    </footer>
+  </article>
+
+  <!-- 🔍 Lightbox Modal for Fullscreen Media -->
+  <div id="project-lightbox" class="fixed inset-0 bg-black/90 z-50 hidden flex-col items-center justify-center p-4 backdrop-blur-sm cursor-zoom-out">
+    <div class="relative max-w-5xl max-h-[90vh] flex flex-col items-center">
+      <img id="lightbox-img" src="" alt="Enlarged Showcase" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" />
+      <p id="lightbox-caption" class="text-xs font-mono text-zinc-300 mt-3 text-center"></p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  const lightbox = document.getElementById('project-lightbox');
+  const lbImg = document.getElementById('lightbox-img');
+  const lbCap = document.getElementById('lightbox-caption');
+
+  window.openLightbox = function (src, caption) {
+    if (!lightbox || !lbImg) return;
+    lbImg.src = src;
+    if (lbCap) lbCap.textContent = caption || '';
+    lightbox.classList.remove('hidden');
+    lightbox.classList.add('flex');
+  };
+
+  lightbox?.addEventListener('click', () => {
+    lightbox.classList.add('hidden');
+    lightbox.classList.remove('flex');
+    if (lbImg) lbImg.src = '';
+  });
+</script>

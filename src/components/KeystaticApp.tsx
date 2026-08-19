@@ -102,7 +102,7 @@ export function KeystaticApp() {
       });
     }
 
-    // Helper untuk sinkronisasi nilai tanggal & jam ke input form Keystatic asli
+    // Helper untuk sinkronisasi nilai tanggal & jam rilis
     function syncDateToKeystatic(dateVal: string, timeVal?: string) {
       const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
       for (const input of allInputs) {
@@ -136,12 +136,48 @@ export function KeystaticApp() {
       }
     }
 
-    // State 2: Pemasangan WordPress Gutenberg Pre-Publish Panel
+    // Helper untuk sinkronisasi tanggal & jam terakhir diperbarui (updatedDate & updatedTime)
+    function syncUpdatedDateToKeystatic(dateVal: string, timeVal?: string) {
+      const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
+      for (const input of allInputs) {
+        if (input.closest('#wp-gutenberg-pre-publish-drawer')) return;
+        const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
+        const text = (container?.textContent || '').toLowerCase();
+        
+        if (text.includes('terakhir diperbarui') || text.includes('updateddate')) {
+          const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+          if (nativeSetter) {
+            nativeSetter.call(input, dateVal);
+          } else {
+            input.value = dateVal;
+          }
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          input.dispatchEvent(new Event('blur', { bubbles: true }));
+        }
+
+        if (timeVal && (text.includes('jam terakhir') || text.includes('updatedtime'))) {
+          const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+          if (nativeSetter) {
+            nativeSetter.call(input, timeVal);
+          } else {
+            input.value = timeVal;
+          }
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          input.dispatchEvent(new Event('blur', { bubbles: true }));
+        }
+      }
+    }
+
+    // State 2: Pemasangan WordPress Gutenberg Pre-Publish Panel & Update Button
     function setupWordPressPublishPanel() {
-      // HANYA pasang tombol Publish & Drawer Jadwal pada artikel Writings & Majalah Editions
+      // HANYA pasang tombol Publish/Update & Drawer pada artikel Writings & Majalah Editions
       const pathname = window.location.pathname;
       const isScheduledContent = pathname.includes('/collection/writings/') || pathname.includes('/collection/editions/');
       if (!isScheduledContent) return;
+
+      const isEditItem = pathname.includes('/item/');
 
       // Cari tombol aksi utama Keystatic (Save / Create)
       const buttons = Array.from(document.querySelectorAll('button'));
@@ -159,19 +195,40 @@ export function KeystaticApp() {
       mainBtn.style.position = 'absolute';
       mainBtn.style.zIndex = '-1';
 
-      // Buat tombol pengganti "Publish…" bergaya WordPress Gutenberg
+      // Cek apakah item sudah pernah dirilis (published)
+      function checkIsItemAlreadyPublished() {
+        if (!isEditItem) return false;
+        const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
+        for (const input of allInputs) {
+          const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
+          const text = (container?.textContent || '').toLowerCase();
+          if (text.includes('tanggal rilis') || text.includes('jadwal rilis')) {
+            const val = input.value;
+            if (val) {
+              const pubDate = new Date(val);
+              const now = new Date();
+              return pubDate.getTime() <= now.getTime() + 86400000; // toleransi hari ini
+            }
+          }
+        }
+        return isEditItem;
+      }
+
+      const isPublishedItem = isEditItem && checkIsItemAlreadyPublished();
+
+      // Buat tombol pengganti "Publish…" atau "Update"
       const wpTriggerBtn = document.createElement('button');
       wpTriggerBtn.type = 'button';
       wpTriggerBtn.dataset.isWpTrigger = 'true';
-      wpTriggerBtn.textContent = 'Publish…';
+      wpTriggerBtn.textContent = isPublishedItem ? 'Update' : 'Publish…';
       wpTriggerBtn.style.cssText = `
-        background-color: #007cba;
+        background-color: ${isPublishedItem ? '#059669' : '#007cba'};
         color: #ffffff;
         font-weight: 600;
         font-size: 13px;
         padding: 7px 18px;
         border-radius: 4px;
-        border: 1px solid #007cba;
+        border: 1px solid ${isPublishedItem ? '#059669' : '#007cba'};
         cursor: pointer;
         display: inline-flex;
         align-items: center;
@@ -179,8 +236,12 @@ export function KeystaticApp() {
         box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         transition: all 0.15s ease;
       `;
-      wpTriggerBtn.onmouseover = () => { wpTriggerBtn.style.backgroundColor = '#006ba1'; };
-      wpTriggerBtn.onmouseout = () => { wpTriggerBtn.style.backgroundColor = '#007cba'; };
+      wpTriggerBtn.onmouseover = () => { 
+        wpTriggerBtn.style.backgroundColor = isPublishedItem ? '#047857' : '#006ba1'; 
+      };
+      wpTriggerBtn.onmouseout = () => { 
+        wpTriggerBtn.style.backgroundColor = isPublishedItem ? '#059669' : '#007cba'; 
+      };
 
       mainBtn.parentElement?.appendChild(wpTriggerBtn);
 
@@ -189,7 +250,6 @@ export function KeystaticApp() {
         const isWritingsPage = window.location.pathname.includes('/writings');
         if (!isWritingsPage) return false;
 
-        // Cari tombol combobox spesifik di bawah field Tipe Publikasi
         const labels = Array.from(document.querySelectorAll('label, div[class*="css-"]'));
         const typeField = labels.find((l) => (l.textContent || '').toLowerCase().includes('tipe publikasi'));
         
@@ -197,13 +257,11 @@ export function KeystaticApp() {
           const btn = typeField.querySelector('button[role="combobox"], [aria-haspopup="listbox"], button');
           if (btn) {
             const btnText = (btn.textContent || '').trim().toLowerCase();
-            // Jika tombol menampilkan "harian", maka PASTI BUKAN mingguan
             if (btnText.includes('harian')) return false;
             if (btnText.includes('mingguan') || btnText.includes('majalah')) return true;
           }
         }
 
-        // Cek apakah ada input field spesifik Edisi Mingguan yang tampil (seperti field relationship Edisi atau Rubrik)
         const allLabels = Array.from(document.querySelectorAll('label')).map(l => (l.textContent || '').toLowerCase());
         const hasWeeklyFields = allLabels.some(t => t.includes('pilih edisi mingguan') || t.includes('laporan utama (cover story)'));
         if (hasWeeklyFields) return true;
@@ -211,7 +269,7 @@ export function KeystaticApp() {
         return false;
       }
 
-      // Buat / Update Modal Panel Pre-Publish (Slide-over Drawer + Backdrop Click Outside)
+      // Buat Modal Panel Drawer
       const panelId = 'wp-gutenberg-pre-publish-drawer';
       const backdropId = 'wp-gutenberg-drawer-backdrop';
       
@@ -220,7 +278,6 @@ export function KeystaticApp() {
       let drawer = document.getElementById(panelId);
       if (drawer) drawer.remove();
 
-      // Backdrop untuk Click-Outside Auto-Close
       backdrop = document.createElement('div');
       backdrop.id = backdropId;
       backdrop.style.cssText = `
@@ -257,12 +314,10 @@ export function KeystaticApp() {
         flex-direction: column;
       `;
 
-      // Inject Global CSS Variables & Dark Mode Rules for Keystatic Drawer (Mengikuti .kui-scheme--light / .kui-scheme--dark)
       if (!document.getElementById('wp-drawer-styles')) {
         const styleSheet = document.createElement('style');
         styleSheet.id = 'wp-drawer-styles';
         styleSheet.textContent = `
-          /* Mode Terang (Light) */
           :root,
           .kui-scheme--light {
             --wp-drawer-bg: #ffffff;
@@ -278,7 +333,6 @@ export function KeystaticApp() {
             --wp-calendar-icon-filter: none;
           }
 
-          /* Mode Gelap (Dark) - Mengikuti Toggle Keystar UI (.kui-scheme--dark) */
           html.kui-scheme--dark,
           body.kui-scheme--dark,
           .kui-scheme--dark,
@@ -326,13 +380,29 @@ export function KeystaticApp() {
         <!-- Top Action Bar -->
         <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--wp-drawer-border); background:var(--wp-drawer-header-bg);">
           <button type="button" id="wp-drawer-cancel" style="background:transparent; border:1px solid var(--wp-drawer-border); border-radius:4px; padding:6px 14px; font-size:13px; font-weight:600; cursor:pointer; color:var(--wp-drawer-text);">Cancel</button>
-          <button type="button" id="wp-drawer-submit" style="background:#007cba; color:#fff; border:none; border-radius:4px; padding:6px 20px; font-size:13px; font-weight:600; cursor:pointer;">Publish</button>
+          <button type="button" id="wp-drawer-submit" style="background:${isPublishedItem ? '#059669' : '#007cba'}; color:#fff; border:none; border-radius:4px; padding:6px 20px; font-size:13px; font-weight:600; cursor:pointer;">
+            ${isPublishedItem ? 'Update' : 'Publish'}
+          </button>
         </div>
 
         <!-- Body Content -->
         <div style="padding:20px; overflow-y:auto; flex:1;">
-          <h3 style="font-size:16px; font-weight:600; margin:0 0 6px 0; color:var(--wp-drawer-text);">Are you ready to publish?</h3>
-          <p style="font-size:12px; color:var(--wp-drawer-muted); margin:0 0 20px 0; line-height:1.4;">Double-check your settings before publishing.</p>
+          <h3 style="font-size:16px; font-weight:600; margin:0 0 6px 0; color:var(--wp-drawer-text);">
+            ${isPublishedItem ? 'Perbarui Artikel (Update)' : 'Are you ready to publish?'}
+          </h3>
+          <p style="font-size:12px; color:var(--wp-drawer-muted); margin:0 0 20px 0; line-height:1.4;">
+            ${isPublishedItem ? 'Simpan revisi konten. Waktu pembaruan (terakhir diperbarui) akan dicatat otomatis.' : 'Double-check your settings before publishing.'}
+          </p>
+
+          <!-- Update Revision Notice Box -->
+          ${isPublishedItem ? `
+            <div style="background:rgba(5, 150, 105, 0.08); border:1px solid rgba(5, 150, 105, 0.25); border-radius:6px; padding:12px; margin-bottom:16px; font-size:12px; color:#059669; line-height:1.5;">
+              <div style="font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                <span>🔄</span> Mode Revisi / Update
+              </div>
+              Artikel ini sudah tayang sebelumnya. Menyimpan perubahan akan mencatat tanggal & jam revisi terkini pada info artikel.
+            </div>
+          ` : ''}
 
           <!-- Weekly Info Notice -->
           <div id="wp-weekly-notice" style="display:none; background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.3); border-radius:6px; padding:14px; margin-bottom:18px; font-size:12px; color:#10b981; line-height:1.5;">
@@ -350,29 +420,31 @@ export function KeystaticApp() {
             </div>
           </div>
 
-          <!-- Section: Publish Scheduling -->
+          <!-- Section: Publish / Update Scheduling -->
           <div id="wp-schedule-section" style="border-top:1px solid var(--wp-drawer-border); padding:14px 0;">
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:500; margin-bottom:12px;">
-              <span style="color:var(--wp-drawer-text);">Publish:</span>
-              <span id="wp-schedule-status-text" style="color:#007cba; font-weight:600;">Immediately</span>
+              <span style="color:var(--wp-drawer-text);">${isPublishedItem ? 'Jadwal Rilis Awal:' : 'Publish:'}</span>
+              <span id="wp-schedule-status-text" style="color:${isPublishedItem ? '#059669' : '#007cba'}; font-weight:600;">
+                ${isPublishedItem ? 'Published' : 'Immediately'}
+              </span>
             </div>
 
             <!-- Date & Time Picker Box -->
             <div id="wp-picker-box" style="padding:14px; background:var(--wp-drawer-card-bg); border-radius:6px; border:1px solid var(--wp-drawer-border);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <span style="font-size:11px; font-weight:700; color:var(--wp-drawer-muted); text-transform:uppercase;">Jadwal Rilis</span>
+                <span style="font-size:11px; font-weight:700; color:var(--wp-drawer-muted); text-transform:uppercase;">
+                  ${isPublishedItem ? 'Ubah Tanggal Rilis Asli (Opsional)' : 'Jadwal Rilis'}
+                </span>
                 <button type="button" id="wp-btn-now" style="font-size:11px; color:#38bdf8; background:none; border:none; cursor:pointer; font-weight:600; text-decoration:underline;">Set to Now</button>
               </div>
 
-              <!-- Dedicated Date Picker -->
               <div style="margin-bottom:12px;">
-                <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">📅 Pilih Tanggal</label>
+                <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">📅 Tanggal Rilis</label>
                 <input type="date" id="wp-picker-date" class="wp-custom-input" value="${currentIsoDate}" style="width:100%; padding:8px 10px; font-size:13px; border-radius:4px; box-sizing:border-box; outline:none;" />
               </div>
 
-              <!-- Dedicated Time Picker -->
               <div style="margin-bottom:12px;">
-                <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">⏰ Pilih Jam (WIB)</label>
+                <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">⏰ Jam (WIB)</label>
                 <input type="time" id="wp-picker-time" class="wp-custom-input" value="${currentHh}:${currentMm}" style="width:100%; padding:8px 10px; font-size:13px; border-radius:4px; box-sizing:border-box; outline:none;" />
               </div>
 
@@ -403,7 +475,7 @@ export function KeystaticApp() {
         if (isWeekly) {
           weeklyNotice.style.display = 'block';
           scheduleSec.style.display = 'none';
-          submitBtn.textContent = 'Publish to Edition';
+          submitBtn.textContent = isPublishedItem ? 'Update in Edition' : 'Publish to Edition';
           submitBtn.style.backgroundColor = '#10b981';
         } else {
           weeklyNotice.style.display = 'none';
@@ -414,12 +486,10 @@ export function KeystaticApp() {
         if (drawer) drawer.style.display = 'flex';
       }
 
-      // Backdrop Click-Outside Auto-Close
       backdrop?.addEventListener('click', () => {
         closeDrawer();
       });
 
-      // Update button label & status text based on selected date & time (Reactive Button Morphing)
       function updateButtonMorph() {
         if (!datePicker || !timePicker) return;
         const dateVal = datePicker.value || currentIsoDate;
@@ -427,15 +497,19 @@ export function KeystaticApp() {
         const combinedIso = `${dateVal}T${timeVal}`;
         const selectedDate = new Date(combinedIso);
         const currentNow = new Date();
-        const isFuture = selectedDate.getTime() > currentNow.getTime() + 60000; // toleransi 1 menit
+        const isFuture = selectedDate.getTime() > currentNow.getTime() + 60000;
 
-        if (isFuture) {
+        if (isPublishedItem) {
+          submitBtn.textContent = 'Update';
+          submitBtn.style.backgroundColor = '#059669';
+          statusText.textContent = isFuture ? `Rescheduled to ${dateVal} ${timeVal} WIB` : 'Published';
+        } else if (isFuture) {
           submitBtn.textContent = 'Schedule';
-          submitBtn.style.backgroundColor = '#4f46e5'; // Indigo untuk Schedule
+          submitBtn.style.backgroundColor = '#4f46e5';
           statusText.textContent = `${dateVal} ${timeVal} WIB`;
         } else {
           submitBtn.textContent = 'Publish';
-          submitBtn.style.backgroundColor = '#007cba'; // Biru untuk Publish Now
+          submitBtn.style.backgroundColor = '#007cba';
           statusText.textContent = 'Immediately';
         }
       }
@@ -457,17 +531,14 @@ export function KeystaticApp() {
         syncDateToKeystatic(datePicker?.value, timePicker.value);
       });
 
-      // Event: Buka Drawer
       wpTriggerBtn.addEventListener('click', () => {
         openDrawer();
       });
 
-      // Event: Cancel Drawer
       cancelBtn?.addEventListener('click', () => {
         closeDrawer();
       });
 
-      // Event: Set to Now
       nowBtn?.addEventListener('click', () => {
         const n = new Date();
         const hh = String(n.getHours()).padStart(2, '0');
@@ -480,15 +551,24 @@ export function KeystaticApp() {
         syncDateToKeystatic(dIso, timeNow);
       });
 
-      // Event: Confirm Submit
       submitBtn?.addEventListener('click', () => {
         closeDrawer();
+
+        const n = new Date();
+        const hh = String(n.getHours()).padStart(2, '0');
+        const mm = String(n.getMinutes()).padStart(2, '0');
+        const todayIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+        const timeNow = `${hh}:${mm}`;
 
         const dateVal = datePicker?.value || currentIsoDate;
         const timeVal = timePicker?.value || `${currentHh}:${currentMm}`;
         syncDateToKeystatic(dateVal, timeVal);
 
-        // Delay 100ms agar state React Keystatic selesai meng-update payload form
+        // Jika mengedit artikel yang sudah terbit, sinkronkan updatedDate & updatedTime
+        if (isPublishedItem) {
+          syncUpdatedDateToKeystatic(todayIso, timeNow);
+        }
+
         setTimeout(() => {
           mainBtn.click();
         }, 100);

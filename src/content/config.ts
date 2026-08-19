@@ -33,6 +33,9 @@ const writingsCollection = defineCollection({
       category: z.string().default('Article'),
       deck: z.string().max(144).optional().nullable(),
       publishDate: z.coerce.date(),
+      publishTime: z.string().optional().nullable(),
+      updatedDate: z.coerce.date().optional().nullable(),
+      updatedTime: z.string().optional().nullable(),
       readTime: z.string().optional().nullable(),
       heroImage: z.string().optional().nullable(),
       heroImageUrl: z.string().optional().nullable(),
@@ -56,8 +59,11 @@ const shipsCollection = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
-    category: z.enum(['Photography', 'Videography', 'Design', 'Code', 'Multimedia']).default('Photography'),
+    category: z.string().default('Photography'),
+    customCategory: z.string().optional().nullable(),
     description: z.string(),
+    client: z.string().optional().nullable(),
+    role: z.string().optional().nullable(),
     coverImage: z.string().optional().nullable(),
     coverImageUrl: z.string().optional().nullable(),
     videoUrl: z.string().optional().nullable(),
@@ -66,6 +72,9 @@ const shipsCollection = defineCollection({
     tools: z.array(z.string()).default([]),
     year: z.string().default('2025'),
     featured: z.boolean().default(false),
+    publishDate: z.coerce.date().optional().nullable(),
+    updatedDate: z.coerce.date().optional().nullable(),
+    updatedTime: z.string().optional().nullable(),
   }),
 });
 
