@@ -5,34 +5,34 @@
 
 <div
   id="cookie-consent-banner"
-  class="fixed bottom-3 sm:bottom-4 left-0 right-0 z-50 px-3 sm:px-4 pointer-events-none transform translate-y-16 opacity-0 transition-all duration-300 ease-out flex justify-center"
+  class="fixed bottom-3 sm:bottom-4 left-0 right-0 z-50 px-3 sm:px-4 pointer-events-none transform translate-y-20 opacity-0 transition-all duration-300 ease-out flex justify-center"
   role="region"
   aria-label="Pemberitahuan Cookie"
 >
   <div
-    class="w-full max-w-2xl px-3.5 py-2.5 sm:px-4 sm:py-2.5 rounded-xl border shadow-lg backdrop-blur-md flex items-center justify-between gap-3 text-xs pointer-events-auto"
+    class="w-full max-w-2xl p-3 sm:px-4 sm:py-2.5 rounded-xl border shadow-lg backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 text-xs pointer-events-auto"
     style="background: var(--card-bg); border-color: var(--border); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);"
   >
-    <!-- Left text -->
-    <div class="flex items-center gap-2 min-w-0 flex-1">
-      <span class="text-sm shrink-0">🍪</span>
-      <p class="text-[11px] sm:text-xs leading-snug truncate sm:whitespace-normal" style="color: var(--text-secondary);">
-        <span>Situs ini memakai cookie preferensi tema (<em>Dark/Light</em>). Bebas pelacak iklan.</span>
+    <!-- Left text: wraps nicely on mobile, inline on desktop -->
+    <div class="flex items-start sm:items-center gap-2 min-w-0 flex-1">
+      <span class="text-sm shrink-0 mt-0.5 sm:mt-0">🍪</span>
+      <p class="text-[11px] sm:text-xs leading-relaxed sm:leading-snug" style="color: var(--text-secondary);">
+        <span>Situs ini memakai cookie esensial preferensi tema (<em>Dark/Light</em>) & bebas pelacak iklan.</span>
         <a
           href="/privacy"
           class="underline ml-1 font-mono hover:text-emerald-500 transition-colors inline-block"
           style="color: var(--text-muted);"
         >
-          Rincian
+          Rincian →
         </a>
       </p>
     </div>
 
-    <!-- Right buttons -->
-    <div class="flex items-center gap-1.5 shrink-0">
+    <!-- Right buttons: compact and aligned -->
+    <div class="flex items-center justify-end gap-2 shrink-0 self-end sm:self-center">
       <button
         id="cookie-accept-btn"
-        class="px-2.5 py-1 rounded text-[11px] sm:text-xs font-mono font-semibold bg-emerald-500 hover:bg-emerald-600 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 transition-colors cursor-pointer"
+        class="px-3 py-1 rounded-md text-[11px] sm:text-xs font-mono font-semibold bg-emerald-500 hover:bg-emerald-600 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 transition-colors cursor-pointer"
       >
         Mengerti
       </button>
@@ -62,7 +62,7 @@
     if (!consent) {
       // Show with smooth transition after 1s delay
       setTimeout(() => {
-        banner.classList.remove('translate-y-16', 'opacity-0');
+        banner.classList.remove('translate-y-20', 'opacity-0');
         banner.classList.add('translate-y-0', 'opacity-100');
       }, 1000);
     }
@@ -70,7 +70,7 @@
     function closeBanner(value) {
       localStorage.setItem('cookie_consent', value || 'accepted');
       banner.classList.remove('translate-y-0', 'opacity-100');
-      banner.classList.add('translate-y-16', 'opacity-0');
+      banner.classList.add('translate-y-20', 'opacity-0');
     }
 
     if (acceptBtn) {
