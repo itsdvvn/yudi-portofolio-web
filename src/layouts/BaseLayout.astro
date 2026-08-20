@@ -101,14 +101,19 @@ const jsonLd = {
       }
     </script>
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-P5EZZ1RM1D"></script>
+    <!-- Google tag (gtag.js) - Only active on production domain -->
     <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+      if (typeof window !== 'undefined' && window.location.hostname === 'itsdvvn.my.id') {
+        const gaScript = document.createElement('script');
+        gaScript.async = true;
+        gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-P5EZZ1RM1D';
+        document.head.appendChild(gaScript);
 
-      gtag('config', 'G-P5EZZ1RM1D');
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-P5EZZ1RM1D');
+      }
     </script>
   </head>
   <body class="py-6 sm:py-8 md:py-12">
