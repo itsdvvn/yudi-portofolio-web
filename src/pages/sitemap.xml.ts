@@ -16,6 +16,14 @@ export const ALL: APIRoute = async ({ site, request }) => {
     { url: `${baseUrl}/privacy`, changefreq: 'monthly', priority: '0.5' },
   ];
 
+  // 1b. Check About Page
+  try {
+    const aboutData = (await (reader.singletons as any).about?.read()) || {};
+    if (aboutData.showInNavbar) {
+      staticPages.push({ url: `${baseUrl}/about`, changefreq: 'monthly', priority: '0.8' });
+    }
+  } catch (e) {}
+
   // 2. Dynamic Writings Articles
   const writingSlugs = await reader.collections.writings.list();
   const writings = await Promise.all(
@@ -25,7 +33,6 @@ export const ALL: APIRoute = async ({ site, request }) => {
         if (!data) return null;
         return { slug, ...data };
       } catch (e) {
-        console.error(`[Sitemap XML SSR] Failed reading writing ${slug}:`, e);
         return null;
       }
     })
@@ -37,10 +44,46 @@ export const ALL: APIRoute = async ({ site, request }) => {
       url: `${baseUrl}/writings/${post.slug}`,
       lastmod: post.publishDate ? parsePublishDateTime(post.publishDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       changefreq: 'monthly',
-      priority: '0.7',
+      priority: '0.8',
     }));
 
-  const allPages = [...staticPages, ...dynamicWritingPages];
+  // 3. Dynamic Ships Case Studies
+  let dynamicShipPages: any[] = [];
+  try {
+    const shipSlugs = await reader.collections.ships.list();
+    const ships = await Promise.all(
+      shipSlugs.map(async (slug) => {
+        try {
+          const data = await reader.collections.ships.read(slug);
+          return data ? { slug, ...data } : null;
+        } catch {
+          return null;
+        }
+      })
+    );
+    dynamicShipPages = ships
+      .filter(Boolean)
+      .map((ship) => ({
+        url: `${baseUrl}/ships/${ship!.slug}`,
+        lastmod: new Date().toISOString().split('T')[0],
+        changefreq: 'monthly',
+        priority: '0.7',
+      }));
+  } catch (e) {}
+
+  // 4. Dynamic Authors Pages
+  let dynamicAuthorPages: any[] = [];
+  try {
+    const authorSlugs = (await (reader.collections as any).authors?.list()) || [];
+    dynamicAuthorPages = authorSlugs.map((slug: string) => ({
+      url: `${baseUrl}/writings/author/${slug}`,
+      lastmod: new Date().toISOString().split('T')[0],
+      changefreq: 'weekly',
+      priority: '0.6',
+    }));
+  } catch (e) {}
+
+  const allPages = [...staticPages, ...dynamicWritingPages, ...dynamicShipPages, ...dynamicAuthorPages];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
