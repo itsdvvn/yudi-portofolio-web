@@ -101,22 +101,19 @@ const jsonLd = {
       }
     </script>
 
-    <!-- Google tag (gtag.js) - Only active on production domain -->
-    <script is:inline>
-      if (typeof window !== 'undefined' && window.location.hostname === 'itsdvvn.my.id') {
-        const gaScript = document.createElement('script');
-        gaScript.async = true;
-        gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-P5EZZ1RM1D';
-        document.head.appendChild(gaScript);
-
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-P5EZZ1RM1D');
-      }
-    </script>
+    <!-- Google Tag Manager -->
+    <script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-P35MT3GV');</script>
+    <!-- End Google Tag Manager -->
   </head>
   <body class="py-6 sm:py-8 md:py-12">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P35MT3GV"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div class="site-wrap flex-1 flex flex-col">
       <!-- Responsive Header -->
       <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-8 sm:mb-12 border-b sm:border-b-0 pb-3.5 sm:pb-0" style="border-color: var(--border);">
