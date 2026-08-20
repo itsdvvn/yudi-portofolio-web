@@ -470,7 +470,33 @@ export function KeystaticApp() {
         if (backdrop) backdrop.style.display = 'none';
       }
 
+      function getExistingPublishDateTime() {
+        let existingDate = '';
+        let existingTime = '';
+        const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
+        for (const input of allInputs) {
+          if (input.closest('#wp-gutenberg-pre-publish-drawer')) continue;
+          const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
+          const text = (container?.textContent || '').toLowerCase();
+          if (text.includes('tanggal rilis') || text.includes('jadwal rilis') || text.includes('jadwal / waktu terbit')) {
+            if (input.value) existingDate = input.value;
+          }
+          if (text.includes('jam rilis') || text.includes('waktu rilis')) {
+            if (input.value) existingTime = input.value;
+          }
+        }
+        return { existingDate, existingTime };
+      }
+
       function openDrawer() {
+        const { existingDate, existingTime } = getExistingPublishDateTime();
+        if (existingDate && datePicker) {
+          datePicker.value = existingDate;
+        }
+        if (existingTime && timePicker) {
+          timePicker.value = existingTime;
+        }
+
         const isWeekly = checkIsWeeklyArticle();
         if (isWeekly) {
           weeklyNotice.style.display = 'block';
@@ -560,9 +586,11 @@ export function KeystaticApp() {
         const todayIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
         const timeNow = `${hh}:${mm}`;
 
-        const dateVal = datePicker?.value || currentIsoDate;
-        const timeVal = timePicker?.value || `${currentHh}:${currentMm}`;
-        syncDateToKeystatic(dateVal, timeVal);
+        const dateVal = datePicker?.value;
+        const timeVal = timePicker?.value;
+        if (dateVal && timeVal) {
+          syncDateToKeystatic(dateVal, timeVal);
+        }
 
         // Jika mengedit artikel yang sudah terbit, sinkronkan updatedDate & updatedTime
         if (isPublishedItem) {
