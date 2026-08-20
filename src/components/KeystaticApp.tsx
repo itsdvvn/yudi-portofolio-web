@@ -396,11 +396,16 @@ export function KeystaticApp() {
 
           <!-- Update Revision Notice Box -->
           ${isPublishedItem ? `
-            <div style="background:rgba(5, 150, 105, 0.08); border:1px solid rgba(5, 150, 105, 0.25); border-radius:6px; padding:12px; margin-bottom:16px; font-size:12px; color:#059669; line-height:1.5;">
-              <div style="font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
-                <span>🔄</span> Mode Revisi / Update
+            <div style="background:rgba(5, 150, 105, 0.08); border:1px solid rgba(5, 150, 105, 0.25); border-radius:6px; padding:14px; margin-bottom:16px; font-size:12px; color:#059669; line-height:1.5;">
+              <div style="font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:6px; font-size:13px;">
+                <span>🟢</span> Artikel Sudah Terbit (Published)
               </div>
-              Artikel ini sudah tayang sebelumnya. Menyimpan perubahan akan mencatat tanggal & jam revisi terkini pada info artikel.
+              <div style="color:var(--wp-drawer-text); margin-bottom:4px;">
+                📅 Tanggal Rilis Asli: <strong id="wp-published-date-badge" style="color:#059669;">-</strong> (Terkunci & Aman)
+              </div>
+              <div style="color:var(--wp-drawer-muted); font-size:11px; margin-top:6px;">
+                Menekan tombol <strong>Update</strong> akan menyimpan isi konten Anda dan mencatat waktu revisi terkini tanpa mengubah tanggal rilis aslinya.
+              </div>
             </div>
           ` : ''}
 
@@ -420,37 +425,57 @@ export function KeystaticApp() {
             </div>
           </div>
 
-          <!-- Section: Publish / Update Scheduling -->
-          <div id="wp-schedule-section" style="border-top:1px solid var(--wp-drawer-border); padding:14px 0;">
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:500; margin-bottom:12px;">
-              <span style="color:var(--wp-drawer-text);">${isPublishedItem ? 'Jadwal Rilis Awal:' : 'Publish:'}</span>
-              <span id="wp-schedule-status-text" style="color:${isPublishedItem ? '#059669' : '#007cba'}; font-weight:600;">
-                ${isPublishedItem ? 'Published' : 'Immediately'}
-              </span>
+          ${isPublishedItem ? `
+            <!-- Optional Override Publish Date for Existing Articles -->
+            <div style="border-top:1px solid var(--wp-drawer-border); padding:14px 0;">
+              <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; cursor:pointer; color:var(--wp-drawer-text); user-select:none;">
+                <input type="checkbox" id="wp-enable-override-date" style="cursor:pointer; width:14px; height:14px;" />
+                <span>Ubah tanggal rilis asli secara manual (Opsional)</span>
+              </label>
+              <div id="wp-override-date-box" style="display:none; padding:12px; background:var(--wp-drawer-card-bg); border-radius:6px; border:1px solid var(--wp-drawer-border); margin-top:10px;">
+                <div style="margin-bottom:10px;">
+                  <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">📅 Tanggal Rilis Baru</label>
+                  <input type="date" id="wp-picker-date" class="wp-custom-input" style="width:100%; padding:7px 10px; font-size:13px; border-radius:4px; box-sizing:border-box; outline:none;" />
+                </div>
+                <div>
+                  <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">⏰ Jam Rilis Baru (WIB)</label>
+                  <input type="time" id="wp-picker-time" class="wp-custom-input" style="width:100%; padding:7px 10px; font-size:13px; border-radius:4px; box-sizing:border-box; outline:none;" />
+                </div>
+              </div>
             </div>
-
-            <!-- Date & Time Picker Box -->
-            <div id="wp-picker-box" style="padding:14px; background:var(--wp-drawer-card-bg); border-radius:6px; border:1px solid var(--wp-drawer-border);">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <span style="font-size:11px; font-weight:700; color:var(--wp-drawer-muted); text-transform:uppercase;">
-                  ${isPublishedItem ? 'Ubah Tanggal Rilis Asli (Opsional)' : 'Jadwal Rilis'}
+          ` : `
+            <!-- Section: Publish Scheduling for New Articles -->
+            <div id="wp-schedule-section" style="border-top:1px solid var(--wp-drawer-border); padding:14px 0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:500; margin-bottom:12px;">
+                <span style="color:var(--wp-drawer-text);">Publish:</span>
+                <span id="wp-schedule-status-text" style="color:#007cba; font-weight:600;">
+                  Immediately
                 </span>
-                <button type="button" id="wp-btn-now" style="font-size:11px; color:#38bdf8; background:none; border:none; cursor:pointer; font-weight:600; text-decoration:underline;">Set to Now</button>
               </div>
 
-              <div style="margin-bottom:12px;">
-                <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">📅 Tanggal Rilis</label>
-                <input type="date" id="wp-picker-date" class="wp-custom-input" value="${currentIsoDate}" style="width:100%; padding:8px 10px; font-size:13px; border-radius:4px; box-sizing:border-box; outline:none;" />
-              </div>
+              <!-- Date & Time Picker Box -->
+              <div id="wp-picker-box" style="padding:14px; background:var(--wp-drawer-card-bg); border-radius:6px; border:1px solid var(--wp-drawer-border);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <span style="font-size:11px; font-weight:700; color:var(--wp-drawer-muted); text-transform:uppercase;">
+                    Jadwal Rilis
+                  </span>
+                  <button type="button" id="wp-btn-now" style="font-size:11px; color:#38bdf8; background:none; border:none; cursor:pointer; font-weight:600; text-decoration:underline;">Set to Now</button>
+                </div>
 
-              <div style="margin-bottom:12px;">
-                <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">⏰ Jam (WIB)</label>
-                <input type="time" id="wp-picker-time" class="wp-custom-input" value="${currentHh}:${currentMm}" style="width:100%; padding:8px 10px; font-size:13px; border-radius:4px; box-sizing:border-box; outline:none;" />
-              </div>
+                <div style="margin-bottom:12px;">
+                  <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">📅 Tanggal Rilis</label>
+                  <input type="date" id="wp-picker-date" class="wp-custom-input" value="${currentIsoDate}" style="width:100%; padding:8px 10px; font-size:13px; border-radius:4px; box-sizing:border-box; outline:none;" />
+                </div>
 
-              <div style="font-size:11px; color:var(--wp-drawer-muted);">Zona waktu sistem: <strong style="color:var(--wp-drawer-text);">WIB (UTC+7)</strong></div>
+                <div style="margin-bottom:12px;">
+                  <label style="display:block; font-size:11px; font-weight:600; color:var(--wp-drawer-muted); margin-bottom:4px;">⏰ Jam (WIB)</label>
+                  <input type="time" id="wp-picker-time" class="wp-custom-input" value="${currentHh}:${currentMm}" style="width:100%; padding:8px 10px; font-size:13px; border-radius:4px; box-sizing:border-box; outline:none;" />
+                </div>
+
+                <div style="font-size:11px; color:var(--wp-drawer-muted);">Zona waktu sistem: <strong style="color:var(--wp-drawer-text);">WIB (UTC+7)</strong></div>
+              </div>
             </div>
-          </div>
+          `}
         </div>
       `;
 
@@ -458,12 +483,21 @@ export function KeystaticApp() {
 
       const cancelBtn = drawer.querySelector('#wp-drawer-cancel') as HTMLElement;
       const submitBtn = drawer.querySelector('#wp-drawer-submit') as HTMLButtonElement;
-      const datePicker = drawer.querySelector('#wp-picker-date') as HTMLInputElement;
-      const timePicker = drawer.querySelector('#wp-picker-time') as HTMLInputElement;
-      const statusText = drawer.querySelector('#wp-schedule-status-text') as HTMLElement;
-      const nowBtn = drawer.querySelector('#wp-btn-now') as HTMLElement;
-      const weeklyNotice = drawer.querySelector('#wp-weekly-notice') as HTMLElement;
-      const scheduleSec = drawer.querySelector('#wp-schedule-section') as HTMLElement;
+      const datePicker = drawer.querySelector('#wp-picker-date') as HTMLInputElement | null;
+      const timePicker = drawer.querySelector('#wp-picker-time') as HTMLInputElement | null;
+      const statusText = drawer.querySelector('#wp-schedule-status-text') as HTMLElement | null;
+      const nowBtn = drawer.querySelector('#wp-btn-now') as HTMLElement | null;
+      const weeklyNotice = drawer.querySelector('#wp-weekly-notice') as HTMLElement | null;
+      const scheduleSec = drawer.querySelector('#wp-schedule-section') as HTMLElement | null;
+      const overrideCheckbox = drawer.querySelector('#wp-enable-override-date') as HTMLInputElement | null;
+      const overrideBox = drawer.querySelector('#wp-override-date-box') as HTMLElement | null;
+      const pubDateBadge = drawer.querySelector('#wp-published-date-badge') as HTMLElement | null;
+
+      if (overrideCheckbox && overrideBox) {
+        overrideCheckbox.addEventListener('change', () => {
+          overrideBox.style.display = overrideCheckbox.checked ? 'block' : 'none';
+        });
+      }
 
       function closeDrawer() {
         if (drawer) drawer.style.display = 'none';
@@ -490,6 +524,11 @@ export function KeystaticApp() {
 
       function openDrawer() {
         const { existingDate, existingTime } = getExistingPublishDateTime();
+        
+        if (pubDateBadge) {
+          pubDateBadge.textContent = existingDate ? `${existingDate} ${existingTime ? existingTime + ' WIB' : ''}` : 'Published';
+        }
+
         if (existingDate && datePicker) {
           datePicker.value = existingDate;
         }
@@ -499,13 +538,13 @@ export function KeystaticApp() {
 
         const isWeekly = checkIsWeeklyArticle();
         if (isWeekly) {
-          weeklyNotice.style.display = 'block';
-          scheduleSec.style.display = 'none';
+          if (weeklyNotice) weeklyNotice.style.display = 'block';
+          if (scheduleSec) scheduleSec.style.display = 'none';
           submitBtn.textContent = isPublishedItem ? 'Update in Edition' : 'Publish to Edition';
           submitBtn.style.backgroundColor = '#10b981';
         } else {
-          weeklyNotice.style.display = 'none';
-          scheduleSec.style.display = 'block';
+          if (weeklyNotice) weeklyNotice.style.display = 'none';
+          if (scheduleSec) scheduleSec.style.display = 'block';
           updateButtonMorph();
         }
         if (backdrop) backdrop.style.display = 'block';
@@ -528,33 +567,32 @@ export function KeystaticApp() {
         if (isPublishedItem) {
           submitBtn.textContent = 'Update';
           submitBtn.style.backgroundColor = '#059669';
-          statusText.textContent = isFuture ? `Rescheduled to ${dateVal} ${timeVal} WIB` : 'Published';
         } else if (isFuture) {
           submitBtn.textContent = 'Schedule';
           submitBtn.style.backgroundColor = '#4f46e5';
-          statusText.textContent = `${dateVal} ${timeVal} WIB`;
+          if (statusText) statusText.textContent = `${dateVal} ${timeVal} WIB`;
         } else {
           submitBtn.textContent = 'Publish';
           submitBtn.style.backgroundColor = '#007cba';
-          statusText.textContent = 'Immediately';
+          if (statusText) statusText.textContent = 'Immediately';
         }
       }
 
       datePicker?.addEventListener('change', () => {
         updateButtonMorph();
-        syncDateToKeystatic(datePicker.value, timePicker?.value);
+        if (!isPublishedItem) syncDateToKeystatic(datePicker.value, timePicker?.value);
       });
       datePicker?.addEventListener('input', () => {
         updateButtonMorph();
-        syncDateToKeystatic(datePicker.value, timePicker?.value);
+        if (!isPublishedItem) syncDateToKeystatic(datePicker.value, timePicker?.value);
       });
       timePicker?.addEventListener('change', () => {
         updateButtonMorph();
-        syncDateToKeystatic(datePicker?.value, timePicker.value);
+        if (!isPublishedItem) syncDateToKeystatic(datePicker?.value, timePicker.value);
       });
       timePicker?.addEventListener('input', () => {
         updateButtonMorph();
-        syncDateToKeystatic(datePicker?.value, timePicker.value);
+        if (!isPublishedItem) syncDateToKeystatic(datePicker?.value, timePicker.value);
       });
 
       wpTriggerBtn.addEventListener('click', () => {
@@ -574,7 +612,7 @@ export function KeystaticApp() {
         if (datePicker) datePicker.value = dIso;
         if (timePicker) timePicker.value = timeNow;
         updateButtonMorph();
-        syncDateToKeystatic(dIso, timeNow);
+        if (!isPublishedItem) syncDateToKeystatic(dIso, timeNow);
       });
 
       submitBtn?.addEventListener('click', () => {
@@ -586,14 +624,17 @@ export function KeystaticApp() {
         const todayIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
         const timeNow = `${hh}:${mm}`;
 
-        const dateVal = datePicker?.value;
-        const timeVal = timePicker?.value;
-        if (dateVal && timeVal) {
+        if (!isPublishedItem) {
+          // Artikel Baru: Terapkan tanggal & jam rilis awal
+          const dateVal = datePicker?.value || currentIsoDate;
+          const timeVal = timePicker?.value || `${currentHh}:${currentMm}`;
           syncDateToKeystatic(dateVal, timeVal);
-        }
-
-        // Jika mengedit artikel yang sudah terbit, sinkronkan updatedDate & updatedTime
-        if (isPublishedItem) {
+        } else {
+          // Artikel Lama (Update): HANYA ubah publishDate jika user sengaja mencentang opsi override
+          if (overrideCheckbox && overrideCheckbox.checked && datePicker?.value && timePicker?.value) {
+            syncDateToKeystatic(datePicker.value, timePicker.value);
+          }
+          // Selalu perbarui updatedDate & updatedTime (Diperbarui)
           syncUpdatedDateToKeystatic(todayIso, timeNow);
         }
 
