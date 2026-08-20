@@ -213,12 +213,16 @@ function formatDate(dateStr: string) {
 
     <div class="divide-y" style="border-color: var(--border);">
       {recentWritings.map((post) => (
-        <a href={`/writings/${post.slug}`} class="post-row py-3 block">
-          <span class="post-title font-medium inline-flex items-center gap-1.5">
-            <span>{post.title}</span>
-            {post.isLocked && <span class="text-xs" title="Artikel Terkunci">🔒</span>}
-          </span>
-          <span class="post-date text-xs font-mono">{formatDate(post.publishDate)}</span>
+        <a href={`/writings/${post.slug}`} class="post-row py-3 group">
+          <div class="post-title font-medium flex items-center gap-2 min-w-0">
+            <span class="group-hover:text-emerald-400 transition-colors">{post.title}</span>
+            {post.isLocked && (
+              <span class="text-xs shrink-0 inline-flex items-center opacity-85" title="Artikel Terkunci (Password Protected)" aria-label="Terkunci">
+                🔒
+              </span>
+            )}
+          </div>
+          <span class="post-date text-xs font-mono shrink-0">{formatDate(post.publishDate)}</span>
         </a>
       ))}
     </div>

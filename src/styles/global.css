@@ -157,7 +157,8 @@
   color: var(--text-primary);
   transition: color 0.15s ease;
   line-height: 1.45;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .post-desc {
