@@ -339,9 +339,9 @@ const authorWebsite = authorData?.website || '';
 
     <!-- Editorial Revision Notice (Red Dot) - Tepat setelah akhir tulisan -->
     {post.updatedDate && (
-      <div id="article-updated-notice" class={`mt-6 mb-2 flex items-center gap-2 text-xs font-mono text-zinc-500 dark:text-zinc-400 ${isLocked ? 'hidden' : ''}`}>
-        <span class="inline-block w-2 h-2 rounded-full bg-rose-500 shrink-0 shadow-sm"></span>
-        <span>
+      <div id="article-updated-notice" class={`mt-6 mb-2 flex items-start gap-2 text-xs font-mono leading-relaxed text-zinc-500 dark:text-zinc-400 ${isLocked ? 'hidden' : ''}`}>
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 mt-1.5 shadow-sm"></span>
+        <span class="leading-relaxed">
           Artikel ini diperbarui pada {formatDate(post.updatedDate)}{post.updatedTime ? `, ${post.updatedTime} WIB` : ''}.
         </span>
       </div>
