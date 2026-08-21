@@ -19,6 +19,11 @@ if (!post) {
   return Astro.redirect('/writings');
 }
 
+let siteFooter: any = null;
+try {
+  siteFooter = await reader.singletons.footer.read();
+} catch (e) {}
+
 const pubType = typeof post.publicationType === 'object' && post.publicationType !== null 
   ? post.publicationType.discriminant 
   : (post.publicationType || 'reguler');
