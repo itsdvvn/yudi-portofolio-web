@@ -1,0 +1,6 @@
+---
+// Dynamic route for clean /writings/page/[page] navigation
+const { page } = Astro.params;
+const targetPage = page || '1';
+return Astro.redirect(`/writings?page=${targetPage}`);
+---

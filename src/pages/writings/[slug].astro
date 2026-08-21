@@ -347,6 +347,24 @@ const authorWebsite = authorData?.website || '';
       </div>
     )}
 
+    <!-- 📌 Catatan Koreksi & Hak Jawab Section (Hanya muncul jika diaktifkan di CMS) -->
+    {post.correction?.hasCorrection && post.correction?.correctionContent && (
+      <div id="article-correction-box" class={`my-6 p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 text-xs leading-relaxed text-zinc-800 dark:text-zinc-200 ${isLocked ? 'hidden' : ''}`}>
+        <div class="flex items-center gap-2 font-mono font-bold text-amber-700 dark:text-amber-400 mb-1.5">
+          <span>📌</span>
+          <span>Catatan Koreksi & Hak Jawab</span>
+          {post.correction.correctionDate && (
+            <span class="text-[11px] font-normal text-zinc-500 dark:text-zinc-400">
+              ({post.correction.correctionDate})
+            </span>
+          )}
+        </div>
+        <p class="whitespace-pre-line text-zinc-700 dark:text-zinc-300 font-sans leading-relaxed">
+          {post.correction.correctionContent}
+        </p>
+      </div>
+    )}
+
     <!-- 📚 Catatan & Referensi Section (Otomatis Render jika ada sitasi) -->
     <div id="references-container">
       {collectedCitations.length > 0 && (
@@ -598,6 +616,30 @@ const authorWebsite = authorData?.website || '';
       </div>
     </div>
 
+    <!-- ✉️ Box "Bantu Saya Memperbaiki Tulisan Ini" (Feedback Email Ke Penulis) -->
+    <div class="mt-6 mb-8 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/60 backdrop-blur-sm transition-all shadow-sm">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="space-y-1.5 max-w-xl">
+          <div class="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100 font-mono">
+            <span class="text-emerald-600 dark:text-emerald-400">💡</span>
+            <span>Bantu Saya Memperbaiki Tulisan Ini</span>
+          </div>
+          <p class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            Saya tak luput dari kesalahan fakta atau kekeliruan penulisan. Jika ada data yang kurang tepat atau perlu diluruskan, silakan beri tahu saya secara langsung.
+          </p>
+        </div>
+        <a
+          href={`mailto:${siteFooter.email || 'itsdvvn@gmail.com'}?subject=${encodeURIComponent(`Koreksi / Masukan Artikel: ${post.title}`)}`}
+          class="shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold font-mono transition-all shadow-sm group"
+        >
+          <svg class="w-4 h-4 text-emerald-400 dark:text-emerald-600 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 002 2v10a2 2 0 002 2z" />
+          </svg>
+          <span>Kirim Koreksi</span>
+        </a>
+      </div>
+    </div>
+
     <!-- 8. Newsletter / Weekly Magazine Subscription Box -->
     <NewsletterBox />
   </article>
@@ -756,6 +798,8 @@ const authorWebsite = authorData?.website || '';
                 }
                 const updatedNotice = document.getElementById('article-updated-notice');
                 if (updatedNotice) updatedNotice.classList.remove('hidden');
+                const correctionBox = document.getElementById('article-correction-box');
+                if (correctionBox) correctionBox.classList.remove('hidden');
                 setupCitationPopovers();
               }, 300);
             } else {

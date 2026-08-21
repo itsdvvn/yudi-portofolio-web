@@ -375,6 +375,22 @@ export default config({
           collection: 'authors',
           description: 'Pilih profil penulis untuk tulisan ini (jika dikosongkan, akan menggunakan profil default)',
         }),
+        correction: fields.object({
+          hasCorrection: fields.checkbox({
+            label: '📌 Aktifkan Catatan Koreksi / Hak Jawab / Klarifikasi',
+            description: 'Centang jika ada hak jawab, koreksi fakta, atau klarifikasi penulis pada artikel ini.',
+            defaultValue: false,
+          }),
+          correctionDate: fields.text({
+            label: 'Tanggal Koreksi (Opsional: e.g. 21 Agustus 2026)',
+            description: 'Tanggal koreksi diterbitkan (jika dikosongkan akan mengambil tanggal hari ini saat diisi)',
+          }),
+          correctionContent: fields.text({
+            label: 'Isi Teks Koreksi / Hak Jawab / Klarifikasi',
+            description: 'Tuliskan klarifikasi atau koreksi fakta secara transparan dan jelas',
+            multiline: true,
+          }),
+        }),
         draft: fields.checkbox({ label: 'Draft', defaultValue: false }),
         isLocked: fields.checkbox({
           label: '🔒 Kunci Artikel Ini (Password Protected)',

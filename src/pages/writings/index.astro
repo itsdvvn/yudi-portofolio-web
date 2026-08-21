@@ -36,7 +36,7 @@ try {
   rubricsMap = new Map(rubricsRaw.filter(Boolean).map((r) => [r!.slug, r!.name || r!.slug]));
 } catch (e) {}
 
-// Published Editions (termasuk auto-fallback untuk label edisi)
+// Published Editions
 const editions = editionsRaw
   .filter((e) => e && isEditionPublished(e))
   .map((e) => {
@@ -113,19 +113,41 @@ const allWritings = writingsRaw
   })
   .sort((a, b) => parsePublishDateTime(b.publishDate, b.publishTime).valueOf() - parsePublishDateTime(a.publishDate, a.publishTime).valueOf());
 
-// Filter Harian / Reguler (termasuk artikel lama tanpa publicationType)
+// Filter Harian / Reguler
 const regulerWritings = allWritings.filter(
   (p) => !p.publicationType || p.publicationType === 'reguler'
 );
 
-// 3. Logika Edisi Mingguan Dinamis (Auto-Update & Persistent Stay):
-// - Jika ada edisi baru yang rilis (publishDate + time <= NOW), otomatis menjadi edisi aktif terdepan.
-// - Jika minggu ini belum ada edisi baru, edisi published terakhir akan tetap tampil (stay persistent).
-// - Jika admin secara manual mencentang 'featured', maka edisi tersebut yang diutamakan.
-const activeEdition = editions.find((e) => e.featured) || editions[0] || null;
+// 3. Paginasi Halaman Writings Harian (Maksimal 10 Artikel per Halaman)
+const pageSize = 10;
+const pageParam = Astro.url.searchParams.get('page');
+const currentPage = Math.max(1, parseInt(pageParam || '1', 10) || 1);
+const totalReguler = regulerWritings.length;
+const totalPages = Math.ceil(totalReguler / pageSize) || 1;
+const startIndex = (currentPage - 1) * pageSize;
+const paginatedRegulerWritings = regulerWritings.slice(startIndex, startIndex + pageSize);
 
-// Arsip Edisi Sebelumnya (semua edisi terbit selain activeEdition)
-const archiveEditions = activeEdition ? editions.filter((e) => e.slug !== activeEdition.slug) : [];
+// 4. Logika Edisi Mingguan Dinamis & Sub-Tab (Tempo Style)
+const requestedEditionSlug = Astro.url.searchParams.get('edition');
+const activeEdition = requestedEditionSlug 
+  ? editions.find((e) => e.slug === requestedEditionSlug) || editions.find((e) => e.featured) || editions[0] || null
+  : editions.find((e) => e.featured) || editions[0] || null;
+
+// Helper menghitung jumlah artikel per edisi
+function getEditionArticleCount(editionSlug: string) {
+  return allWritings.filter((p) => p.publicationType === 'mingguan' && p.edition === editionSlug).length;
+}
+
+// Group ALL editions by Month & Year for "Semua Edisi" tab
+const editionsByMonth = new Map<string, typeof editions>();
+editions.forEach((ed) => {
+  const d = parsePublishDateTime(ed.publishDate, ed.publishTime);
+  const monthYearKey = d.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', month: 'long', year: 'numeric' }).toUpperCase();
+  if (!editionsByMonth.has(monthYearKey)) {
+    editionsByMonth.set(monthYearKey, []);
+  }
+  editionsByMonth.get(monthYearKey)!.push(ed);
+});
 
 // Get articles associated with the active/featured edition
 const featuredEditionArticles = activeEdition
@@ -174,200 +196,304 @@ function formatDate(dateStr: string) {
   </div>
 
   <!-- TAB CONTENT 1: HARIAN / REGULER -->
-  <div id="tab-content-harian" class="tab-pane space-y-4">
-    {regulerWritings.map((post) => {
-      const rawHero = post.heroImage || post.heroImageUrl;
-      const heroThumb = rawHero ? (rawHero.startsWith('http') ? rawHero : `${rawHero}?t=${Date.now()}`) : '';
+  <div id="tab-content-harian" class="tab-pane space-y-6">
+    <div class="space-y-4">
+      {paginatedRegulerWritings.map((post) => {
+        const rawHero = post.heroImage || post.heroImageUrl;
+        const heroThumb = rawHero ? (rawHero.startsWith('http') ? rawHero : `${rawHero}?t=${Date.now()}`) : '';
 
-      return (
-        <a 
-          href={`/writings/${post.slug}`} 
-          class="ship-card p-3.5 sm:p-4 flex flex-col sm:flex-row gap-4 items-start group hover:border-zinc-500 transition-all block"
-        >
-          {heroThumb && (
-            <div class="w-full sm:w-36 sm:h-24 h-44 rounded-md overflow-hidden bg-zinc-900 shrink-0 border" style="border-color: var(--border);">
-              <img 
-                src={heroThumb} 
-                alt={post.title} 
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                loading="lazy" 
-              />
-            </div>
-          )}
-          <div class="flex-1 flex flex-col justify-between min-w-0 w-full">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-1">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-500 font-medium">
-                    {post.category || 'Article'}
-                  </span>
-                  {post.isLocked && (
-                    <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold font-mono bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                      🔒 Terkunci
-                    </span>
-                  )}
-                </div>
-                <span class="post-date text-[11px] font-mono shrink-0">
-                  {formatDate(post.publishDate)}
-                </span>
+        return (
+          <a 
+            href={`/writings/${post.slug}`} 
+            class="ship-card p-3.5 sm:p-4 flex flex-col sm:flex-row gap-4 items-start group hover:border-zinc-500 transition-all block"
+          >
+            {heroThumb && (
+              <div class="w-full sm:w-36 sm:h-24 h-44 rounded-md overflow-hidden bg-zinc-900 shrink-0 border" style="border-color: var(--border);">
+                <img 
+                  src={heroThumb} 
+                  alt={post.title} 
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                  loading="lazy" 
+                />
               </div>
-              <h2 class="text-base sm:text-base font-semibold group-hover:text-emerald-400 transition-colors leading-snug mb-1.5" style="color: var(--text-primary);">
-                {post.title}
-              </h2>
-              {post.deck && (
-                <p class="text-xs sm:text-xs leading-relaxed line-clamp-2" style="color: var(--text-secondary);">
-                  {post.deck}
-                </p>
-              )}
-            </div>
-            <div class="flex items-center gap-3 text-[11px] font-mono mt-3 pt-2 border-t" style="border-color: var(--border); color: var(--text-muted);">
-              <span>{post.readTime || '3 min read'}</span>
-              <span>•</span>
-              <span class="group-hover:translate-x-0.5 transition-transform text-emerald-400">baca selengkapnya →</span>
-            </div>
-          </div>
-        </a>
-      );
-    })}
+            )}
+            <div class="flex-1 flex flex-col justify-between min-w-0 w-full">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+                      {post.category}
+                    </span>
+                    {post.isLocked && (
+                      <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        🔒 Locked
+                      </span>
+                    )}
+                  </div>
+                  <span class="text-[11px] font-mono" style="color: var(--text-muted);">
+                    {formatDate(post.publishDate)}
+                  </span>
+                </div>
 
-    {regulerWritings.length === 0 && (
-      <p class="text-xs italic py-4" style="color: var(--text-muted);">Belum ada artikel harian yang dipublikasikan.</p>
+                <h3 class="text-base font-bold leading-snug mb-1 group-hover:text-emerald-400 transition-colors" style="color: var(--text-primary);">
+                  {post.title}
+                </h3>
+                
+                {post.deck && (
+                  <p class="text-xs leading-relaxed line-clamp-2 mb-2" style="color: var(--text-secondary);">
+                    {post.deck}
+                  </p>
+                )}
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] font-mono pt-2 border-t mt-2" style="border-color: var(--border); color: var(--text-muted);">
+                <span>⏱️ {post.readTime || '3 min read'}</span>
+                <span class="text-emerald-500 font-semibold group-hover:translate-x-0.5 transition-transform">Baca →</span>
+              </div>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+
+    <!-- Paginasi Navigasi (Maksimal 10 Artikel / Halaman) -->
+    {totalPages > 1 && (
+      <div class="pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs" style="border-color: var(--border);">
+        <div style="color: var(--text-muted);">
+          Menampilkan <span class="font-bold" style="color: var(--text-primary);">{startIndex + 1} - {Math.min(startIndex + pageSize, totalReguler)}</span> dari <span class="font-bold" style="color: var(--text-primary);">{totalReguler}</span> artikel
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          {currentPage > 1 ? (
+            <a
+              href={`/writings?page=${currentPage - 1}`}
+              class="px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 transition-colors inline-flex items-center gap-1"
+            >
+              <span>←</span>
+              <span>Sebelumnya</span>
+            </a>
+          ) : (
+            <span class="px-3 py-1.5 rounded-lg border border-zinc-800/50 text-zinc-600 cursor-not-allowed select-none">
+              ← Sebelumnya
+            </span>
+          )}
+
+          <div class="flex items-center gap-1 px-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
+              <a
+                href={`/writings?page=${pNum}`}
+                class={`w-8 h-8 rounded-lg flex items-center justify-center font-bold transition-colors ${pNum === currentPage ? 'bg-emerald-500 text-zinc-950 shadow-sm' : 'hover:bg-zinc-800 text-zinc-400'}`}
+              >
+                {pNum}
+              </a>
+            ))}
+          </div>
+
+          {currentPage < totalPages ? (
+            <a
+              href={`/writings?page=${currentPage + 1}`}
+              class="px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 transition-colors inline-flex items-center gap-1"
+            >
+              <span>Selanjutnya</span>
+              <span>→</span>
+            </a>
+          ) : (
+            <span class="px-3 py-1.5 rounded-lg border border-zinc-800/50 text-zinc-600 cursor-not-allowed select-none">
+              Selanjutnya →
+            </span>
+          )}
+        </div>
+      </div>
     )}
   </div>
 
-  <!-- TAB CONTENT 2: MINGGUAN (MAJALAH TEMPO STYLE) -->
-  <div id="tab-content-mingguan" class="tab-pane hidden space-y-8">
-    {activeEdition ? (
-      <div>
-        <!-- Featured Edition Magazine Hero Banner (Tempo Style) -->
-        <div class="rounded-xl overflow-hidden border p-5 sm:p-7 transition-all shadow-md bg-gradient-to-br from-zinc-900 via-zinc-950 to-black text-white" style="border-color: rgba(255,255,255,0.1);">
-          <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
-            <!-- Left: Magazine Vertical Cover -->
-            <div class="w-full sm:w-56 md:w-64 shrink-0 mx-auto md:mx-0">
-              <div class="relative aspect-[3/4] rounded-lg overflow-hidden border border-white/10 shadow-2xl bg-zinc-800 group">
+  <!-- TAB CONTENT 2: MINGGUAN (MAJALAH EDITORIAL PEKANAN) -->
+  <div id="tab-content-mingguan" class="tab-pane hidden space-y-6">
+    <!-- Sub-Tab Navigation: Edisi Pekan Ini vs Semua Edisi (Tempo Style) -->
+    <div class="flex items-center gap-6 border-b pb-1 mb-6 font-mono text-xs" style="border-color: var(--border);">
+      <button 
+        id="subtab-btn-pekan-ini" 
+        class="subtab-btn pb-2 font-bold transition-all cursor-pointer border-b-2 border-emerald-500 text-emerald-400"
+        data-subtab="pekan-ini"
+      >
+        Edisi Pekan Ini
+      </button>
+      <button 
+        id="subtab-btn-semua-edisi" 
+        class="subtab-btn pb-2 font-medium transition-all cursor-pointer border-b-2 border-transparent hover:text-zinc-200" 
+        style="color: var(--text-muted);"
+        data-subtab="semua-edisi"
+      >
+        Semua Edisi ({editions.length})
+      </button>
+    </div>
+
+    <!-- SUB-TAB 1: EDISI PEKAN INI -->
+    <div id="subtab-content-pekan-ini" class="subtab-pane space-y-8">
+      {activeEdition ? (
+        <div>
+          <!-- Featured Magazine Banner -->
+          <div class="ship-card p-5 sm:p-7 rounded-2xl border bg-gradient-to-br from-zinc-900/90 via-zinc-900 to-zinc-950 text-white relative overflow-hidden shadow-xl" style="border-color: var(--border);">
+            <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start relative z-10">
+              <!-- Left: Magazine Cover Card (3:4 Ratio) -->
+              <div class="w-48 sm:w-56 shrink-0 aspect-[3/4] rounded-xl overflow-hidden shadow-2xl border border-zinc-700/60 bg-zinc-950 relative group">
                 <img 
                   src={activeEdition.coverImage || activeEdition.coverImageUrl || '/itsdvvn-web.jpg'} 
                   alt={activeEdition.title} 
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
-            </div>
 
-            <!-- Right: Edition Info & Main Story CTA -->
-            <div class="flex-1 flex flex-col justify-between self-stretch w-full min-w-0">
-              <div>
-                <div class="flex items-center gap-3 mb-3">
-                  <span class="px-2.5 py-1 rounded text-[11px] font-bold bg-rose-600 text-white font-mono tracking-wider uppercase whitespace-nowrap">
-                    Edisi Khusus
-                  </span>
-                  <span class="text-xs font-mono text-zinc-300">
-                    {activeEdition.editionNumber || formatDate(activeEdition.publishDate)}
-                  </span>
-                </div>
-
-                <h2 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white mb-3 leading-tight">
-                  {activeEdition.title}
-                </h2>
-
-                {activeEdition.summary && (
-                  <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed mb-6 whitespace-pre-line">
-                    {activeEdition.summary}
-                  </p>
-                )}
-
-                {coverStoryArticle && (
-                  <div class="pt-2">
-                    <a 
-                      href={`/writings/${coverStoryArticle.slug}`} 
-                      class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold bg-white hover:bg-zinc-200 text-zinc-950 transition-all shadow-md active:scale-95 w-full sm:w-auto text-center"
-                    >
-                      <span>Baca Laporan Utama</span>
-                      <span class="text-sm font-bold">→</span>
-                    </a>
+              <!-- Right: Edition Info & Main Story CTA -->
+              <div class="flex-1 flex flex-col justify-between self-stretch w-full min-w-0">
+                <div>
+                  <div class="flex items-center gap-3 mb-3">
+                    <span class="px-2.5 py-1 rounded text-[11px] font-bold bg-rose-600 text-white font-mono tracking-wider uppercase whitespace-nowrap">
+                      Edisi Khusus
+                    </span>
+                    <span class="text-xs font-mono text-zinc-300">
+                      {activeEdition.editionNumber || formatDate(activeEdition.publishDate)}
+                    </span>
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Articles Inside This Edition -->
-        {otherEditionArticles.length > 0 && (
-          <div class="mt-10">
-            <h3 class="section-tag mb-4">Laporan & Artikel Edisi Ini</h3>
-            <div class="divide-y border-y" style="border-color: var(--border);">
-              {otherEditionArticles.map((article) => {
-                const rawHero = article.heroImage || article.heroImageUrl;
-                const heroThumb = rawHero ? (rawHero.startsWith('http') ? rawHero : `${rawHero}?t=${Date.now()}`) : '';
+                  <h2 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white mb-3 leading-tight">
+                    {activeEdition.title}
+                  </h2>
 
-                return (
-                  <a 
-                    href={`/writings/${article.slug}`} 
-                    class="py-4.5 sm:py-5 flex flex-col sm:flex-row gap-4 items-start group transition-colors block hover:opacity-90"
-                  >
-                    {heroThumb && (
-                      <div class="w-full sm:w-32 sm:h-20 h-36 rounded overflow-hidden bg-zinc-900 shrink-0 border" style="border-color: var(--border);">
-                        <img 
-                          src={heroThumb} 
-                          alt={article.title} 
-                          class="w-full h-full object-cover group-hover:scale-105 transition-transform" 
-                          loading="lazy" 
-                          decoding="async" 
-                        />
-                      </div>
-                    )}
-                    <div class="flex-1 min-w-0">
-                      <span class="text-[11px] font-mono uppercase tracking-wider text-rose-500 font-semibold mb-1 block">
-                        {article.rubrik || article.category || 'Editorial'}
-                      </span>
-                      <h4 class="text-base font-semibold leading-snug mb-1.5 group-hover:text-emerald-400 transition-colors" style="color: var(--text-primary);">
-                        {article.title}
-                      </h4>
-                      {article.deck && (
-                        <p class="text-xs leading-relaxed line-clamp-2 mb-2" style="color: var(--text-secondary);">
-                          {article.deck}
-                        </p>
-                      )}
-                      <span class="text-xs font-medium text-rose-400 inline-flex items-center gap-1">
-                        Baca selengkapnya →
-                      </span>
+                  {activeEdition.summary && (
+                    <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed mb-6 whitespace-pre-line">
+                      {activeEdition.summary}
+                    </p>
+                  )}
+
+                  {coverStoryArticle && (
+                    <div class="pt-2">
+                      <a 
+                        href={`/writings/${coverStoryArticle.slug}`} 
+                        class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold bg-white hover:bg-zinc-200 text-zinc-950 transition-all shadow-md active:scale-95 w-full sm:w-auto text-center"
+                      >
+                        <span>Baca Laporan Utama</span>
+                        <span class="text-sm font-bold">→</span>
+                      </a>
                     </div>
-                  </a>
-                );
-              })}
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        )}
-      </div>
-    ) : (
-      <p class="text-xs italic py-4" style="color: var(--text-muted);">Belum ada Edisi Mingguan yang dibuat di CMS.</p>
-    )}
 
-    <!-- Past Editions Archive (Grid / Carousel) -->
-    {archiveEditions.length > 0 && (
-      <div class="mt-12 pt-8 border-t" style="border-color: var(--border);">
-        <h3 class="section-tag mb-4">Arsip Edisi Sebelumnya</h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {archiveEditions.map((ed) => (
-            <div class="ship-card p-3 flex flex-col justify-between">
-              <div class="aspect-[3/4] rounded overflow-hidden mb-2 bg-zinc-900 border" style="border-color: var(--border);">
-                <img 
-                  src={ed.coverImage || ed.coverImageUrl || '/itsdvvn-web.jpg'} 
-                  alt={ed.title} 
-                  class="w-full h-full object-cover" 
-                  loading="lazy" 
-                  decoding="async" 
-                />
-              </div>
-              <div>
-                <span class="text-[10px] font-mono text-zinc-500 block mb-1">{ed.editionNumber}</span>
-                <h5 class="text-xs font-semibold leading-tight line-clamp-2" style="color: var(--text-primary);">{ed.title}</h5>
+          <!-- Articles Inside This Edition -->
+          {otherEditionArticles.length > 0 && (
+            <div class="mt-10">
+              <h3 class="section-tag mb-4">Laporan & Artikel Edisi Ini</h3>
+              <div class="divide-y border-y" style="border-color: var(--border);">
+                {otherEditionArticles.map((article) => {
+                  const rawHero = article.heroImage || article.heroImageUrl;
+                  const heroThumb = rawHero ? (rawHero.startsWith('http') ? rawHero : `${rawHero}?t=${Date.now()}`) : '';
+
+                  return (
+                    <a 
+                      href={`/writings/${article.slug}`} 
+                      class="py-4.5 sm:py-5 flex flex-col sm:flex-row gap-4 items-start group transition-colors block hover:opacity-90"
+                    >
+                      {heroThumb && (
+                        <div class="w-full sm:w-32 sm:h-20 h-36 rounded overflow-hidden bg-zinc-900 shrink-0 border" style="border-color: var(--border);">
+                          <img 
+                            src={heroThumb} 
+                            alt={article.title} 
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                            loading="lazy" 
+                            decoding="async" 
+                          />
+                        </div>
+                      )}
+                      <div class="flex-1 min-w-0">
+                        <span class="text-[11px] font-mono uppercase tracking-wider text-rose-500 font-semibold mb-1 block">
+                          {article.rubrik || article.category || 'Editorial'}
+                        </span>
+                        <h4 class="text-base font-semibold leading-snug mb-1.5 group-hover:text-emerald-400 transition-colors" style="color: var(--text-primary);">
+                          {article.title}
+                        </h4>
+                        {article.deck && (
+                          <p class="text-xs leading-relaxed line-clamp-2 mb-2" style="color: var(--text-secondary);">
+                            {article.deck}
+                          </p>
+                        )}
+                        <span class="text-xs font-medium text-rose-400 inline-flex items-center gap-1">
+                          Baca selengkapnya →
+                        </span>
+                      </div>
+                    </a>
+                  );
+                })}
               </div>
             </div>
-          ))}
+          )}
         </div>
-      </div>
-    )}
+      ) : (
+        <p class="text-xs italic py-4" style="color: var(--text-muted);">Belum ada Edisi Mingguan yang dibuat di CMS.</p>
+      )}
+    </div>
+
+    <!-- SUB-TAB 2: SEMUA EDISI (KATALOG MAJALAH TERBAGI PER BULAN & TAHUN) -->
+    <div id="subtab-content-semua-edisi" class="subtab-pane hidden space-y-10">
+      {Array.from(editionsByMonth.entries()).map(([monthYear, editionList]) => (
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b pb-2" style="border-color: var(--border);">
+            <span class="text-xs font-bold font-mono tracking-wider text-emerald-500 uppercase">📅 {monthYear}</span>
+            <span class="text-[11px] font-mono" style="color: var(--text-muted);">({editionList.length} Edisi)</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {editionList.map((ed) => {
+              const artCount = getEditionArticleCount(ed.slug);
+              const isActive = activeEdition && activeEdition.slug === ed.slug;
+              const edCover = ed.coverImage || ed.coverImageUrl || '/itsdvvn-web.jpg';
+
+              return (
+                <a
+                  href={`/writings?edition=${ed.slug}#mingguan`}
+                  class={`ship-card p-4 rounded-xl border flex flex-col justify-between group transition-all block hover:border-emerald-500/50 ${isActive ? 'ring-2 ring-emerald-500/50 bg-emerald-500/5' : ''}`}
+                >
+                  <div>
+                    <!-- 3:4 Cover Aspect Ratio -->
+                    <div class="aspect-[3/4] rounded-lg overflow-hidden mb-3 bg-zinc-900 border shadow-md group-hover:shadow-xl transition-all relative" style="border-color: var(--border);">
+                      <img
+                        src={edCover}
+                        alt={ed.title}
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      {isActive && (
+                        <span class="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-emerald-500 text-zinc-950 shadow-md">
+                          SEDANG DIBACA
+                        </span>
+                      )}
+                    </div>
+
+                    <div class="space-y-1">
+                      <div class="flex items-center justify-between text-[11px] font-mono" style="color: var(--text-muted);">
+                        <span>{ed.editionNumber}</span>
+                        <span class="text-emerald-500 font-semibold">{artCount} Laporan</span>
+                      </div>
+                      <h4 class="text-sm font-bold leading-snug group-hover:text-emerald-400 transition-colors line-clamp-2" style="color: var(--text-primary);">
+                        {ed.title}
+                      </h4>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 pt-3 border-t flex items-center justify-between text-xs font-mono text-emerald-500 font-medium" style="border-color: var(--border);">
+                    <span>Lihat Edisi Ini</span>
+                    <span class="group-hover:translate-x-1 transition-transform">→</span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
   </div>
 </BaseLayout>
 
@@ -377,33 +503,60 @@ function formatDate(dateStr: string) {
   const contentHarian = document.getElementById('tab-content-harian');
   const contentMingguan = document.getElementById('tab-content-mingguan');
 
+  const subtabPekanIni = document.getElementById('subtab-btn-pekan-ini');
+  const subtabSemuaEdisi = document.getElementById('subtab-btn-semua-edisi');
+  const subcontentPekanIni = document.getElementById('subtab-content-pekan-ini');
+  const subcontentSemuaEdisi = document.getElementById('subtab-content-semua-edisi');
+
   function switchTab(activeTab) {
     if (activeTab === 'mingguan') {
-      tabMingguan.classList.add('border-emerald-500', 'text-emerald-400');
-      tabMingguan.classList.remove('border-transparent');
-      tabHarian.classList.remove('border-emerald-500', 'text-emerald-400');
-      tabHarian.classList.add('border-transparent');
+      tabMingguan?.classList.add('border-emerald-500', 'text-emerald-400');
+      tabMingguan?.classList.remove('border-transparent');
+      tabHarian?.classList.remove('border-emerald-500', 'text-emerald-400');
+      tabHarian?.classList.add('border-transparent');
 
-      contentHarian.classList.add('hidden');
-      contentMingguan.classList.remove('hidden');
-      if (history.replaceState) history.replaceState(null, '', '#mingguan');
+      contentHarian?.classList.add('hidden');
+      contentMingguan?.classList.remove('hidden');
     } else {
-      tabHarian.classList.add('border-emerald-500', 'text-emerald-400');
-      tabHarian.classList.remove('border-transparent');
-      tabMingguan.classList.remove('border-emerald-500', 'text-emerald-400');
-      tabMingguan.classList.add('border-transparent');
+      tabHarian?.classList.add('border-emerald-500', 'text-emerald-400');
+      tabHarian?.classList.remove('border-transparent');
+      tabMingguan?.classList.remove('border-emerald-500', 'text-emerald-400');
+      tabMingguan?.classList.add('border-transparent');
 
-      contentMingguan.classList.add('hidden');
-      contentHarian.classList.remove('hidden');
-      if (history.replaceState) history.replaceState(null, '', '#harian');
+      contentMingguan?.classList.add('hidden');
+      contentHarian?.classList.remove('hidden');
+    }
+  }
+
+  function switchSubtab(activeSub) {
+    if (activeSub === 'semua-edisi') {
+      subtabSemuaEdisi?.classList.add('border-emerald-500', 'text-emerald-400', 'font-bold');
+      subtabSemuaEdisi?.classList.remove('border-transparent');
+      subtabPekanIni?.classList.remove('border-emerald-500', 'text-emerald-400', 'font-bold');
+      subtabPekanIni?.classList.add('border-transparent');
+
+      subcontentPekanIni?.classList.add('hidden');
+      subcontentSemuaEdisi?.classList.remove('hidden');
+    } else {
+      subtabPekanIni?.classList.add('border-emerald-500', 'text-emerald-400', 'font-bold');
+      subtabPekanIni?.classList.remove('border-transparent');
+      subtabSemuaEdisi?.classList.remove('border-emerald-500', 'text-emerald-400', 'font-bold');
+      subtabSemuaEdisi?.classList.add('border-transparent');
+
+      subcontentSemuaEdisi?.classList.add('hidden');
+      subcontentPekanIni?.classList.remove('hidden');
     }
   }
 
   tabHarian?.addEventListener('click', () => switchTab('harian'));
   tabMingguan?.addEventListener('click', () => switchTab('mingguan'));
 
-  // Check URL Hash on load
-  if (window.location.hash === '#mingguan') {
+  subtabPekanIni?.addEventListener('click', () => switchSubtab('pekan-ini'));
+  subtabSemuaEdisi?.addEventListener('click', () => switchSubtab('semua-edisi'));
+
+  // Check URL Hash or Params on load
+  const urlParams = new URLSearchParams(window.location.search);
+  if (window.location.hash === '#mingguan' || urlParams.has('edition')) {
     switchTab('mingguan');
   }
 </script>

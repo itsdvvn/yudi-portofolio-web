@@ -45,8 +45,12 @@ const writingsCollection = defineCollection({
       draft: z.boolean().default(false),
       isLocked: z.boolean().default(false),
       password: z.string().optional().nullable(),
-      passwordClue: z.string().optional().nullable(),
       author: z.string().optional().nullable(),
+      correction: z.object({
+        hasCorrection: z.boolean().default(false),
+        correctionDate: z.string().optional().nullable(),
+        correctionContent: z.string().optional().nullable(),
+      }).optional().nullable(),
     }),
 });
 
