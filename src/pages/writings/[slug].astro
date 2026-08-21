@@ -194,6 +194,7 @@ if (!authorData) {
 
 const authorName = authorData?.name || 'dvvn';
 const authorBio = authorData?.bio || 'Visual storyteller, developer, and writer.';
+const authorEmail = authorData?.email || siteFooter?.email || 'itsdvvn@gmail.com';
 const rawAvatar = authorData?.avatar || authorData?.avatarUrl || '/itsdvvn-web.jpg';
 const avatarImg = rawAvatar.startsWith('http') ? rawAvatar : `${rawAvatar}?t=${Date.now()}`;
 const authorInstagram = authorData?.instagram || '';
@@ -622,7 +623,7 @@ const authorWebsite = authorData?.website || '';
           Menemukan kesalahan fakta atau kekeliruan data?
         </span>
         <a
-          href={`mailto:${siteFooter?.email || 'itsdvvn@gmail.com'}?subject=${encodeURIComponent(`Koreksi / Masukan Artikel: ${post.title}`)}`}
+          href={`mailto:${authorEmail}?subject=${encodeURIComponent(`Koreksi / Masukan Artikel: ${post.title}`)}`}
           class="inline-flex items-center gap-1.5 font-mono text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline shrink-0 font-medium group"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 transition-transform group-hover:translate-x-0.5">

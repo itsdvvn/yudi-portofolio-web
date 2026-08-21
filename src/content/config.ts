@@ -61,6 +61,7 @@ const authorsCollection = defineCollection({
     bio: z.string(),
     avatar: z.string().optional().nullable(),
     avatarUrl: z.string().optional().nullable(),
+    email: z.string().optional().nullable(),
     instagram: z.string().optional().nullable(),
     xTwitter: z.string().optional().nullable(),
     website: z.string().optional().nullable(),

@@ -160,6 +160,10 @@ export default config({
         avatarUrl: fields.text({
           label: 'Atau Avatar CDN / R2 URL (Opsional: https://media.itsdvvn.my.id/...)',
         }),
+        email: fields.text({
+          label: 'Alamat Email Penulis (Opsional)',
+          description: 'Digunakan untuk menerima koreksi / masukan pembaca jika artikel ini ditulis oleh Anda (misal: penulis@domain.com)',
+        }),
         instagram: fields.text({ label: 'Username / URL Instagram (Opsional)' }),
         xTwitter: fields.text({ label: 'Username / URL X / Twitter (Opsional)' }),
         website: fields.text({ label: 'Website Pribadi (Opsional)' }),
