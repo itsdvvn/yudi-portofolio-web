@@ -194,6 +194,7 @@ if (!authorData) {
 
 const authorName = authorData?.name || 'dvvn';
 const authorBio = authorData?.bio || 'Visual storyteller, developer, and writer.';
+const authorEmail = authorData?.email || siteFooter?.email || 'itsdvvn@gmail.com';
 const rawAvatar = authorData?.avatar || authorData?.avatarUrl || '/itsdvvn-web.jpg';
 const avatarImg = rawAvatar.startsWith('http') ? rawAvatar : `${rawAvatar}?t=${Date.now()}`;
 const authorInstagram = authorData?.instagram || '';
@@ -531,75 +532,94 @@ const authorWebsite = authorData?.website || '';
       </a>
     </div>
 
-    <!-- 7. Author Bio Card -->
-    <div class="mt-8 p-4 sm:p-5 rounded-xl border flex items-start gap-4 transition-all shadow-sm" style="background: var(--card-bg); border-color: var(--border);">
-      <a 
-        href={`/writings/author/${authorSlug}`} 
-        class="w-12 h-12 rounded-full overflow-hidden shrink-0 border block group transition-transform hover:scale-105" 
-        style="border-color: var(--border);"
-        title={`Lihat profil ${authorName}`}
-      >
-        <img 
-          src={avatarImg} 
-          alt={authorName} 
-          class="w-full h-full object-cover" 
-          loading="lazy"
-        />
-      </a>
-      <div class="min-w-0 flex-1">
-        <div class="flex items-center justify-between gap-2 flex-wrap mb-1">
-          <a 
-            href={`/writings/author/${authorSlug}`} 
-            class="text-sm font-semibold hover:text-emerald-500 transition-colors inline-flex items-center gap-1.5" 
-            style="color: var(--text-primary);"
-          >
-            <span>{authorName}</span>
-          </a>
-          <a 
-            href={`/writings/author/${authorSlug}`} 
-            class="text-[11px] font-mono text-emerald-500 hover:underline inline-flex items-center gap-0.5"
-          >
-            <span>Lihat semua tulisan</span>
-            <span>→</span>
-          </a>
-        </div>
-        <p class="text-xs leading-relaxed mb-2.5" style="color: var(--text-secondary);">
-          {authorBio}
-        </p>
-        {(authorInstagram || authorXTwitter || authorWebsite) && (
-          <div class="flex items-center gap-3.5 text-[11px] font-mono pt-1.5 border-t" style="border-color: var(--border); color: var(--text-muted);">
-            {authorInstagram && (
-              <a 
-                href={authorInstagram.startsWith('http') ? authorInstagram : `https://instagram.com/${authorInstagram.replace('@', '')}`} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="hover:text-emerald-500 transition-colors"
-              >
-                Instagram ↗
-              </a>
-            )}
-            {authorXTwitter && (
-              <a 
-                href={authorXTwitter.startsWith('http') ? authorXTwitter : `https://x.com/${authorXTwitter.replace('@', '')}`} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="hover:text-emerald-500 transition-colors"
-              >
-                X (Twitter) ↗
-              </a>
-            )}
-            {authorWebsite && (
-              <a 
-                href={authorWebsite} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="hover:text-emerald-500 transition-colors"
-              >
-                Website ↗
-              </a>
-            )}
+    <!-- 7. Author Bio & Editorial Correction Action (Unified Single Card) -->
+    <div class="mt-8 mb-8 rounded-xl border transition-all overflow-hidden" style="background: var(--card-bg); border-color: var(--border);">
+      <div class="p-4 sm:p-5 flex items-start gap-4">
+        <a 
+          href={`/writings/author/${authorSlug}`} 
+          class="w-12 h-12 rounded-full overflow-hidden shrink-0 border block group transition-transform hover:scale-105" 
+          style="border-color: var(--border);"
+          title={`Lihat profil ${authorName}`}
+        >
+          <img 
+            src={avatarImg} 
+            alt={authorName} 
+            class="w-full h-full object-cover" 
+            loading="lazy"
+          />
+        </a>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-2 flex-wrap mb-1">
+            <a 
+              href={`/writings/author/${authorSlug}`} 
+              class="text-sm font-semibold hover:text-emerald-500 transition-colors inline-flex items-center gap-1.5" 
+              style="color: var(--text-primary);"
+            >
+              <span>{authorName}</span>
+            </a>
+            <a 
+              href={`/writings/author/${authorSlug}`} 
+              class="text-[11px] font-mono text-emerald-500 hover:underline inline-flex items-center gap-0.5"
+            >
+              <span>Lihat semua tulisan</span>
+              <span>→</span>
+            </a>
           </div>
-        )}
+          <p class="text-xs leading-relaxed mb-2.5" style="color: var(--text-secondary);">
+            {authorBio}
+          </p>
+          {(authorInstagram || authorXTwitter || authorWebsite) && (
+            <div class="flex items-center gap-3.5 text-[11px] font-mono pt-1.5 border-t" style="border-color: var(--border); color: var(--text-muted);">
+              {authorInstagram && (
+                <a 
+                  href={authorInstagram.startsWith('http') ? authorInstagram : `https://instagram.com/${authorInstagram.replace('@', '')}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="hover:text-emerald-500 transition-colors"
+                >
+                  Instagram ↗
+                </a>
+              )}
+              {authorXTwitter && (
+                <a 
+                  href={authorXTwitter.startsWith('http') ? authorXTwitter : `https://x.com/${authorXTwitter.replace('@', '')}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="hover:text-emerald-500 transition-colors"
+                >
+                  X (Twitter) ↗
+                </a>
+              )}
+              {authorWebsite && (
+                <a 
+                  href={authorWebsite} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="hover:text-emerald-500 transition-colors"
+                >
+                  Website ↗
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- Integrated Reader Correction Action Bar -->
+      <div class="px-4 py-3 sm:px-5 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs bg-zinc-50/80 dark:bg-zinc-900/40" style="border-color: var(--border);">
+        <span class="text-zinc-600 dark:text-zinc-400 font-normal">
+          Menemukan kesalahan fakta atau kekeliruan data?
+        </span>
+        <a
+          href={`mailto:${authorEmail}?subject=${encodeURIComponent(`Koreksi / Masukan Artikel: ${post.title}`)}`}
+          class="inline-flex items-center gap-1.5 font-mono text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline shrink-0 font-medium group"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 transition-transform group-hover:translate-x-0.5">
+            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+          </svg>
+          <span>Bantu koreksi penulis →</span>
+        </a>
       </div>
     </div>
 
