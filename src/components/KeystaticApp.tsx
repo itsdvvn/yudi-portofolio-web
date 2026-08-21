@@ -87,7 +87,9 @@ export function KeystaticApp() {
           text.startsWith('jam rilis artikel') ||
           text.startsWith('jadwal rilis') ||
           text.startsWith('tanggal rilis') ||
-          text.startsWith('jam rilis')
+          text.startsWith('jam rilis') ||
+          text.startsWith('sudah pernah dirilis') ||
+          text.includes('hasbeenpublished')
         ) {
           // Cari container terdekat dari field tersebut
           const fieldBlock = (el.closest('[role="group"]') || el.closest('div[class*="css-"]') || el.parentElement?.parentElement || el.parentElement) as HTMLElement;
@@ -170,6 +172,24 @@ export function KeystaticApp() {
       }
     }
 
+    // Helper untuk sinkronisasi flag hasBeenPublished ke Keystatic
+    function syncHasBeenPublishedToKeystatic(isPublished: boolean) {
+      const allCheckboxes = Array.from(document.querySelectorAll('input[type="checkbox"]')) as HTMLInputElement[];
+      for (const cb of allCheckboxes) {
+        if (cb.closest('#wp-gutenberg-pre-publish-drawer')) continue;
+        const container = cb.closest('label') || cb.parentElement?.parentElement || cb.parentElement;
+        const text = (container?.textContent || '').toLowerCase();
+        if (text.includes('sudah pernah dirilis') || text.includes('hasbeenpublished')) {
+          if (cb.checked !== isPublished) {
+            cb.checked = isPublished;
+            cb.dispatchEvent(new Event('input', { bubbles: true }));
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+            cb.dispatchEvent(new Event('blur', { bubbles: true }));
+          }
+        }
+      }
+    }
+
     // State 2: Pemasangan WordPress Gutenberg Pre-Publish Panel & Update Button
     function setupWordPressPublishPanel() {
       // HANYA pasang tombol Publish/Update & Drawer pada artikel Writings & Majalah Editions
@@ -195,27 +215,6 @@ export function KeystaticApp() {
       mainBtn.style.position = 'absolute';
       mainBtn.style.zIndex = '-1';
 
-      // Cek apakah item sudah pernah dirilis (published)
-      function checkIsItemAlreadyPublished() {
-        if (!isEditItem) return false;
-        const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
-        for (const input of allInputs) {
-          const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
-          const text = (container?.textContent || '').toLowerCase();
-          if (text.includes('tanggal rilis') || text.includes('jadwal rilis')) {
-            const val = input.value;
-            if (val) {
-              const pubDate = new Date(val);
-              const now = new Date();
-              return pubDate.getTime() <= now.getTime() + 86400000;
-            }
-          }
-        }
-        return isEditItem;
-      }
-
-      const isPublishedItem = isEditItem && checkIsItemAlreadyPublished();
-
       // Cek apakah form saat ini mencentang opsi Draft
       function checkIsDraftChecked(): boolean {
         const allCheckboxes = Array.from(document.querySelectorAll('input[type="checkbox"]')) as HTMLInputElement[];
@@ -227,6 +226,39 @@ export function KeystaticApp() {
           }
         }
         return false;
+      }
+
+      // Cek apakah item sudah pernah dirilis secara resmi (bukan draft baru)
+      function checkIsItemAlreadyPublished() {
+        if (!isEditItem) return false;
+        
+        // 1. Cek langsung checkbox hasBeenPublished di form
+        const allCheckboxes = Array.from(document.querySelectorAll('input[type="checkbox"]')) as HTMLInputElement[];
+        for (const cb of allCheckboxes) {
+          const container = cb.closest('label') || cb.parentElement?.parentElement || cb.parentElement;
+          const text = (container?.textContent || '').toLowerCase();
+          if (text.includes('sudah pernah dirilis') || text.includes('hasbeenpublished')) {
+            return cb.checked;
+          }
+        }
+
+        // 2. Jika field hasBeenPublished belum ada pada artikel legacy, cek apakah ada updatedDate/updatedTime
+        const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
+        for (const input of allInputs) {
+          const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
+          const text = (container?.textContent || '').toLowerCase();
+          if (text.includes('terakhir diperbarui') || text.includes('updateddate')) {
+            if (input.value) return true;
+          }
+        }
+
+        return false;
+      }
+
+      function getIsPublishedItem(): boolean {
+        const isDraft = checkIsDraftChecked();
+        if (isDraft) return false;
+        return isEditItem && checkIsItemAlreadyPublished();
       }
 
       // Buat tombol pengganti "Publish…", "Update", atau "Save Draft"
@@ -249,13 +281,15 @@ export function KeystaticApp() {
 
       function updateWpTriggerBtnState() {
         const isDraft = checkIsDraftChecked();
+        const isPublished = getIsPublishedItem();
+
         if (isDraft) {
           wpTriggerBtn.textContent = 'Save Draft';
           wpTriggerBtn.style.backgroundColor = '#4b5563';
           wpTriggerBtn.style.border = '1px solid #4b5563';
           wpTriggerBtn.onmouseover = () => { wpTriggerBtn.style.backgroundColor = '#374151'; };
           wpTriggerBtn.onmouseout = () => { wpTriggerBtn.style.backgroundColor = '#4b5563'; };
-        } else if (isPublishedItem) {
+        } else if (isPublished) {
           wpTriggerBtn.textContent = 'Update';
           wpTriggerBtn.style.backgroundColor = '#059669';
           wpTriggerBtn.style.border = '1px solid #059669';
@@ -561,6 +595,7 @@ export function KeystaticApp() {
 
       function openDrawer() {
         const { existingDate, existingTime } = getExistingPublishDateTime();
+        const isPublished = getIsPublishedItem();
         
         if (pubDateBadge) {
           pubDateBadge.textContent = existingDate ? `${existingDate} ${existingTime ? existingTime + ' WIB' : ''}` : 'Published';
@@ -577,7 +612,7 @@ export function KeystaticApp() {
         if (isWeekly) {
           if (weeklyNotice) weeklyNotice.style.display = 'block';
           if (scheduleSec) scheduleSec.style.display = 'none';
-          submitBtn.textContent = isPublishedItem ? 'Update in Edition' : 'Publish to Edition';
+          submitBtn.textContent = isPublished ? 'Update in Edition' : 'Publish to Edition';
           submitBtn.style.backgroundColor = '#10b981';
         } else {
           if (weeklyNotice) weeklyNotice.style.display = 'none';
@@ -594,6 +629,7 @@ export function KeystaticApp() {
 
       function updateButtonMorph() {
         if (!datePicker || !timePicker) return;
+        const isPublished = getIsPublishedItem();
         const dateVal = datePicker.value || currentIsoDate;
         const timeVal = timePicker.value || `${currentHh}:${currentMm}`;
         const combinedIso = `${dateVal}T${timeVal}`;
@@ -601,7 +637,7 @@ export function KeystaticApp() {
         const currentNow = new Date();
         const isFuture = selectedDate.getTime() > currentNow.getTime() + 60000;
 
-        if (isPublishedItem) {
+        if (isPublished) {
           submitBtn.textContent = 'Update';
           submitBtn.style.backgroundColor = '#059669';
         } else if (isFuture) {
@@ -617,25 +653,32 @@ export function KeystaticApp() {
 
       datePicker?.addEventListener('change', () => {
         updateButtonMorph();
-        if (!isPublishedItem) syncDateToKeystatic(datePicker.value, timePicker?.value);
+        const isPublished = getIsPublishedItem();
+        if (!isPublished) syncDateToKeystatic(datePicker.value, timePicker?.value);
       });
       datePicker?.addEventListener('input', () => {
         updateButtonMorph();
-        if (!isPublishedItem) syncDateToKeystatic(datePicker.value, timePicker?.value);
+        const isPublished = getIsPublishedItem();
+        if (!isPublished) syncDateToKeystatic(datePicker.value, timePicker?.value);
       });
       timePicker?.addEventListener('change', () => {
         updateButtonMorph();
-        if (!isPublishedItem) syncDateToKeystatic(datePicker?.value, timePicker.value);
+        const isPublished = getIsPublishedItem();
+        if (!isPublished) syncDateToKeystatic(datePicker?.value, timePicker.value);
       });
       timePicker?.addEventListener('input', () => {
         updateButtonMorph();
-        if (!isPublishedItem) syncDateToKeystatic(datePicker?.value, timePicker.value);
+        const isPublished = getIsPublishedItem();
+        if (!isPublished) syncDateToKeystatic(datePicker?.value, timePicker.value);
       });
 
       wpTriggerBtn.addEventListener('click', () => {
         if (checkIsDraftChecked()) {
-          // Mode Draft: Simpan langsung tanpa perlu membuka drawer jadwal rilis publik
-          mainBtn.click();
+          // Mode Draft: Pastikan hasBeenPublished = false dan simpan langsung ke server
+          syncHasBeenPublishedToKeystatic(false);
+          setTimeout(() => {
+            mainBtn.click();
+          }, 50);
           return;
         }
         openDrawer();
@@ -654,7 +697,8 @@ export function KeystaticApp() {
         if (datePicker) datePicker.value = dIso;
         if (timePicker) timePicker.value = timeNow;
         updateButtonMorph();
-        if (!isPublishedItem) syncDateToKeystatic(dIso, timeNow);
+        const isPublished = getIsPublishedItem();
+        if (!isPublished) syncDateToKeystatic(dIso, timeNow);
       });
 
       submitBtn?.addEventListener('click', () => {
@@ -665,8 +709,12 @@ export function KeystaticApp() {
         const mm = String(n.getMinutes()).padStart(2, '0');
         const todayIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
         const timeNow = `${hh}:${mm}`;
+        const isPublished = getIsPublishedItem();
 
-        if (!isPublishedItem) {
+        // Tandai bahwa konten resmi diterbitkan
+        syncHasBeenPublishedToKeystatic(true);
+
+        if (!isPublished) {
           // Artikel Baru: Terapkan tanggal & jam rilis awal
           const dateVal = datePicker?.value || currentIsoDate;
           const timeVal = timePicker?.value || `${currentHh}:${currentMm}`;

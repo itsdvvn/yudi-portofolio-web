@@ -275,6 +275,11 @@ export default config({
           label: 'Draft (Sembunyikan dari publik)',
           defaultValue: false,
         }),
+        hasBeenPublished: fields.checkbox({
+          label: 'Sudah Pernah Dirilis (Status Publikasi)',
+          description: 'Otomatis aktif saat edisi ini diterbitkan melalui tombol Publish/Schedule',
+          defaultValue: false,
+        }),
       },
     }),
     writings: collection({
@@ -402,6 +407,11 @@ export default config({
           }),
         }),
         draft: fields.checkbox({ label: 'Draft', defaultValue: false }),
+        hasBeenPublished: fields.checkbox({
+          label: 'Sudah Pernah Dirilis (Status Publikasi)',
+          description: 'Otomatis aktif saat artikel ini diterbitkan melalui tombol Publish/Schedule',
+          defaultValue: false,
+        }),
         isLocked: fields.checkbox({
           label: '🔒 Kunci Artikel Ini (Password Protected)',
           description: 'Aktifkan jika artikel ini bersifat privat dan pembaca wajib memasukkan kata sandi',
