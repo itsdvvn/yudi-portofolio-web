@@ -232,43 +232,32 @@ const authorWebsite = authorData?.website || '';
       </p>
     )}
 
-    <!-- 4. Publication Date, Author, Updated Date & Read Time -->
-    <div class="mb-6 space-y-1.5 font-mono text-xs">
-      <div class="flex items-center flex-wrap gap-x-2.5 gap-y-1 text-zinc-500 dark:text-zinc-400">
-        <a 
-          href={`/writings/author/${authorSlug}`} 
-          class="inline-flex items-center gap-1.5 font-medium hover:text-emerald-500 transition-colors shrink-0" 
-          style="color: var(--text-primary);"
-        >
-          <span class="w-4 h-4 rounded-full overflow-hidden inline-block shrink-0 border" style="border-color: var(--border);">
-            <img src={avatarImg} alt={authorName} class="w-full h-full object-cover" />
+    <!-- 4. Publication Date, Author, Read Time & Lock Status -->
+    <div class="flex items-center flex-wrap gap-x-2.5 gap-y-1.5 text-xs font-mono mb-6" style="color: var(--text-muted);">
+      <a 
+        href={`/writings/author/${authorSlug}`} 
+        class="inline-flex items-center gap-1.5 font-medium hover:text-emerald-500 transition-colors shrink-0" 
+        style="color: var(--text-primary);"
+      >
+        <span class="w-4 h-4 rounded-full overflow-hidden inline-block shrink-0 border" style="border-color: var(--border);">
+          <img src={avatarImg} alt={authorName} class="w-full h-full object-cover" />
+        </span>
+        <span>{authorName}</span>
+      </a>
+
+      <span class="opacity-30">•</span>
+      <span class="shrink-0">{formatDate(post.publishDate)}</span>
+
+      <span class="opacity-30">•</span>
+      <span class="shrink-0">{computedReadTime || post.readTime || '1 min read'}</span>
+
+      {isLocked && (
+        <>
+          <span class="opacity-30">•</span>
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+            🔒 Terkunci
           </span>
-          <span>{authorName}</span>
-        </a>
-
-        <span class="opacity-30">•</span>
-        <span class="shrink-0">{formatDate(post.publishDate)}</span>
-
-        <span class="opacity-30">•</span>
-        <span class="shrink-0">{computedReadTime || post.readTime || '1 min read'}</span>
-
-        {isLocked && (
-          <>
-            <span class="opacity-30">•</span>
-            <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
-              🔒 Terkunci
-            </span>
-          </>
-        )}
-      </div>
-
-      {post.updatedDate && (
-        <div class="flex items-center gap-1.5 text-[11px] text-zinc-400 dark:text-zinc-500 pt-0.5">
-          <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/80 shrink-0"></span>
-          <span>
-            Diperbarui: {formatDate(post.updatedDate)}{post.updatedTime ? `, ${post.updatedTime} WIB` : ''}
-          </span>
-        </div>
+        </>
       )}
     </div>
 
@@ -497,6 +486,16 @@ const authorWebsite = authorData?.website || '';
           </div>
         </div>
       </section>
+    )}
+
+    <!-- Editorial Revision Footnote (Red Dot) -->
+    {post.updatedDate && (
+      <div class="mt-8 pt-4 border-t flex items-center gap-2 text-xs font-mono text-zinc-500 dark:text-zinc-400" style="border-color: var(--border);">
+        <span class="inline-block w-2 h-2 rounded-full bg-rose-500 shrink-0 shadow-sm"></span>
+        <span>
+          Artikel ini diperbarui pada {formatDate(post.updatedDate)}{post.updatedTime ? `, ${post.updatedTime} WIB` : ''}.
+        </span>
+      </div>
     )}
 
     <!-- 6. Share & Actions Footer -->
