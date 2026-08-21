@@ -207,7 +207,7 @@ export function KeystaticApp() {
             if (val) {
               const pubDate = new Date(val);
               const now = new Date();
-              return pubDate.getTime() <= now.getTime() + 86400000; // toleransi hari ini
+              return pubDate.getTime() <= now.getTime() + 86400000;
             }
           }
         }
@@ -216,19 +216,29 @@ export function KeystaticApp() {
 
       const isPublishedItem = isEditItem && checkIsItemAlreadyPublished();
 
-      // Buat tombol pengganti "Publish…" atau "Update"
+      // Cek apakah form saat ini mencentang opsi Draft
+      function checkIsDraftChecked(): boolean {
+        const allCheckboxes = Array.from(document.querySelectorAll('input[type="checkbox"]')) as HTMLInputElement[];
+        for (const cb of allCheckboxes) {
+          const container = cb.closest('label') || cb.parentElement?.parentElement || cb.parentElement;
+          const text = (container?.textContent || '').toLowerCase();
+          if (text.includes('draft')) {
+            return cb.checked;
+          }
+        }
+        return false;
+      }
+
+      // Buat tombol pengganti "Publish…", "Update", atau "Save Draft"
       const wpTriggerBtn = document.createElement('button');
       wpTriggerBtn.type = 'button';
       wpTriggerBtn.dataset.isWpTrigger = 'true';
-      wpTriggerBtn.textContent = isPublishedItem ? 'Update' : 'Publish…';
       wpTriggerBtn.style.cssText = `
-        background-color: ${isPublishedItem ? '#059669' : '#007cba'};
         color: #ffffff;
         font-weight: 600;
         font-size: 13px;
         padding: 7px 18px;
         border-radius: 4px;
-        border: 1px solid ${isPublishedItem ? '#059669' : '#007cba'};
         cursor: pointer;
         display: inline-flex;
         align-items: center;
@@ -236,12 +246,39 @@ export function KeystaticApp() {
         box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         transition: all 0.15s ease;
       `;
-      wpTriggerBtn.onmouseover = () => { 
-        wpTriggerBtn.style.backgroundColor = isPublishedItem ? '#047857' : '#006ba1'; 
-      };
-      wpTriggerBtn.onmouseout = () => { 
-        wpTriggerBtn.style.backgroundColor = isPublishedItem ? '#059669' : '#007cba'; 
-      };
+
+      function updateWpTriggerBtnState() {
+        const isDraft = checkIsDraftChecked();
+        if (isDraft) {
+          wpTriggerBtn.textContent = 'Save Draft';
+          wpTriggerBtn.style.backgroundColor = '#4b5563';
+          wpTriggerBtn.style.border = '1px solid #4b5563';
+          wpTriggerBtn.onmouseover = () => { wpTriggerBtn.style.backgroundColor = '#374151'; };
+          wpTriggerBtn.onmouseout = () => { wpTriggerBtn.style.backgroundColor = '#4b5563'; };
+        } else if (isPublishedItem) {
+          wpTriggerBtn.textContent = 'Update';
+          wpTriggerBtn.style.backgroundColor = '#059669';
+          wpTriggerBtn.style.border = '1px solid #059669';
+          wpTriggerBtn.onmouseover = () => { wpTriggerBtn.style.backgroundColor = '#047857'; };
+          wpTriggerBtn.onmouseout = () => { wpTriggerBtn.style.backgroundColor = '#059669'; };
+        } else {
+          wpTriggerBtn.textContent = 'Publish…';
+          wpTriggerBtn.style.backgroundColor = '#007cba';
+          wpTriggerBtn.style.border = '1px solid #007cba';
+          wpTriggerBtn.onmouseover = () => { wpTriggerBtn.style.backgroundColor = '#006ba1'; };
+          wpTriggerBtn.onmouseout = () => { wpTriggerBtn.style.backgroundColor = '#007cba'; };
+        }
+      }
+
+      updateWpTriggerBtnState();
+
+      // Pasang listener jika user mencentang/uncheck Draft
+      document.addEventListener('change', () => {
+        updateWpTriggerBtnState();
+      });
+      document.addEventListener('click', () => {
+        setTimeout(updateWpTriggerBtnState, 50);
+      });
 
       mainBtn.parentElement?.appendChild(wpTriggerBtn);
 
@@ -596,6 +633,11 @@ export function KeystaticApp() {
       });
 
       wpTriggerBtn.addEventListener('click', () => {
+        if (checkIsDraftChecked()) {
+          // Mode Draft: Simpan langsung tanpa perlu membuka drawer jadwal rilis publik
+          mainBtn.click();
+          return;
+        }
         openDrawer();
       });
 
