@@ -354,14 +354,9 @@ const authorWebsite = authorData?.website || '';
 
     <!-- Catatan Koreksi & Hak Jawab Section (Left Accent Border, No Box/Emoji) -->
     {post.correction?.hasCorrection && post.correction?.correctionContent && (
-      <div id="article-correction-box" class={`my-6 pl-4 border-l-2 border-amber-500/80 text-xs leading-relaxed ${isLocked ? 'hidden' : ''}`}>
-        <div class="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-amber-500 dark:text-amber-400 mb-1">
-          <span>Catatan Koreksi & Hak Jawab</span>
-          {post.correction.correctionDate && (
-            <span class="text-zinc-500 dark:text-zinc-400 font-normal">
-              ({post.correction.correctionDate})
-            </span>
-          )}
+      <div id="article-correction-box" class={`my-4 pl-3.5 border-l-2 border-amber-500/80 text-xs leading-relaxed ${isLocked ? 'hidden' : ''}`}>
+        <div class="font-mono text-[11px] font-semibold text-amber-500 dark:text-amber-400 mb-1">
+          Catatan Koreksi & Hak Jawab:
         </div>
         <p class="whitespace-pre-line text-zinc-700 dark:text-zinc-300 font-sans leading-relaxed">
           {post.correction.correctionContent}
