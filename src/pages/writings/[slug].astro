@@ -352,14 +352,13 @@ const authorWebsite = authorData?.website || '';
       </div>
     )}
 
-    <!-- 📌 Catatan Koreksi & Hak Jawab Section (Hanya muncul jika diaktifkan di CMS) -->
+    <!-- Catatan Koreksi & Hak Jawab Section (Left Accent Border, No Box/Emoji) -->
     {post.correction?.hasCorrection && post.correction?.correctionContent && (
-      <div id="article-correction-box" class={`my-6 p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 text-xs leading-relaxed text-zinc-800 dark:text-zinc-200 ${isLocked ? 'hidden' : ''}`}>
-        <div class="flex items-center gap-2 font-mono font-bold text-amber-700 dark:text-amber-400 mb-1.5">
-          <span>📌</span>
+      <div id="article-correction-box" class={`my-6 pl-4 border-l-2 border-amber-500/80 text-xs leading-relaxed ${isLocked ? 'hidden' : ''}`}>
+        <div class="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-amber-500 dark:text-amber-400 mb-1">
           <span>Catatan Koreksi & Hak Jawab</span>
           {post.correction.correctionDate && (
-            <span class="text-[11px] font-normal text-zinc-500 dark:text-zinc-400">
+            <span class="text-zinc-500 dark:text-zinc-400 font-normal">
               ({post.correction.correctionDate})
             </span>
           )}
@@ -549,100 +548,93 @@ const authorWebsite = authorData?.website || '';
       </a>
     </div>
 
-    <!-- 7. Author Bio Card -->
-    <div class="mt-8 p-4 sm:p-5 rounded-xl border flex items-start gap-4 transition-all shadow-sm" style="background: var(--card-bg); border-color: var(--border);">
-      <a 
-        href={`/writings/author/${authorSlug}`} 
-        class="w-12 h-12 rounded-full overflow-hidden shrink-0 border block group transition-transform hover:scale-105" 
-        style="border-color: var(--border);"
-        title={`Lihat profil ${authorName}`}
-      >
-        <img 
-          src={avatarImg} 
-          alt={authorName} 
-          class="w-full h-full object-cover" 
-          loading="lazy"
-        />
-      </a>
-      <div class="min-w-0 flex-1">
-        <div class="flex items-center justify-between gap-2 flex-wrap mb-1">
-          <a 
-            href={`/writings/author/${authorSlug}`} 
-            class="text-sm font-semibold hover:text-emerald-500 transition-colors inline-flex items-center gap-1.5" 
-            style="color: var(--text-primary);"
-          >
-            <span>{authorName}</span>
-          </a>
-          <a 
-            href={`/writings/author/${authorSlug}`} 
-            class="text-[11px] font-mono text-emerald-500 hover:underline inline-flex items-center gap-0.5"
-          >
-            <span>Lihat semua tulisan</span>
-            <span>→</span>
-          </a>
-        </div>
-        <p class="text-xs leading-relaxed mb-2.5" style="color: var(--text-secondary);">
-          {authorBio}
-        </p>
-        {(authorInstagram || authorXTwitter || authorWebsite) && (
-          <div class="flex items-center gap-3.5 text-[11px] font-mono pt-1.5 border-t" style="border-color: var(--border); color: var(--text-muted);">
-            {authorInstagram && (
-              <a 
-                href={authorInstagram.startsWith('http') ? authorInstagram : `https://instagram.com/${authorInstagram.replace('@', '')}`} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="hover:text-emerald-500 transition-colors"
-              >
-                Instagram ↗
-              </a>
-            )}
-            {authorXTwitter && (
-              <a 
-                href={authorXTwitter.startsWith('http') ? authorXTwitter : `https://x.com/${authorXTwitter.replace('@', '')}`} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="hover:text-emerald-500 transition-colors"
-              >
-                X (Twitter) ↗
-              </a>
-            )}
-            {authorWebsite && (
-              <a 
-                href={authorWebsite} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="hover:text-emerald-500 transition-colors"
-              >
-                Website ↗
-              </a>
-            )}
+    <!-- 7. Author Bio & Editorial Correction Action (Unified Single Card) -->
+    <div class="mt-8 mb-8 rounded-xl border transition-all overflow-hidden" style="background: var(--card-bg); border-color: var(--border);">
+      <div class="p-4 sm:p-5 flex items-start gap-4">
+        <a 
+          href={`/writings/author/${authorSlug}`} 
+          class="w-12 h-12 rounded-full overflow-hidden shrink-0 border block group transition-transform hover:scale-105" 
+          style="border-color: var(--border);"
+          title={`Lihat profil ${authorName}`}
+        >
+          <img 
+            src={avatarImg} 
+            alt={authorName} 
+            class="w-full h-full object-cover" 
+            loading="lazy"
+          />
+        </a>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-2 flex-wrap mb-1">
+            <a 
+              href={`/writings/author/${authorSlug}`} 
+              class="text-sm font-semibold hover:text-emerald-500 transition-colors inline-flex items-center gap-1.5" 
+              style="color: var(--text-primary);"
+            >
+              <span>{authorName}</span>
+            </a>
+            <a 
+              href={`/writings/author/${authorSlug}`} 
+              class="text-[11px] font-mono text-emerald-500 hover:underline inline-flex items-center gap-0.5"
+            >
+              <span>Lihat semua tulisan</span>
+              <span>→</span>
+            </a>
           </div>
-        )}
-      </div>
-    </div>
-
-    <!-- ✉️ Box "Bantu Memperbaiki Tulisan Ini" (Feedback Email Ke Penulis) -->
-    <div class="mt-6 mb-8 p-4 sm:p-4.5 rounded-xl border transition-all" style="background: var(--card-bg); border-color: var(--border);">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
-        <div class="space-y-1 min-w-0">
-          <div class="flex items-center gap-2 text-xs font-mono font-semibold" style="color: var(--text-primary);">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
-            <span>Bantu Memperbaiki Tulisan Ini</span>
-          </div>
-          <p class="text-xs leading-relaxed" style="color: var(--text-secondary);">
-            Saya tak luput dari kesalahan fakta atau kekeliruan penulisan. Jika ada data yang kurang tepat atau perlu diluruskan, silakan beri tahu saya.
+          <p class="text-xs leading-relaxed mb-2.5" style="color: var(--text-secondary);">
+            {authorBio}
           </p>
+          {(authorInstagram || authorXTwitter || authorWebsite) && (
+            <div class="flex items-center gap-3.5 text-[11px] font-mono pt-1.5 border-t" style="border-color: var(--border); color: var(--text-muted);">
+              {authorInstagram && (
+                <a 
+                  href={authorInstagram.startsWith('http') ? authorInstagram : `https://instagram.com/${authorInstagram.replace('@', '')}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="hover:text-emerald-500 transition-colors"
+                >
+                  Instagram ↗
+                </a>
+              )}
+              {authorXTwitter && (
+                <a 
+                  href={authorXTwitter.startsWith('http') ? authorXTwitter : `https://x.com/${authorXTwitter.replace('@', '')}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="hover:text-emerald-500 transition-colors"
+                >
+                  X (Twitter) ↗
+                </a>
+              )}
+              {authorWebsite && (
+                <a 
+                  href={authorWebsite} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="hover:text-emerald-500 transition-colors"
+                >
+                  Website ↗
+                </a>
+              )}
+            </div>
+          )}
         </div>
+      </div>
+
+      <!-- Integrated Reader Correction Action Bar -->
+      <div class="px-4 py-3 sm:px-5 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs" style="border-color: var(--border); background: rgba(0,0,0,0.12);">
+        <span style="color: var(--text-muted);">
+          Menemukan kesalahan fakta atau kekeliruan data?
+        </span>
         <a
           href={`mailto:${siteFooter?.email || 'itsdvvn@gmail.com'}?subject=${encodeURIComponent(`Koreksi / Masukan Artikel: ${post.title}`)}`}
-          class="shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all group hover:border-emerald-500/50 hover:bg-emerald-500/10 text-emerald-400"
-          style="border-color: var(--border);"
+          class="inline-flex items-center gap-1.5 font-mono text-[11px] text-emerald-400 hover:underline shrink-0 font-medium"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 transition-transform group-hover:scale-110">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
             <rect width="20" height="16" x="2" y="4" rx="2"></rect>
             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
           </svg>
-          <span>Kirim Koreksi</span>
+          <span>Bantu koreksi penulis →</span>
         </a>
       </div>
     </div>
