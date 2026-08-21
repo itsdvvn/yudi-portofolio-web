@@ -219,7 +219,7 @@ export default config({
       slugField: 'title',
       path: 'src/content/editions/*',
       format: { data: 'json' },
-      columns: ['title', 'publishDate', 'publishTime'],
+      columns: ['title', 'publishDate', 'publishTime', 'draft'],
       schema: {
         title: fields.slug({ 
           name: { 
@@ -287,7 +287,7 @@ export default config({
       slugField: 'title',
       path: 'src/content/writings/*',
       format: { contentField: 'content' },
-      columns: ['title', 'category', 'publishDate', 'publishTime'],
+      columns: ['title', 'category', 'publishDate', 'publishTime', 'draft'],
       schema: {
         title: fields.slug({ 
           name: { 

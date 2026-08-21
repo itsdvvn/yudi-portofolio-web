@@ -752,10 +752,16 @@ export function KeystaticApp() {
         const cells = Array.from(row.querySelectorAll('[role="gridcell"], [role="rowheader"], td')) as HTMLElement[];
         if (cells.length === 0) return;
 
-        // Baca tanggal (YYYY-MM-DD) dan jam (HH:mm) dari teks seluruh baris tabel
+        // Baca tanggal (YYYY-MM-DD), jam (HH:mm), dan indikator Draft dari teks seluruh baris tabel
         const rowText = cells.map(c => c.textContent || '').join(' ');
         const dateMatch = rowText.match(/\b\d{4}-\d{2}-\d{2}\b/);
         const timeMatch = rowText.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/);
+
+        // Deteksi apakah baris ini memiliki flag draft (true / yes / Draft)
+        const isDraftRow = cells.some((c) => {
+          const text = (c.textContent || '').trim().toLowerCase();
+          return text === 'true' || text === 'yes' || text === 'draft';
+        }) || rowText.toLowerCase().includes(' draft ') || rowText.toLowerCase().endsWith(' draft');
 
         let isFuture = false;
         if (dateMatch) {
@@ -792,8 +798,13 @@ export function KeystaticApp() {
           firstCell.appendChild(badge);
         }
 
-        // Update status badge secara reaktif setiap detik/interval
-        if (isFuture) {
+        // Update status badge secara reaktif: DRAFT vs SCHEDULED vs PUBLISHED
+        if (isDraftRow) {
+          badge.textContent = '📝 DRAFT';
+          badge.style.backgroundColor = '#f3f4f6';
+          badge.style.color = '#4b5563';
+          badge.style.border = '1px solid #d1d5db';
+        } else if (isFuture) {
           badge.textContent = '⏰ SCHEDULED';
           badge.style.backgroundColor = '#ede9fe';
           badge.style.color = '#6d28d9';
