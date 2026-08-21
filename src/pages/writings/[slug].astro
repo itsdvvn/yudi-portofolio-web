@@ -621,24 +621,26 @@ const authorWebsite = authorData?.website || '';
       </div>
     </div>
 
-    <!-- ✉️ Box "Bantu Saya Memperbaiki Tulisan Ini" (Feedback Email Ke Penulis) -->
-    <div class="mt-6 mb-8 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/60 backdrop-blur-sm transition-all shadow-sm">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div class="space-y-1.5 max-w-xl">
-          <div class="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100 font-mono">
-            <span class="text-emerald-600 dark:text-emerald-400">💡</span>
-            <span>Bantu Saya Memperbaiki Tulisan Ini</span>
+    <!-- ✉️ Box "Bantu Memperbaiki Tulisan Ini" (Feedback Email Ke Penulis) -->
+    <div class="mt-6 mb-8 p-4 sm:p-4.5 rounded-xl border transition-all" style="background: var(--card-bg); border-color: var(--border);">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
+        <div class="space-y-1 min-w-0">
+          <div class="flex items-center gap-2 text-xs font-mono font-semibold" style="color: var(--text-primary);">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
+            <span>Bantu Memperbaiki Tulisan Ini</span>
           </div>
-          <p class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            Saya tak luput dari kesalahan fakta atau kekeliruan penulisan. Jika ada data yang kurang tepat atau perlu diluruskan, silakan beri tahu saya secara langsung.
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary);">
+            Saya tak luput dari kesalahan fakta atau kekeliruan penulisan. Jika ada data yang kurang tepat atau perlu diluruskan, silakan beri tahu saya.
           </p>
         </div>
         <a
-          href={`mailto:${siteFooter.email || 'itsdvvn@gmail.com'}?subject=${encodeURIComponent(`Koreksi / Masukan Artikel: ${post.title}`)}`}
-          class="shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold font-mono transition-all shadow-sm group"
+          href={`mailto:${siteFooter?.email || 'itsdvvn@gmail.com'}?subject=${encodeURIComponent(`Koreksi / Masukan Artikel: ${post.title}`)}`}
+          class="shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all group hover:border-emerald-500/50 hover:bg-emerald-500/10 text-emerald-400"
+          style="border-color: var(--border);"
         >
-          <svg class="w-4 h-4 text-emerald-400 dark:text-emerald-600 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 002 2v10a2 2 0 002 2z" />
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 transition-transform group-hover:scale-110">
+            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
           </svg>
           <span>Kirim Koreksi</span>
         </a>
