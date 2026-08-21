@@ -153,12 +153,14 @@ export default config({
           validation: { isRequired: true },
         }),
         avatar: fields.image({
-          label: 'Foto Profil / Avatar (Pilih / Upload File)',
+          label: 'Foto Profil / Avatar (Persegi 1:1)',
+          description: 'Rekomendasi ukuran: 400 x 400 px atau 500 x 500 px (Format JPG/PNG/WebP, rasio persegi 1:1).',
           directory: 'public/images/authors',
           publicPath: '/media/authors/',
         }),
         avatarUrl: fields.text({
-          label: 'Atau Avatar CDN / R2 URL (Opsional: https://media.itsdvvn.my.id/...)',
+          label: 'Atau Avatar CDN / R2 URL',
+          description: 'Rekomendasi rasio foto persegi 1:1 (contoh: https://media.itsdvvn.my.id/..., 400x400 px).',
         }),
         email: fields.text({
           label: 'Alamat Email Penulis (Opsional)',
@@ -252,12 +254,14 @@ export default config({
           }
         }),
         coverImage: fields.image({
-          label: 'Cover Gambar Edisi',
+          label: 'Cover Gambar Edisi (Vertikal 3:4)',
+          description: 'Rekomendasi ukuran: 600 x 800 px atau 900 x 1200 px (Format JPG/PNG/WebP, rasio vertikal majalah 3:4).',
           directory: 'public/media/editions',
           publicPath: '/media/editions',
         }),
         coverImageUrl: fields.text({
-          label: 'Atau URL Cover CDN / R2 (Direct Link: https://media.itsdvvn.my.id/...)',
+          label: 'Atau URL Cover CDN / R2 (Direct Link)',
+          description: 'Rekomendasi rasio gambar sampul majalah vertikal 3:4 / 4:5 (contoh: https://media.itsdvvn.my.id/..., 600x800 px).',
         }),
         summary: fields.text({
           label: 'Ringkasan / Intro Isu Pekan Ini',
@@ -355,12 +359,14 @@ export default config({
           description: 'Format 24 jam (misal 14:30)',
         }),
         heroImage: fields.image({
-          label: 'Hero / Featured Image (Pilih / Upload File)',
+          label: 'Hero / Featured Image (Lanskap 16:9)',
+          description: 'Rekomendasi ukuran: 1200 x 675 px atau 1600 x 900 px (Format JPG/PNG/WebP, rasio lanskap 16:9).',
           directory: 'public/images/writings',
           publicPath: '/media/writings/',
         }),
         heroImageUrl: fields.text({
-          label: 'Hero Image URL (PocketBase / CDN / R2: https://pb.itsdvvn.my.id/api/files/...)',
+          label: 'Hero Image URL (PocketBase / CDN / R2)',
+          description: 'Rekomendasi rasio gambar lanskap 16:9 (contoh: https://media.itsdvvn.my.id/..., 1200x675 px).',
         }),
         imageCaption: fields.text({ label: 'Image Caption' }),
         photoCredit: fields.text({ label: 'Photo Credit' }),
