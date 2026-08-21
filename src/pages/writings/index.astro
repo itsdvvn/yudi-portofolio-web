@@ -221,34 +221,32 @@ function formatDate(dateStr: string) {
               <div>
                 <div class="flex items-center justify-between gap-2 mb-1">
                   <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
-                      {post.category}
+                    <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-500 font-medium">
+                      {post.category || 'Article'}
                     </span>
                     {post.isLocked && (
-                      <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                        🔒 Locked
+                      <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold font-mono bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                        🔒 Terkunci
                       </span>
                     )}
                   </div>
-                  <span class="text-[11px] font-mono" style="color: var(--text-muted);">
+                  <span class="post-date text-[11px] font-mono shrink-0">
                     {formatDate(post.publishDate)}
                   </span>
                 </div>
-
-                <h3 class="text-base font-bold leading-snug mb-1 group-hover:text-emerald-400 transition-colors" style="color: var(--text-primary);">
+                <h2 class="text-base sm:text-base font-semibold group-hover:text-emerald-400 transition-colors leading-snug mb-1.5" style="color: var(--text-primary);">
                   {post.title}
-                </h3>
-                
+                </h2>
                 {post.deck && (
-                  <p class="text-xs leading-relaxed line-clamp-2 mb-2" style="color: var(--text-secondary);">
+                  <p class="text-xs sm:text-xs leading-relaxed line-clamp-2" style="color: var(--text-secondary);">
                     {post.deck}
                   </p>
                 )}
               </div>
-
-              <div class="flex items-center justify-between text-[11px] font-mono pt-2 border-t mt-2" style="border-color: var(--border); color: var(--text-muted);">
-                <span>⏱️ {post.readTime || '3 min read'}</span>
-                <span class="text-emerald-500 font-semibold group-hover:translate-x-0.5 transition-transform">Baca →</span>
+              <div class="flex items-center gap-3 text-[11px] font-mono mt-3 pt-2 border-t" style="border-color: var(--border); color: var(--text-muted);">
+                <span>{post.readTime || '3 min read'}</span>
+                <span>•</span>
+                <span class="group-hover:translate-x-0.5 transition-transform text-emerald-400">baca selengkapnya →</span>
               </div>
             </div>
           </a>
