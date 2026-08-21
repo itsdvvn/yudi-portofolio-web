@@ -623,7 +623,9 @@ const authorWebsite = authorData?.website || '';
           Menemukan kesalahan fakta atau kekeliruan data?
         </span>
         <a
-          href={`mailto:${authorEmail}?subject=${encodeURIComponent(`Koreksi / Masukan Artikel: ${post.title}`)}`}
+          href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(authorEmail)}&su=${encodeURIComponent(`Koreksi / Masukan Artikel: ${post.title}`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
           class="inline-flex items-center gap-1.5 font-mono text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline shrink-0 font-medium group"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 transition-transform group-hover:translate-x-0.5">
