@@ -1,0 +1,79 @@
+name: CI/CD Pipeline (Build, Test & Deploy)
+
+on:
+  push:
+    branches:
+      - main
+      - develop-v5
+  pull_request:
+    branches:
+      - main
+      - develop-v5
+
+jobs:
+  build-and-test:
+    name: 🧪 Build & Unit Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Run Unit Tests (Vitest)
+        run: npm run test
+
+      - name: 🔨 Run Astro Build Test
+        run: npm run build
+
+  deploy-main:
+    name: 🚀 Deploy to Production (itsdvvn.my.id)
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🌐 Deploy Production Container via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          script: |
+            cd /root/portfolio
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose up -d --build
+            echo "=== PRODUCTION DEPLOYMENT COMPLETE ==="
+            docker ps --filter "name=yudi-portfolio-web"
+
+  deploy-dev:
+    name: 🧪 Deploy to Dev Staging (dev.itsdvvn.my.id)
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop-v5'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🌐 Deploy Dev Container via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          script: |
+            cd /root/portfolio-dev
+            git fetch origin develop-v5
+            git reset --hard origin/develop-v5
+            docker compose up -d --build
+            echo "=== DEV STAGING DEPLOYMENT COMPLETE ==="
+            docker ps --filter "name=yudi-portfolio-dev"
