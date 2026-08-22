@@ -108,7 +108,7 @@ export function KeystaticApp() {
     function syncDateToKeystatic(dateVal: string, timeVal?: string) {
       const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
       for (const input of allInputs) {
-        if (input.closest('#wp-gutenberg-pre-publish-drawer')) return;
+        if (input.closest('#wp-gutenberg-pre-publish-drawer')) continue;
         const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
         const text = (container?.textContent || '').toLowerCase();
         
@@ -142,7 +142,7 @@ export function KeystaticApp() {
     function syncUpdatedDateToKeystatic(dateVal: string, timeVal?: string) {
       const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
       for (const input of allInputs) {
-        if (input.closest('#wp-gutenberg-pre-publish-drawer')) return;
+        if (input.closest('#wp-gutenberg-pre-publish-drawer')) continue;
         const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
         const text = (container?.textContent || '').toLowerCase();
         
@@ -228,13 +228,27 @@ export function KeystaticApp() {
         return false;
       }
 
+      // Helper untuk memicu save pada mainBtn Keystatic
+      function triggerMainSave() {
+        if (!mainBtn) return;
+        mainBtn.click();
+        const form = mainBtn.closest('form');
+        if (form && typeof (form as any).requestSubmit === 'function') {
+          try {
+            (form as any).requestSubmit(mainBtn);
+          } catch {
+            mainBtn.click();
+          }
+        }
+      }
+
       // Cek apakah item sudah pernah dirilis secara resmi (bukan draft baru)
       function checkIsItemAlreadyPublished() {
-        if (!isEditItem) return false;
+        if (isEditItem) return true;
         
-        // 1. Cek langsung checkbox hasBeenPublished di form
         const allCheckboxes = Array.from(document.querySelectorAll('input[type="checkbox"]')) as HTMLInputElement[];
         for (const cb of allCheckboxes) {
+          if (cb.closest('#wp-gutenberg-pre-publish-drawer')) continue;
           const container = cb.closest('label') || cb.parentElement?.parentElement || cb.parentElement;
           const text = (container?.textContent || '').toLowerCase();
           if (text.includes('sudah pernah dirilis') || text.includes('hasbeenpublished')) {
@@ -242,9 +256,9 @@ export function KeystaticApp() {
           }
         }
 
-        // 2. Jika field hasBeenPublished belum ada pada artikel legacy, cek apakah ada updatedDate/updatedTime
         const allInputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
         for (const input of allInputs) {
+          if (input.closest('#wp-gutenberg-pre-publish-drawer')) continue;
           const container = input.closest('label') || input.parentElement?.parentElement || input.parentElement;
           const text = (container?.textContent || '').toLowerCase();
           if (text.includes('terakhir diperbarui') || text.includes('updateddate')) {
@@ -258,10 +272,10 @@ export function KeystaticApp() {
       function getIsPublishedItem(): boolean {
         const isDraft = checkIsDraftChecked();
         if (isDraft) return false;
-        return isEditItem && checkIsItemAlreadyPublished();
+        return isEditItem || checkIsItemAlreadyPublished();
       }
 
-      // Buat tombol pengganti "Publish…", "Update", atau "Save Draft"
+      // Buat tombol pengganti "Publish…", "Save", atau "Save Draft"
       const wpTriggerBtn = document.createElement('button');
       wpTriggerBtn.type = 'button';
       wpTriggerBtn.dataset.isWpTrigger = 'true';
@@ -289,8 +303,8 @@ export function KeystaticApp() {
           wpTriggerBtn.style.border = '1px solid #4b5563';
           wpTriggerBtn.onmouseover = () => { wpTriggerBtn.style.backgroundColor = '#374151'; };
           wpTriggerBtn.onmouseout = () => { wpTriggerBtn.style.backgroundColor = '#4b5563'; };
-        } else if (isPublished) {
-          wpTriggerBtn.textContent = 'Update';
+        } else if (isEditItem || isPublished) {
+          wpTriggerBtn.textContent = 'Save';
           wpTriggerBtn.style.backgroundColor = '#059669';
           wpTriggerBtn.style.border = '1px solid #059669';
           wpTriggerBtn.onmouseover = () => { wpTriggerBtn.style.backgroundColor = '#047857'; };
@@ -673,14 +687,31 @@ export function KeystaticApp() {
       });
 
       wpTriggerBtn.addEventListener('click', () => {
-        if (checkIsDraftChecked()) {
-          // Mode Draft: Pastikan hasBeenPublished = false dan simpan langsung ke server
+        const isDraft = checkIsDraftChecked();
+        const n = new Date();
+        const todayIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+        const timeNow = `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
+
+        if (isDraft) {
+          // Mode Draft: Tandai hasBeenPublished = false & simpan langsung
           syncHasBeenPublishedToKeystatic(false);
           setTimeout(() => {
-            mainBtn.click();
+            triggerMainSave();
           }, 50);
           return;
         }
+
+        if (isEditItem) {
+          // Mode Edit Artikel Lama (Publik): Langsung simpan (Save), tandai hasBeenPublished = true & catat updatedDate
+          syncHasBeenPublishedToKeystatic(true);
+          syncUpdatedDateToKeystatic(todayIso, timeNow);
+          setTimeout(() => {
+            triggerMainSave();
+          }, 50);
+          return;
+        }
+
+        // Mode Artikel Baru (Create): Buka Drawer Pre-Publish
         openDrawer();
       });
 
