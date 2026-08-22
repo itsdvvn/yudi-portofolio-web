@@ -190,6 +190,37 @@ export function KeystaticApp() {
       }
     }
 
+    // Helper untuk menemukan tombol asli Keystatic secara dinamis
+    function findKeystaticMainButton(): HTMLButtonElement | null {
+      const buttons = Array.from(document.querySelectorAll('button')) as HTMLButtonElement[];
+      return buttons.find((b) => {
+        if (b.dataset.isWpTrigger === 'true') return false;
+        if (b.closest('#wp-gutenberg-pre-publish-drawer')) return false;
+        const t = (b.textContent || '').trim();
+        return t === 'Save' || t === 'Create' || t === 'Publish' || t === 'Published' || t === 'Saving…' || t === 'Publishing…';
+      }) || null;
+    }
+
+    // Helper untuk memicu event klik nyata yang dikenali oleh React / React-Aria
+    function dispatchRealClick(el: HTMLElement | null) {
+      if (!el) return;
+      const opts = { bubbles: true, cancelable: true, view: window };
+      try {
+        el.dispatchEvent(new PointerEvent('pointerdown', opts));
+        el.dispatchEvent(new MouseEvent('mousedown', opts));
+        el.dispatchEvent(new PointerEvent('pointerup', opts));
+        el.dispatchEvent(new MouseEvent('mouseup', opts));
+        el.dispatchEvent(new MouseEvent('click', opts));
+      } catch {}
+      if (typeof el.click === 'function') {
+        try { el.click(); } catch {}
+      }
+      const form = el.closest('form');
+      if (form && typeof (form as any).requestSubmit === 'function') {
+        try { (form as any).requestSubmit(el); } catch {}
+      }
+    }
+
     // State 2: Pemasangan WordPress Gutenberg Pre-Publish Panel & Update Button
     function setupWordPressPublishPanel() {
       // HANYA pasang tombol Publish/Update & Drawer pada artikel Writings & Majalah Editions
@@ -199,26 +230,24 @@ export function KeystaticApp() {
 
       const isEditItem = pathname.includes('/item/');
 
-      // Cari tombol aksi utama Keystatic (Save / Create)
-      const buttons = Array.from(document.querySelectorAll('button'));
-      const mainBtn = buttons.find((b) => {
-        const t = b.textContent?.trim();
-        return (t === 'Save' || t === 'Create' || t === 'Publish') && !b.dataset.isWpTrigger;
-      });
+      // Cari tombol asli Keystatic secara dinamis
+      const mainBtn = findKeystaticMainButton();
+      if (!mainBtn) return;
 
-      if (!mainBtn || mainBtn.dataset.hasWpModal === 'true') return;
-      mainBtn.dataset.hasWpModal = 'true';
-
-      // Sembunyikan tombol form asli dari pandangan tanpa merusak DOM
+      // Sembunyikan tombol form asli secara terisolasi tanpa memblokir React events
       mainBtn.style.opacity = '0';
       mainBtn.style.pointerEvents = 'none';
       mainBtn.style.position = 'absolute';
       mainBtn.style.zIndex = '-1';
+      mainBtn.style.width = '1px';
+      mainBtn.style.height = '1px';
+      mainBtn.style.overflow = 'hidden';
 
       // Cek apakah form saat ini mencentang opsi Draft
       function checkIsDraftChecked(): boolean {
         const allCheckboxes = Array.from(document.querySelectorAll('input[type="checkbox"]')) as HTMLInputElement[];
         for (const cb of allCheckboxes) {
+          if (cb.closest('#wp-gutenberg-pre-publish-drawer')) continue;
           const container = cb.closest('label') || cb.parentElement?.parentElement || cb.parentElement;
           const text = (container?.textContent || '').toLowerCase();
           if (text.includes('draft')) {
@@ -226,20 +255,6 @@ export function KeystaticApp() {
           }
         }
         return false;
-      }
-
-      // Helper untuk memicu save pada mainBtn Keystatic
-      function triggerMainSave() {
-        if (!mainBtn) return;
-        mainBtn.click();
-        const form = mainBtn.closest('form');
-        if (form && typeof (form as any).requestSubmit === 'function') {
-          try {
-            (form as any).requestSubmit(mainBtn);
-          } catch {
-            mainBtn.click();
-          }
-        }
       }
 
       // Cek apakah item sudah pernah dirilis secara resmi (bukan draft baru)
@@ -275,45 +290,61 @@ export function KeystaticApp() {
         return isEditItem || checkIsItemAlreadyPublished();
       }
 
-      // Buat tombol pengganti "Publish…", "Save", atau "Save Draft"
-      const wpTriggerBtn = document.createElement('button');
-      wpTriggerBtn.type = 'button';
-      wpTriggerBtn.dataset.isWpTrigger = 'true';
-      wpTriggerBtn.style.cssText = `
-        color: #ffffff;
-        font-weight: 600;
-        font-size: 13px;
-        padding: 7px 18px;
-        border-radius: 4px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        transition: all 0.15s ease;
-      `;
+      // Buat atau gunakan kembali tombol pengganti "Publish…", "Save", atau "Save Draft"
+      let wpTriggerBtn = mainBtn.parentElement?.querySelector('button[data-is-wp-trigger="true"]') as HTMLButtonElement | null;
+      if (!wpTriggerBtn) {
+        wpTriggerBtn = document.createElement('button');
+        wpTriggerBtn.type = 'button';
+        wpTriggerBtn.dataset.isWpTrigger = 'true';
+        wpTriggerBtn.style.cssText = `
+          color: #ffffff;
+          font-weight: 600;
+          font-size: 13px;
+          padding: 7px 18px;
+          border-radius: 4px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+          transition: all 0.15s ease;
+        `;
+        mainBtn.parentElement?.appendChild(wpTriggerBtn);
+      }
 
       function updateWpTriggerBtnState() {
+        if (!wpTriggerBtn) return;
         const isDraft = checkIsDraftChecked();
         const isPublished = getIsPublishedItem();
 
+        const isMainDisabled = mainBtn ? (mainBtn.disabled || mainBtn.getAttribute('aria-disabled') === 'true' || (mainBtn.textContent || '').includes('ing…')) : false;
+        if (isMainDisabled) {
+          wpTriggerBtn.setAttribute('disabled', 'true');
+          wpTriggerBtn.style.opacity = '0.6';
+          wpTriggerBtn.style.cursor = 'not-allowed';
+        } else {
+          wpTriggerBtn.removeAttribute('disabled');
+          wpTriggerBtn.style.opacity = '1';
+          wpTriggerBtn.style.cursor = 'pointer';
+        }
+
         if (isDraft) {
-          wpTriggerBtn.textContent = 'Save Draft';
+          wpTriggerBtn.textContent = isMainDisabled ? 'Saving Draft…' : 'Save Draft';
           wpTriggerBtn.style.backgroundColor = '#4b5563';
           wpTriggerBtn.style.border = '1px solid #4b5563';
-          wpTriggerBtn.onmouseover = () => { wpTriggerBtn.style.backgroundColor = '#374151'; };
+          wpTriggerBtn.onmouseover = () => { if (!isMainDisabled) wpTriggerBtn.style.backgroundColor = '#374151'; };
           wpTriggerBtn.onmouseout = () => { wpTriggerBtn.style.backgroundColor = '#4b5563'; };
         } else if (isEditItem || isPublished) {
-          wpTriggerBtn.textContent = 'Save';
+          wpTriggerBtn.textContent = isMainDisabled ? 'Saving…' : 'Save';
           wpTriggerBtn.style.backgroundColor = '#059669';
           wpTriggerBtn.style.border = '1px solid #059669';
-          wpTriggerBtn.onmouseover = () => { wpTriggerBtn.style.backgroundColor = '#047857'; };
+          wpTriggerBtn.onmouseover = () => { if (!isMainDisabled) wpTriggerBtn.style.backgroundColor = '#047857'; };
           wpTriggerBtn.onmouseout = () => { wpTriggerBtn.style.backgroundColor = '#059669'; };
         } else {
-          wpTriggerBtn.textContent = 'Publish…';
+          wpTriggerBtn.textContent = isMainDisabled ? 'Publishing…' : 'Publish…';
           wpTriggerBtn.style.backgroundColor = '#007cba';
           wpTriggerBtn.style.border = '1px solid #007cba';
-          wpTriggerBtn.onmouseover = () => { wpTriggerBtn.style.backgroundColor = '#006ba1'; };
+          wpTriggerBtn.onmouseover = () => { if (!isMainDisabled) wpTriggerBtn.style.backgroundColor = '#006ba1'; };
           wpTriggerBtn.onmouseout = () => { wpTriggerBtn.style.backgroundColor = '#007cba'; };
         }
       }
@@ -327,8 +358,6 @@ export function KeystaticApp() {
       document.addEventListener('click', () => {
         setTimeout(updateWpTriggerBtnState, 50);
       });
-
-      mainBtn.parentElement?.appendChild(wpTriggerBtn);
 
       // Cek apakah form saat ini adalah Artikel yang bertipe Mingguan
       function checkIsWeeklyArticle() {
@@ -465,22 +494,22 @@ export function KeystaticApp() {
         <!-- Top Action Bar -->
         <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--wp-drawer-border); background:var(--wp-drawer-header-bg);">
           <button type="button" id="wp-drawer-cancel" style="background:transparent; border:1px solid var(--wp-drawer-border); border-radius:4px; padding:6px 14px; font-size:13px; font-weight:600; cursor:pointer; color:var(--wp-drawer-text);">Cancel</button>
-          <button type="button" id="wp-drawer-submit" style="background:${isPublishedItem ? '#059669' : '#007cba'}; color:#fff; border:none; border-radius:4px; padding:6px 20px; font-size:13px; font-weight:600; cursor:pointer;">
-            ${isPublishedItem ? 'Update' : 'Publish'}
+          <button type="button" id="wp-drawer-submit" style="background:${isEditItem ? '#059669' : '#007cba'}; color:#fff; border:none; border-radius:4px; padding:6px 20px; font-size:13px; font-weight:600; cursor:pointer;">
+            ${isEditItem ? 'Update' : 'Publish'}
           </button>
         </div>
 
         <!-- Body Content -->
         <div style="padding:20px; overflow-y:auto; flex:1;">
           <h3 style="font-size:16px; font-weight:600; margin:0 0 6px 0; color:var(--wp-drawer-text);">
-            ${isPublishedItem ? 'Perbarui Artikel (Update)' : 'Are you ready to publish?'}
+            ${isEditItem ? 'Perbarui Artikel (Update)' : 'Are you ready to publish?'}
           </h3>
           <p style="font-size:12px; color:var(--wp-drawer-muted); margin:0 0 20px 0; line-height:1.4;">
-            ${isPublishedItem ? 'Simpan revisi konten. Waktu pembaruan (terakhir diperbarui) akan dicatat otomatis.' : 'Double-check your settings before publishing.'}
+            ${isEditItem ? 'Simpan revisi konten. Waktu pembaruan (terakhir diperbarui) akan dicatat otomatis.' : 'Double-check your settings before publishing.'}
           </p>
 
           <!-- Update Revision Notice Box -->
-          ${isPublishedItem ? `
+          ${isEditItem ? `
             <div style="background:rgba(5, 150, 105, 0.08); border:1px solid rgba(5, 150, 105, 0.25); border-radius:6px; padding:14px; margin-bottom:16px; font-size:12px; color:#059669; line-height:1.5;">
               <div style="font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:6px; font-size:13px;">
                 <span>🟢</span> Artikel Sudah Terbit (Published)
@@ -510,7 +539,7 @@ export function KeystaticApp() {
             </div>
           </div>
 
-          ${isPublishedItem ? `
+          ${isEditItem ? `
             <!-- Optional Override Publish Date for Existing Articles -->
             <div style="border-top:1px solid var(--wp-drawer-border); padding:14px 0;">
               <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; cursor:pointer; color:var(--wp-drawer-text); user-select:none;">
@@ -609,7 +638,6 @@ export function KeystaticApp() {
 
       function openDrawer() {
         const { existingDate, existingTime } = getExistingPublishDateTime();
-        const isPublished = getIsPublishedItem();
         
         if (pubDateBadge) {
           pubDateBadge.textContent = existingDate ? `${existingDate} ${existingTime ? existingTime + ' WIB' : ''}` : 'Published';
@@ -626,7 +654,7 @@ export function KeystaticApp() {
         if (isWeekly) {
           if (weeklyNotice) weeklyNotice.style.display = 'block';
           if (scheduleSec) scheduleSec.style.display = 'none';
-          submitBtn.textContent = isPublished ? 'Update in Edition' : 'Publish to Edition';
+          submitBtn.textContent = isEditItem ? 'Update in Edition' : 'Publish to Edition';
           submitBtn.style.backgroundColor = '#10b981';
         } else {
           if (weeklyNotice) weeklyNotice.style.display = 'none';
@@ -643,7 +671,6 @@ export function KeystaticApp() {
 
       function updateButtonMorph() {
         if (!datePicker || !timePicker) return;
-        const isPublished = getIsPublishedItem();
         const dateVal = datePicker.value || currentIsoDate;
         const timeVal = timePicker.value || `${currentHh}:${currentMm}`;
         const combinedIso = `${dateVal}T${timeVal}`;
@@ -651,7 +678,7 @@ export function KeystaticApp() {
         const currentNow = new Date();
         const isFuture = selectedDate.getTime() > currentNow.getTime() + 60000;
 
-        if (isPublished) {
+        if (isEditItem) {
           submitBtn.textContent = 'Update';
           submitBtn.style.backgroundColor = '#059669';
         } else if (isFuture) {
@@ -667,53 +694,58 @@ export function KeystaticApp() {
 
       datePicker?.addEventListener('change', () => {
         updateButtonMorph();
-        const isPublished = getIsPublishedItem();
-        if (!isPublished) syncDateToKeystatic(datePicker.value, timePicker?.value);
+        if (!isEditItem) syncDateToKeystatic(datePicker.value, timePicker?.value);
       });
       datePicker?.addEventListener('input', () => {
         updateButtonMorph();
-        const isPublished = getIsPublishedItem();
-        if (!isPublished) syncDateToKeystatic(datePicker.value, timePicker?.value);
+        if (!isEditItem) syncDateToKeystatic(datePicker.value, timePicker?.value);
       });
       timePicker?.addEventListener('change', () => {
         updateButtonMorph();
-        const isPublished = getIsPublishedItem();
-        if (!isPublished) syncDateToKeystatic(datePicker?.value, timePicker.value);
+        if (!isEditItem) syncDateToKeystatic(datePicker?.value, timePicker.value);
       });
       timePicker?.addEventListener('input', () => {
         updateButtonMorph();
-        const isPublished = getIsPublishedItem();
-        if (!isPublished) syncDateToKeystatic(datePicker?.value, timePicker.value);
+        if (!isEditItem) syncDateToKeystatic(datePicker?.value, timePicker.value);
       });
 
-      wpTriggerBtn.addEventListener('click', () => {
-        const isDraft = checkIsDraftChecked();
-        const n = new Date();
-        const todayIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
-        const timeNow = `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
+      if (!wpTriggerBtn.dataset.hasClickListener) {
+        wpTriggerBtn.dataset.hasClickListener = 'true';
+        wpTriggerBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
 
-        if (isDraft) {
-          // Mode Draft: Tandai hasBeenPublished = false & simpan langsung
-          syncHasBeenPublishedToKeystatic(false);
-          setTimeout(() => {
-            triggerMainSave();
-          }, 50);
-          return;
-        }
+          const activeMainBtn = findKeystaticMainButton();
+          if (!activeMainBtn) return;
 
-        if (isEditItem) {
-          // Mode Edit Artikel Lama (Publik): Langsung simpan (Save), tandai hasBeenPublished = true & catat updatedDate
-          syncHasBeenPublishedToKeystatic(true);
-          syncUpdatedDateToKeystatic(todayIso, timeNow);
-          setTimeout(() => {
-            triggerMainSave();
-          }, 50);
-          return;
-        }
+          const isDraft = checkIsDraftChecked();
+          const n = new Date();
+          const todayIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+          const timeNow = `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
 
-        // Mode Artikel Baru (Create): Buka Drawer Pre-Publish
-        openDrawer();
-      });
+          if (isDraft) {
+            // Mode Draft: Tandai hasBeenPublished = false & simpan langsung
+            syncHasBeenPublishedToKeystatic(false);
+            setTimeout(() => {
+              dispatchRealClick(activeMainBtn);
+            }, 50);
+            return;
+          }
+
+          if (isEditItem) {
+            // Mode Edit Artikel Lama (Publik): Langsung simpan (Save), tandai hasBeenPublished = true & catat updatedDate
+            syncHasBeenPublishedToKeystatic(true);
+            syncUpdatedDateToKeystatic(todayIso, timeNow);
+            setTimeout(() => {
+              dispatchRealClick(activeMainBtn);
+            }, 50);
+            return;
+          }
+
+          // Mode Artikel Baru (Create): Buka Drawer Pre-Publish
+          openDrawer();
+        });
+      }
 
       cancelBtn?.addEventListener('click', () => {
         closeDrawer();
@@ -728,24 +760,24 @@ export function KeystaticApp() {
         if (datePicker) datePicker.value = dIso;
         if (timePicker) timePicker.value = timeNow;
         updateButtonMorph();
-        const isPublished = getIsPublishedItem();
-        if (!isPublished) syncDateToKeystatic(dIso, timeNow);
+        if (!isEditItem) syncDateToKeystatic(dIso, timeNow);
       });
 
-      submitBtn?.addEventListener('click', () => {
+      submitBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
         closeDrawer();
 
+        const activeMainBtn = findKeystaticMainButton();
         const n = new Date();
         const hh = String(n.getHours()).padStart(2, '0');
         const mm = String(n.getMinutes()).padStart(2, '0');
         const todayIso = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
         const timeNow = `${hh}:${mm}`;
-        const isPublished = getIsPublishedItem();
 
         // Tandai bahwa konten resmi diterbitkan
         syncHasBeenPublishedToKeystatic(true);
 
-        if (!isPublished) {
+        if (!isEditItem) {
           // Artikel Baru: Terapkan tanggal & jam rilis awal
           const dateVal = datePicker?.value || currentIsoDate;
           const timeVal = timePicker?.value || `${currentHh}:${currentMm}`;
@@ -760,7 +792,7 @@ export function KeystaticApp() {
         }
 
         setTimeout(() => {
-          mainBtn.click();
+          if (activeMainBtn) dispatchRealClick(activeMainBtn);
         }, 100);
       });
     }
