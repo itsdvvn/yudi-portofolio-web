@@ -4,7 +4,16 @@ import type { APIRoute } from 'astro';
 import { reader } from '../lib/reader';
 import { isArticlePublished, parsePublishDateTime } from '../lib/schedule';
 
-export const ALL: APIRoute = async ({ site, request }) => {
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+export const GET: APIRoute = async ({ site }) => {
   const baseUrl = (site ? site.origin : 'https://itsdvvn.my.id').replace(/\/+$/, '');
 
   // 1. Static Pages
@@ -40,12 +49,23 @@ export const ALL: APIRoute = async ({ site, request }) => {
 
   const dynamicWritingPages = writings
     .filter((post) => post && isArticlePublished(post))
-    .map((post) => ({
-      url: `${baseUrl}/writings/${post.slug}`,
-      lastmod: post.publishDate ? parsePublishDateTime(post.publishDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      changefreq: 'monthly',
-      priority: '0.8',
-    }));
+    .map((post) => {
+      const lastmodDate = post!.updatedDate || post!.publishDate;
+      let formattedLastmod = new Date().toISOString().split('T')[0];
+      if (lastmodDate) {
+        try {
+          formattedLastmod = parsePublishDateTime(lastmodDate).toISOString().split('T')[0];
+        } catch {
+          formattedLastmod = String(lastmodDate).substring(0, 10);
+        }
+      }
+      return {
+        url: `${baseUrl}/writings/${post!.slug}`,
+        lastmod: formattedLastmod,
+        changefreq: 'monthly',
+        priority: '0.8',
+      };
+    });
 
   // 3. Dynamic Ships Case Studies
   let dynamicShipPages: any[] = [];
@@ -90,8 +110,8 @@ export const ALL: APIRoute = async ({ site, request }) => {
 ${allPages
   .map(
     (page) => `  <url>
-    <loc>${page.url}</loc>
-    ${page.lastmod ? `<lastmod>${page.lastmod}</lastmod>` : `<lastmod>${new Date().toISOString().split('T')[0]}</lastmod>`}
+    <loc>${escapeXml(page.url)}</loc>
+    <lastmod>${page.lastmod || new Date().toISOString().split('T')[0]}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
   </url>`
@@ -107,3 +127,5 @@ ${allPages
     },
   });
 };
+
+export const ALL = GET;
